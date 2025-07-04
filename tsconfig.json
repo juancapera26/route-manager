@@ -1,5 +1,18 @@
 {
-  "files": [],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "jsx": "react-jsx",
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
+  },
+  "include": ["src", "src/types/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
