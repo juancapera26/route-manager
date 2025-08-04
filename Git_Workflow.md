@@ -6,7 +6,7 @@ Este documento define la estrategia de control de versiones y colaboración para
 
 ---
 
-## 💬 Convención de Commits
+##  Convención de Commits
 
 Se utiliza la convención [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -27,7 +27,7 @@ git commit -m "fix(routes): corregir error en lógica de asignación"
 
 ---
 
-## 🔁 Frecuencia de Push y Pull
+##  Frecuencia de Push y Pull
 
 - Hacer `git pull origin develop` al comenzar el día de trabajo.
 - Hacer `git push origin feature/nombre-funcionalidad` al menos una vez al día.
@@ -35,7 +35,7 @@ git commit -m "fix(routes): corregir error en lógica de asignación"
 
 ---
 
-## ✅ Política de Pull Requests (PR)
+##  Política de Pull Requests (PR)
 
 - Toda rama `feature/*` debe crear un PR hacia `develop`.
 - El PR debe incluir:
@@ -47,7 +47,7 @@ git commit -m "fix(routes): corregir error en lógica de asignación"
 
 ---
 
-## 📁 Organización de Ramas
+##  Organización de Ramas
 
 1. Crear nueva funcionalidad:
 
