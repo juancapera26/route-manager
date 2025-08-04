@@ -2,31 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clonar repositorio
-      uses: actions/checkout@v3
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
 
-    - name: Instalar Node.js 
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
 
-    - name: Instalar dependencias
-      run: yarn install
+      - name: Instalar dependencias
+        run: yarn install
 
-    - name: Verificar compilación
-      run: yarn run build
+      - name: Verificar compilación
+        run: yarn run build
 
-    - name: Ejecutar pruebas unitarias
-      run: yarn test
+      - name: Ejecutar pruebas unitarias
+        run: yarn test
 
-    - name: Ejecutar linter
-      run: yarn run lint
+      - name: Ejecutar linter
+        run: yarn run lint
