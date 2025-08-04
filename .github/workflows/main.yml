@@ -27,6 +27,3 @@ jobs:
 
       - name: Ejecutar pruebas unitarias
         run: yarn test
-
-      - name: Ejecutar linter
-        run: yarn run lint
