@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  getIdTokenResult,
   type User,
 } from "firebase/auth";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,14 +16,35 @@ const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Estado local para usuario, para que el hook sea reactivo a cambios de auth
   const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [role, setRole] = useState<string | null>(null);
+  const [nombre, setNombre] = useState<string | null>(null); // 👈 Nuevo
+  const [apellido, setApellido] = useState<string | null>(null); // 👈 Nuevo
 
-  // Escuchar cambios en el usuario autenticado
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser); // actualizamos el estado con el usuario actual o null
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const token = await getIdTokenResult(firebaseUser);
+          console.log("🔥 TOKEN CLAIMS:", token.claims);
+
+          setRole((token.claims.role as string) || null);
+          setNombre((token.claims.nombre as string) || null); // 👈 Nuevo
+          setApellido((token.claims.apellido as string) || null); // 👈 Nuevo
+        } catch (err) {
+          console.error("❌ Error al obtener claims:", err);
+          setRole(null);
+          setNombre(null);
+          setApellido(null);
+        }
+      } else {
+        setRole(null);
+        setNombre(null);
+        setApellido(null);
+      }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -36,14 +58,14 @@ const useAuth = () => {
   }, [navigate]);
 
   const resetIdleTimer = useCallback(() => {
-    if (!user) return; // si no hay usuario, no inicia timer
+    if (!user) return;
 
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
 
     idleTimerRef.current = setTimeout(() => {
-      toast.info("Session expired due to inactivity.");
+      toast.info("Sesión cerrada por inactividad.");
       logout();
-    }, 10 * 60 * 1000);
+    }, 10 * 60 * 1000); // 10 minutos
   }, [logout, user]);
 
   useEffect(() => {
@@ -78,8 +100,21 @@ const useAuth = () => {
         email,
         password
       );
-      await userCredential.user.getIdToken();
-      navigate("/");
+      const tokenResult = await getIdTokenResult(userCredential.user);
+
+      const rawRole = tokenResult.claims.role;
+      setRole(typeof rawRole === "string" ? rawRole : null);
+
+      setNombre((tokenResult.claims.nombre as string) || null); // 👈 Nuevo
+      setApellido((tokenResult.claims.apellido as string) || null); // 👈 Nuevo
+
+      if (tokenResult.claims.role === "1") {
+        navigate("/admin");
+      } else if (tokenResult.claims.role === "2") {
+        navigate("/home");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -96,7 +131,7 @@ const useAuth = () => {
     setError("");
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage("We've sent you a link to reset your password.");
+      setMessage("Hemos enviado un enlace para restablecer la contraseña.");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -119,6 +154,9 @@ const useAuth = () => {
     handlePasswordReset,
     getAccessToken,
     user,
+    role,
+    nombre, // 👈 Nuevo
+    apellido, // 👈 Nuevo
     isAuthenticated: !!user,
   };
 };

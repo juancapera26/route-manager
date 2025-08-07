@@ -1,38 +1,32 @@
+// src/hooks/protectedRoute.tsx
+import { Navigate, Outlet } from "react-router";
+import CustomLoader from "../components/customLoader/CustomLoader";
+import useAuth from "./useAuth";
 
-import { onAuthStateChanged } from 'firebase/auth';
-import { useEffect, useState } from 'react';
-import { auth } from '../firebase/firebaseConfig'; // Asegúrate de importar tu instancia de auth
-import { Navigate, Outlet } from 'react-router';
-import CustomLoader from '../components/customLoader/CustomLoader';
+interface ProtectedRouteProps {
+  allowedRoles: string[];
+}
 
-const ProtectedRoute = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, role, loading } = useAuth();
 
-  useEffect(() => {
-    // Escucha los cambios en el estado de autenticación
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticated(true); // Usuario autenticado
-      } else {
-        setIsAuthenticated(false); // Usuario no autenticado
-      }
-    });
-
-    // Limpieza de la suscripción
-    return () => unsubscribe();
-  }, []);
-
-  // Mientras no se sepa si está autenticado, muestra un loading o nada
-  if (isAuthenticated === null) {
-    return <CustomLoader />; // Puedes mostrar un spinner o similar aquí
+  // Mientras carga el usuario o el rol, muestra loader
+  if (loading || (isAuthenticated && role === null)) {
+    return <CustomLoader />;
   }
 
-  if (isAuthenticated) {
-  
-    return <Outlet />; // Si está autenticado, permite el acceso a las rutas protegidas
-  } else {
-    return <Navigate to="/signin" replace />; // Si no está autenticado, redirige al login
+  // Si no está autenticado, redirige a login
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" replace />;
   }
+
+  // Si el rol no está permitido, redirige
+  if (!allowedRoles.includes(role || "")) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Si todo bien, renderiza la ruta hija
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

@@ -11,10 +11,24 @@ export default defineConfig({
         svgr({
             svgrOptions: {
                 icon: true,
-                // This will transform your SVG to a React component
                 exportType: "named",
                 namedExport: "ReactComponent",
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes("node_modules")) {
+                        if (id.includes("react"))
+                            return "vendor-react";
+                        if (id.includes("firebase"))
+                            return "vendor-firebase";
+                        return "vendor"; // Resto de librerías
+                    }
+                },
+            },
+        },
+    },
 });
