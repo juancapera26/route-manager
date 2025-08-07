@@ -7,22 +7,33 @@ import SignUp from "./pages/AuthPages/SignUp";
 import AppLayout from "./layout/AppLayout";
 import NotFound from "./pages/otherPages/NotFound";
 import { Home } from "./pages/home/Home";
+import { Admin } from "./pages/admin/Admin";
 
 function App() {
   return (
     <Router basename="/">
       <Routes>
+        {/* Rutas públicas */}
+        <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetRequest />} />
         <Route path="/reset-password-form" element={<ResetPasswordForm />} />
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            {/* Rutas de la página del Dashboard */}
-            <Route index path="/" element={<Home />} />
+
+        {/* Rutas protegidas */}
+        <Route element={<ProtectedRoute allowedRoles={["1"]} />}>
+          <Route path="/admin" element={<AppLayout />}>
+            <Route index element={<Admin />} />
           </Route>
         </Route>
-        {/* Ruta de Fallback */}
+
+        <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
+          <Route path="/home" element={<AppLayout />}>
+            <Route index element={<Home />} />
+          </Route>
+        </Route>
+
+        {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

@@ -8,6 +8,9 @@ declare const useAuth: () => {
     handlePasswordReset: (email: string, setError: React.Dispatch<React.SetStateAction<string>>, setMessage: React.Dispatch<React.SetStateAction<string>>) => Promise<void>;
     getAccessToken: () => Promise<string | null>;
     user: User | null;
+    role: string | null;
+    nombre: string | null;
+    apellido: string | null;
     isAuthenticated: boolean;
 };
 export default useAuth;
