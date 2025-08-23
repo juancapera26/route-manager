@@ -1,5 +1,5 @@
 import React from "react";
-type ThemeMode = "light" | "dark";
+type ThemeMode = "light" | "orange";
 type ThemeContextType = {
     theme: ThemeMode;
     toggleTheme: () => void;

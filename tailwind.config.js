@@ -1,8 +1,10 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 /** @type {import('tailwindcss').Config} */
+
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   darkMode: "class",
+
   theme: {
     fontFamily: {
       outfit: ["Outfit", "sans-serif"],
@@ -28,9 +30,9 @@ export default {
         "theme-xs": ["12px", "18px"],
       },
       colors: {
-        primary: '#154457',
-        primaryDark: '#0b242e',
-        secondary: '#c2a300',
+        primary: '#161950',
+        primaryDark: '#1F2937',
+        secondary: '#101828',
         current: "currentColor",
         transparent: "transparent",
         white: "#FFFFFF",
@@ -142,9 +144,9 @@ export default {
         },
       },
       backgroundColor: {
-        primary: '#154457',
-        primaryDark: '#0b242e',
-        secondary: '#c2a300',
+        primary: '#161950',
+        primaryDark: '#1F2937',
+        secondary: '#ededed',
       },
       boxShadow: {
         "theme-md":
