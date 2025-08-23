@@ -11,6 +11,7 @@ declare const useAuth: () => {
     role: string | null;
     nombre: string | null;
     apellido: string | null;
+    correo: string | null;
     isAuthenticated: boolean;
 };
 export default useAuth;

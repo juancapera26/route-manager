@@ -17,18 +17,8 @@ export default defineConfig({
         }),
     ],
     build: {
-        rollupOptions: {
-            output: {
-                manualChunks(id) {
-                    if (id.includes("node_modules")) {
-                        if (id.includes("react"))
-                            return "vendor-react";
-                        if (id.includes("firebase"))
-                            return "vendor-firebase";
-                        return "vendor"; // Resto de librerías
-                    }
-                },
-            },
-        },
+        sourcemap: true, // 🔍 Habilita sourcemaps para depurar en Vercel
+        // ❌ `manualChunks` desactivado para evitar errores de ejecución
+        // Vite gestionará los chunks automáticamente
     },
 });

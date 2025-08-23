@@ -8,6 +8,7 @@ import AppLayout from "./layout/AppLayout";
 import NotFound from "./pages/otherPages/NotFound";
 import { Home } from "./pages/home/Home";
 import { Admin } from "./pages/admin/Admin";
+import AppLayout_home from "./pages/home/layout_conductor/AppLayout_home";
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
-          <Route path="/home" element={<AppLayout />}>
+          <Route path="/home" element={<AppLayout_home />}>
             <Route index element={<Home />} />
           </Route>
         </Route>
