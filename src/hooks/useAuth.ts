@@ -18,8 +18,9 @@ const useAuth = () => {
 
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [role, setRole] = useState<string | null>(null);
-  const [nombre, setNombre] = useState<string | null>(null); // 👈 Nuevo
-  const [apellido, setApellido] = useState<string | null>(null); // 👈 Nuevo
+  const [nombre, setNombre] = useState<string | null>(null);
+  const [apellido, setApellido] = useState<string | null>(null);
+  const [correo, setCorreo] = useState<string | null>(null); // 👈 Nuevo
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -30,18 +31,30 @@ const useAuth = () => {
           console.log("🔥 TOKEN CLAIMS:", token.claims);
 
           setRole((token.claims.role as string) || null);
-          setNombre((token.claims.nombre as string) || null); // 👈 Nuevo
-          setApellido((token.claims.apellido as string) || null); // 👈 Nuevo
+
+          const fullName = token.claims.name as string | undefined;
+          if (fullName) {
+            const partes = fullName.split(" ");
+            setNombre(partes[0] || null);
+            setApellido(partes.slice(1).join(" ") || null);
+          } else {
+            setNombre(null);
+            setApellido(null);
+          }
+
+          setCorreo(firebaseUser.email || null); // 👈 Guardamos correo
         } catch (err) {
           console.error("❌ Error al obtener claims:", err);
           setRole(null);
           setNombre(null);
           setApellido(null);
+          setCorreo(null);
         }
       } else {
         setRole(null);
         setNombre(null);
         setApellido(null);
+        setCorreo(null);
       }
     });
 
@@ -105,8 +118,17 @@ const useAuth = () => {
       const rawRole = tokenResult.claims.role;
       setRole(typeof rawRole === "string" ? rawRole : null);
 
-      setNombre((tokenResult.claims.nombre as string) || null); // 👈 Nuevo
-      setApellido((tokenResult.claims.apellido as string) || null); // 👈 Nuevo
+      const fullName = tokenResult.claims.name as string | undefined;
+      if (fullName) {
+        const partes = fullName.split(" ");
+        setNombre(partes[0] || null);
+        setApellido(partes.slice(1).join(" ") || null);
+      } else {
+        setNombre(null);
+        setApellido(null);
+      }
+
+      setCorreo(userCredential.user.email || null); // 👈 Guardamos correo
 
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
@@ -155,8 +177,9 @@ const useAuth = () => {
     getAccessToken,
     user,
     role,
-    nombre, // 👈 Nuevo
-    apellido, // 👈 Nuevo
+    nombre,
+    apellido,
+    correo, // 👈 lo devolvemos
     isAuthenticated: !!user,
   };
 };

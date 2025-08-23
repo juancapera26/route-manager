@@ -5,7 +5,7 @@ import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function UserDropdown() {
-  const { nombre, apellido } = useAuth();
+  const { nombre, apellido, correo } = useAuth();
   const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,8 +27,8 @@ export default function UserDropdown() {
           <img src={"/images/user/owner.jpg"} alt="User" />
         </span>
         <span className="block mr-1 font-medium text-theme-sm">
-          {nombre ? `${nombre}` : "Usuario"}
-        </span>{" "}
+          {nombre ? `${nombre}${apellido ? " " + apellido : ""}` : "Usuario"}
+        </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -61,7 +61,7 @@ export default function UserDropdown() {
           </span>{" "}
           {/* get data userName */}
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            juanda@gmail.com
+            {correo ?? "correo@ejemplo.com"}
           </span>
         </div>
 
