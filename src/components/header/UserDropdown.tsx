@@ -23,11 +23,11 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-secondary dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={"/images/user/owner.jpg"} alt="User" />
-        </span>
         <span className="block mr-1 font-medium text-theme-sm">
           {nombre ? `${nombre}${apellido ? " " + apellido : ""}` : "Usuario"}
+        </span>{" "}
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+          <img src={"/images/user/owner.jpg"} alt="User profile" />
         </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -57,7 +57,7 @@ export default function UserDropdown() {
         <div>
           {/* get data userName */}
           <span className="block mr-1 font-medium text-theme-sm">
-            {nombre && apellido ? `${nombre} ${apellido}` : "Usuario"}
+            {nombre && apellido ? `${nombre} ${apellido}` : "User"}
           </span>{" "}
           {/* get data userName */}
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
@@ -66,7 +66,7 @@ export default function UserDropdown() {
         </div>
 
         <ul className="flex flex-col gap-1 pb-3 border-b border-gray-200 dark:border-gray-800">
-          {/* <li>
+          <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -90,7 +90,7 @@ export default function UserDropdown() {
               </svg>
               Edit profile
             </DropdownItem>
-          </li> */}
+          </li>
           {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}

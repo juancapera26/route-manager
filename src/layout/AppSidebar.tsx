@@ -8,6 +8,7 @@ import {
   PlugInIcon,
 } from "../icons";
 
+
 import BusinessIcon from "@mui/icons-material/Business";
 import Diversity3Icon from "@mui/icons-material/Diversity3";
 import Groups2Icon from "@mui/icons-material/Groups2";
@@ -29,79 +30,56 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  // {
-  //   icon: <GridIcon />,
-  //   name: 'Dashboard',
-  //   subItems: [{ name: 'Ecommerce', path: '/', pro: false }],
-  // },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: 'Calendar',
-  //   path: '/calendar',
-  // },
-  // {
-  //   icon: <AccountCircleIcon />,
-  //   name: 'User Profile',
-  //   path: '/profile',
-  // },
   {
     icon: <HomeIcon />,
-    name: "Home",
-    path: "/",
+    name: "Dashboard",
+    path: "/admin",
   },
   {
-    name: "Participants",
+    name: "operational monitoring",
     icon: <Groups2Icon />,
-    path: "/participants",
+    path: "/operationalMonitoring",
   },
   {
-    name: "Contacts",
+    name: "Route Managmenent",
     icon: <Groups2Icon />,
-    path: "/contacts",
+    path: "/routeManagmenent",
   },
   {
-    name: "Leads",
+    name: "Packages Managmenent",
     icon: <Groups2Icon />,
-    path: "/leads",
+    path: "/packagesManagment",
   },
   {
-    name: "Researchers",
+    name: "Drivers Managmenent",
     icon: <Diversity3Icon />,
-    path: "/researchers",
+    path: "/drivesManagmenent",
   },
   {
-    name: "Companies",
+    name: "Vehicles Managmenent",
     icon: <BusinessIcon />,
-    path: "/companies",
+    path: "/vehicles Management",
   },
   {
-    name: "Campaigns",
+    name: "register packages",
+    icon: <BusinessIcon />,
+    path: "/registerPackages",
+  },
+  {
+    name: "History",
     icon: <PhonelinkIcon />,
-    path: "/campaigns",
+    path: "/history",
   },
   {
-    name: "Reminders",
+    name: "Reports",
     icon: <BellIcon />,
-    path: "/reminders",
+    path: "/reports",
   },
-  // {
-  //   name: 'Forms',
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: 'Form Elements', path: '/form-elements', pro: false }],
-  // },
-  // {
-  //   name: 'Tables',
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: 'Basic Tables', path: '/basic-tables', pro: false }],
-  // },
-  // {
-  //   name: 'Pages',
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: 'Blank Page', path: '/blank', pro: false },
-  //     { name: '404 Error', path: '/error-404', pro: false },
-  //   ],
-  // },
+  {
+    name: "Configuration",
+    icon: <BellIcon />,
+    path: "/configuration",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -346,7 +324,7 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`flex w-full h-[76.5px] justify-center align-middle items-center border-b bg-primary bg-gradient-to-r from-primaryDark via-primary to-primaryDark`}
+        className={`flex w-full h-[76.5px] justify-center align-middle items-center border-b bg-white dark:bg-gray-900 from-primaryDark via-primary to-primaryDark`}
       >
         <img
           src={IconStudyImpetus}
@@ -363,7 +341,7 @@ const AppSidebar: React.FC = () => {
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
-                    : "justify-start"
+                    : "justify-z"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
