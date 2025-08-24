@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import ModalHistorial from "../ModalHistorial";
+
 import { Link, useLocation } from "react-router";
 import {
   BoxCubeIcon,
@@ -8,101 +10,26 @@ import {
   PlugInIcon,
 } from "../../../icons";
 
-import BusinessIcon from "@mui/icons-material/Business";
-import Diversity3Icon from "@mui/icons-material/Diversity3";
-import Groups2Icon from "@mui/icons-material/Groups2";
-import HomeIcon from "@mui/icons-material/Home";
-import PhonelinkIcon from "@mui/icons-material/Phonelink";
-import { BellIcon } from "lucide-react";
+import PlaceIcon from "@mui/icons-material/Place";
+import ArticleIcon from "@mui/icons-material/Article";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 import { useSidebar } from "../../../context/SidebarContext";
 
-// Assume these icons are imported from an icon library
-
-// import SidebarWidget from './SidebarWidget';
-// import { permissions } from '../global/permisions';
+type SubItem = {
+  name: string;
+  path: string;
+  pro?: boolean;
+  new?: boolean;
+};
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  action?: () => void;
+  subItems?: SubItem[];
 };
-
-const navItems: NavItem[] = [
-  // {
-  //   icon: <GridIcon />,
-  //   name: 'Dashboard',
-  //   subItems: [{ name: 'Ecommerce', path: '/', pro: false }],
-  // },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: 'Calendar',
-  //   path: '/calendar',
-  // },
-  // {
-  //   icon: <AccountCircleIcon />,
-  //   name: 'User Profile',
-  //   path: '/profile',
-  // },
-  {
-    icon: <HomeIcon />,
-    name: "Home",
-    path: "/",
-  },
-  {
-    name: "Participants",
-    icon: <Groups2Icon />,
-    path: "/participants",
-  },
-  {
-    name: "Contacts",
-    icon: <Groups2Icon />,
-    path: "/contacts",
-  },
-  {
-    name: "Leads",
-    icon: <Groups2Icon />,
-    path: "/leads",
-  },
-  {
-    name: "Researchers",
-    icon: <Diversity3Icon />,
-    path: "/researchers",
-  },
-  {
-    name: "Companies",
-    icon: <BusinessIcon />,
-    path: "/companies",
-  },
-  {
-    name: "Campaigns",
-    icon: <PhonelinkIcon />,
-    path: "/campaigns",
-  },
-  {
-    name: "Reminders",
-    icon: <BellIcon />,
-    path: "/reminders",
-  },
-  // {
-  //   name: 'Forms',
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: 'Form Elements', path: '/form-elements', pro: false }],
-  // },
-  // {
-  //   name: 'Tables',
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: 'Basic Tables', path: '/basic-tables', pro: false }],
-  // },
-  // {
-  //   name: 'Pages',
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: 'Blank Page', path: '/blank', pro: false },
-  //     { name: '404 Error', path: '/error-404', pro: false },
-  //   ],
-  // },
-];
 
 const othersItems: NavItem[] = [
   {
@@ -136,9 +63,28 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
   const IconStudyImpetus = "/public/images/logo/logo.png";
+
+  const navItems: NavItem[] = [
+    {
+      icon: <PlaceIcon htmlColor="white" />, // Forzar color blanco
+      name: "Rutas",
+      path: "/",
+    },
+    {
+      name: "Historial",
+      icon: <ArticleIcon htmlColor="white" />, // Forzar color blanco
+      action: () => setIsModalOpen(true),
+    },
+    {
+      name: "indefinido",
+      icon: <ArrowBackIcon htmlColor="white" />, // Forzar color blanco
+      path: "/campaigns",
+    },
+  ];
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -150,7 +96,6 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -174,11 +119,10 @@ const AppSidebar: React.FC = () => {
         }
       });
     });
-
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
-  }, [location, isActive]);
+  }, [location, isActive, navItems, othersItems]);
 
   useEffect(() => {
     if (openSubmenu !== null) {
@@ -223,7 +167,7 @@ const AppSidebar: React.FC = () => {
               }`}
             >
               <span
-                className={`menu-item-icon-size text-primary  ${
+                className={`menu-item-icon-size text-primary ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
                     ? "menu-item-icon-active"
                     : "menu-item-icon-inactive"
@@ -245,31 +189,41 @@ const AppSidebar: React.FC = () => {
                 />
               )}
             </button>
-          ) : (
-            nav.path && (
-              <Link
-                to={nav.path}
-                className={`menu-item group hover:text-primary hover:font-outfit ${
+          ) : nav.action ? (
+            <button
+              onClick={nav.action}
+              className="menu-item group cursor-pointer flex items-center gap-3 text-white"
+            >
+              <span className="menu-item-icon-size" style={{ color: "white" }}>
+                {nav.icon}
+              </span>
+              {(isExpanded || isHovered || isMobileOpen) && (
+                <span className="menu-item-text">{nav.name}</span>
+              )}
+            </button>
+          ) : nav.path ? (
+            <Link
+              to={nav.path}
+              className={`menu-item group hover:text-primary hover:font-outfit ${
+                isActive(nav.path)
+                  ? "text-primary font-bold bg-primary/10"
+                  : "menu-item-inactive"
+              }`}
+            >
+              <span
+                className={`${
                   isActive(nav.path)
-                    ? "text-primary font-bold bg-primary/10"
-                    : "menu-item-inactive"
+                    ? "text-primary font-bold hover:font-outfit"
+                    : "text-gray-500"
                 }`}
               >
-                <span
-                  className={`${
-                    isActive(nav.path)
-                      ? "text-primary font-bold hover:font-outfit"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-              </Link>
-            )
-          )}
+                {nav.icon}
+              </span>
+              {(isExpanded || isHovered || isMobileOpen) && (
+                <span className="menu-item-text">{nav.name}</span>
+              )}
+            </Link>
+          ) : null}
           {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
             <div
               ref={(el) => {
@@ -331,70 +285,60 @@ const AppSidebar: React.FC = () => {
   );
 
   return (
-    <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-          isExpanded || isMobileOpen
-            ? "w-[290px]"
-            : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div
-        className={`flex w-full h-[76.5px] justify-center align-middle items-center border-b bg-primary bg-gradient-to-r from-primaryDark via-primary to-primaryDark`}
+    <>
+      <aside
+        className={`fixed mt-16 flex flex-col lg:mt-0 top-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+          ${
+            isExpanded || isMobileOpen
+              ? "w-[290px]"
+              : isHovered
+              ? "w-[290px]"
+              : "w-[90px]"
+          }
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0`}
+        onMouseEnter={() => !isExpanded && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <img
-          src={IconStudyImpetus}
-          className={`${isExpanded || isHovered ? "h-20" : "h-10"} ${
-            isMobileOpen ?? "h-20"
-          }`}
-        />
-      </div>
-      <div className="px-5 pt-5 flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
-                ) : (
-                  <HorizontaLDots className="size-6" />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "main")}
+        <div
+          className={`flex w-full h-[76.5px] justify-center align-middle items-center border-b bg-primary bg-gradient-to-r from-primaryDark via-primary to-primaryDark`}
+        >
+          <img
+            src={IconStudyImpetus}
+            className={`${isExpanded || isHovered ? "h-20" : "h-10"} ${
+              isMobileOpen ?? "h-20"
+            }`}
+          />
+        </div>
+        <div className="px-5 pt-5 flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+          <nav className="mb-6">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2
+                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                    !isExpanded && !isHovered
+                      ? "lg:justify-center"
+                      : "justify-start"
+                  }`}
+                >
+                  {isExpanded || isHovered || isMobileOpen ? (
+                    "Menu"
+                  ) : (
+                    <HorizontaLDots className="size-6" />
+                  )}
+                </h2>
+                {renderMenuItems(navItems, "main")}
+              </div>
             </div>
-            {/* <div className=''>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? 'lg:justify-center'
-                    : 'justify-start'
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  'Others'
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {permissions.isActive && renderMenuItems(othersItems, 'others')}
-            </div> */}
-          </div>
-        </nav>
-        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
-      </div>
-    </aside>
+          </nav>
+        </div>
+      </aside>
+
+      <ModalHistorial
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
   );
 };
 

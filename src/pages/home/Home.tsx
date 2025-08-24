@@ -2,7 +2,7 @@ import { GoogleMap, LoadScript } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
-  height: "800px",
+  height: "100vh",
 };
 
 const center = {
@@ -17,7 +17,13 @@ export const Home = () => {
         mapContainerStyle={containerStyle}
         center={center}
         zoom={10}
-      ></GoogleMap>
+        options={{
+          disableDefaultUI: true,
+          streetViewControl: true,
+          minZoom: 3,
+          maxZoom: 20,
+        }}
+      />
     </LoadScript>
   );
 };
