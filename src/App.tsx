@@ -21,6 +21,7 @@ import NotFound from "./pages/otherPages/NotFound";
 // Páginas principales según rol de usuario
 import { Home } from "./pages/home/Home";
 import { Admin } from "./pages/admin/Admin";
+import AppLayout_home from "./pages/home/layout_conductor/AppLayout_home";
 
 
 // ---------------------
@@ -72,10 +73,8 @@ function App() {
         {/* Rutas exclusivas para usuarios con rol "2" (conductores) */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
           
-          {/* Layout general también, pero para la sección de home */}
-          <Route path="/home" element={<AppLayout />}>
+          <Route path="/home" element={<AppLayout_home />}>
             
-            {/* Ruta índice dentro de /home → muestra la página principal del usuario */}
             <Route index element={<Home />} />
           </Route>
         </Route>
