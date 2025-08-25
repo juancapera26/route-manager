@@ -29,67 +29,35 @@ import { Admin } from "./pages/admin/Admin";
 // La función `App` es el corazón del frontend. Define todas las rutas disponibles.
 function App() {
   return (
-    // <Router>: envuelve toda la aplicación y habilita la navegación con historial del navegador.
     <Router basename="/">
-      
-      {/* <Routes>: agrupa todas las rutas de la aplicación */}
       <Routes>
-        
-        {/* ---------------------
-            📌 RUTAS PÚBLICAS
-        ---------------------- */}
-        {/* Página de inicio de sesión (por defecto en "/") */}
+        {/* --- Rutas Públicas --- */}
         <Route path="/" element={<SignIn />} />
-
-        {/* Alternativa explícita de inicio de sesión */}
         <Route path="/signin" element={<SignIn />} />
-        
-        {/* Registro de usuario */}
         <Route path="/signup" element={<SignUp />} />
-        
-        {/* Petición de restablecimiento de contraseña (usuario escribe su correo) */}
         <Route path="/reset-password" element={<ResetRequest />} />
-        
-        {/* Formulario para ingresar nueva contraseña tras recibir enlace/token */}
         <Route path="/reset-password-form" element={<ResetPasswordForm />} />
 
-
-        {/* ---------------------
-            🔒 RUTAS PROTEGIDAS (solo con login y rol específico)
-        ---------------------- */}
-
-        {/* Rutas exclusivas para usuarios con rol "1" (administradores) */}
+        {/* --- Rutas Protegidas para Admin (rol "1") --- */}
         <Route element={<ProtectedRoute allowedRoles={["1"]} />}>
-          
-          {/* Layout general (barra lateral, header, etc.) para la zona de administración */}
-          <Route path="/admin" element={<AppLayout />}>
-            
-            {/* Ruta índice dentro de /admin → muestra el dashboard de admin */}
-            <Route index element={<Admin />} />
+          <Route element={<AppLayout />}> {/* Layout para este grupo de rutas */}
+            <Route path="/admin" element={<Admin />} />
+
           </Route>
         </Route>
 
-        {/* Rutas exclusivas para usuarios con rol "2" (conductores) */}
+        {/* --- Rutas Protegidas para Usuario (rol "2") --- */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
-          
-          {/* Layout general también, pero para la sección de home */}
-          <Route path="/home" element={<AppLayout />}>
-            
-            {/* Ruta índice dentro de /home → muestra la página principal del usuario */}
-            <Route index element={<Home />} />
+          <Route element={<AppLayout />}> {/* Layout para este grupo de rutas */}
+            <Route path="/home" element={<Home />} />
           </Route>
         </Route>
 
-
-        {/* ---------------------
-            ⚠️ RUTA DE FALLBACK
-        ---------------------- */}
-        {/* Cualquier ruta no definida → muestra página 404 */}
+        {/* --- Ruta de Not Found --- */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
 }
 
-// Exporta App para usarla en src/main.tsx (punto de entrada).
 export default App;
