@@ -81,7 +81,7 @@ const AppSidebar: React.FC = () => {
     },
     {
       name: "indefinido",
-      icon: <ArrowBackIcon htmlColor="white" />, // Forzar color blanco
+      icon: <ArrowBackIcon htmlColor="white" />,
       path: "/campaigns",
     },
   ];
