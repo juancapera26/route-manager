@@ -1,20 +1,18 @@
 import { useEffect, useRef } from "react";
 
-import MenuIcon from '@mui/icons-material/Menu';
+import MenuIcon from "@mui/icons-material/Menu";
 import UserDropdown from "../../../components/header/UserDropdown";
 import { useSidebar } from "../../../context/SidebarContext";
 
 // import { Link } from "react-router";
 
-
 // import NotificationDropdown from "../components/header/NotificationDropdown";
-
 
 const AppHeader: React.FC = () => {
   // const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
-  
+
   const handleToggle = () => {
     if (window.innerWidth >= 991) {
       toggleSidebar();
@@ -24,7 +22,7 @@ const AppHeader: React.FC = () => {
   };
 
   // const toggleApplicationMenu = () => {
-  //   setApplicationMenuOpen(!isApplicationMenuOpen);
+  //   setApplicationMenuOpen(!isApplicationMenuOpen
   // };
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,14 +51,13 @@ const AppHeader: React.FC = () => {
             onClick={handleToggle}
             aria-label="Toggle Sidebar"
           >
-            <MenuIcon/>
+            <MenuIcon />
           </button>
-         
+
           <div className="ml-auto">
-          <UserDropdown />
+            <UserDropdown />
+          </div>
         </div>
-        </div>
-        
       </div>
     </header>
   );

@@ -26,10 +26,10 @@ export interface RegisterData {
 
 const useAuth = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [user, setUser] = useState<User | null>(null); 
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [apellido, setApellido] = useState<string | null>(null);
@@ -58,7 +58,6 @@ const useAuth = () => {
 
           // correo
           setCorreo(firebaseUser.email || null);
-
         } catch (err) {
           console.error("❌ Error al obtener claims:", err);
           setRole(null);
@@ -72,7 +71,7 @@ const useAuth = () => {
         setApellido(null);
         setCorreo(null);
       }
-      
+
       setLoading(false);
     });
 
@@ -187,11 +186,12 @@ const useAuth = () => {
         throw new Error("La contraseña debe tener al menos 6 caracteres");
       }
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
 
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: registerData.nombre,
           apellido: registerData.apellido,
@@ -200,19 +200,24 @@ const useAuth = () => {
           email: registerData.email,
           password: registerData.password,
           tipoVehiculo: registerData.tipoVehiculo,
-          role: "2"
-        })
+          role: "2",
+        }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || 'Error en el registro');
+      if (!response.ok) throw new Error(data.message || "Error en el registro");
 
-      if (setSuccess) setSuccess("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
-      else toast.success("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
+      if (setSuccess)
+        setSuccess(
+          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
+        );
+      else
+        toast.success(
+          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
+        );
 
       navigate("/signin");
-
     } catch (err) {
       console.error("❌ Error en el registro:", err);
       setError((err as Error).message);
