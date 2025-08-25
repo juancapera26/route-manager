@@ -21,12 +21,8 @@ import NotFound from "./pages/otherPages/NotFound";
 // Páginas principales según rol de usuario
 import { Home } from "./pages/home/Home";
 import { Admin } from "./pages/admin/Admin";
+import AppLayout_home from "./pages/home/layout_conductor/AppLayout_home";
 
-
-// ---------------------
-//  COMPONENTE PRINCIPAL
-// ---------------------
-// La función `App` es el corazón del frontend. Define todas las rutas disponibles.
 function App() {
   return (
     <Router basename="/">
@@ -40,16 +36,17 @@ function App() {
 
         {/* --- Rutas Protegidas para Admin (rol "1") --- */}
         <Route element={<ProtectedRoute allowedRoles={["1"]} />}>
-          <Route element={<AppLayout />}> {/* Layout para este grupo de rutas */}
-            <Route path="/admin" element={<Admin />} />
-
+          <Route path="/admin" element={<AppLayout />}>
+            <Route index element={<Admin />} />
           </Route>
         </Route>
 
         {/* --- Rutas Protegidas para Usuario (rol "2") --- */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
-          <Route element={<AppLayout />}> {/* Layout para este grupo de rutas */}
-            <Route path="/home" element={<Home />} />
+          
+          <Route path="/home" element={<AppLayout_home />}>
+            
+            <Route index element={<Home />} />
           </Route>
         </Route>
 

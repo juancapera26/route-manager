@@ -33,6 +33,7 @@ const useAuth = () => {
   const [role, setRole] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [apellido, setApellido] = useState<string | null>(null);
+  const [correo, setCorreo] = useState<string | null>(null); // ✅ agregado de main
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -43,18 +44,33 @@ const useAuth = () => {
           console.log("🔥 TOKEN CLAIMS:", token.claims);
 
           setRole((token.claims.role as string) || null);
-          setNombre((token.claims.nombre as string) || null);
-          setApellido((token.claims.apellido as string) || null);
+
+          // lógica de main para fullName
+          const fullName = token.claims.name as string | undefined;
+          if (fullName) {
+            const partes = fullName.split(" ");
+            setNombre(partes[0] || null);
+            setApellido(partes.slice(1).join(" ") || null);
+          } else {
+            setNombre(null);
+            setApellido(null);
+          }
+
+          // correo
+          setCorreo(firebaseUser.email || null);
+
         } catch (err) {
           console.error("❌ Error al obtener claims:", err);
           setRole(null);
           setNombre(null);
           setApellido(null);
+          setCorreo(null);
         }
       } else {
         setRole(null);
         setNombre(null);
         setApellido(null);
+        setCorreo(null);
       }
       
       setLoading(false);
@@ -120,8 +136,19 @@ const useAuth = () => {
       const rawRole = tokenResult.claims.role;
       setRole(typeof rawRole === "string" ? rawRole : null);
 
-      setNombre((tokenResult.claims.nombre as string) || null);
-      setApellido((tokenResult.claims.apellido as string) || null);
+      // lógica de main para fullName
+      const fullName = tokenResult.claims.name as string | undefined;
+      if (fullName) {
+        const partes = fullName.split(" ");
+        setNombre(partes[0] || null);
+        setApellido(partes.slice(1).join(" ") || null);
+      } else {
+        setNombre(null);
+        setApellido(null);
+      }
+
+      // correo
+      setCorreo(userCredential.user.email || null);
 
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
@@ -160,15 +187,11 @@ const useAuth = () => {
         throw new Error("La contraseña debe tener al menos 6 caracteres");
       }
 
-      // Obtener la URL base del backend desde variables de entorno o configuración
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-      // Llamada al backend para crear el usuario
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: registerData.nombre,
           apellido: registerData.apellido,
@@ -177,26 +200,17 @@ const useAuth = () => {
           email: registerData.email,
           password: registerData.password,
           tipoVehiculo: registerData.tipoVehiculo,
-          // El rol siempre será "2" para conductores según tus especificaciones
           role: "2"
         })
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        // Manejar errores específicos del backend
-        throw new Error(data.message || 'Error en el registro');
-      }
+      if (!response.ok) throw new Error(data.message || 'Error en el registro');
 
-      // Registro exitoso
-      if (setSuccess) {
-        setSuccess("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
-      } else {
-        toast.success("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
-      }
+      if (setSuccess) setSuccess("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
+      else toast.success("Usuario registrado exitosamente. Ya puedes iniciar sesión.");
 
-      // Redirigir al login después de registro exitoso
       navigate("/signin");
 
     } catch (err) {
@@ -235,7 +249,7 @@ const useAuth = () => {
   return {
     authLoading: loading,
     handleLogin,
-    handleRegister, // ✅ Nueva función exportada
+    handleRegister, // ✅ tu registro intacto
     logout,
     handlePasswordReset,
     getAccessToken,
@@ -243,6 +257,7 @@ const useAuth = () => {
     role,
     nombre,
     apellido,
+    correo, // ✅ agregado
     isAuthenticated: !!user,
   };
 };
