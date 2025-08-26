@@ -69,7 +69,6 @@ export default function SignUpForm() {
     if (!formData.password) return "La contraseña es requerida";
     if (formData.password.length < 6) return "La contraseña debe tener al menos 6 caracteres";
     if (formData.password !== formData.repetirPassword) return "Las contraseñas no coinciden";
-    if (!formData.tipoVehiculo) return "Debe seleccionar un tipo de vehículo";
     if (!isChecked) return "Debe aceptar los términos y condiciones";
 
     return null;
@@ -110,7 +109,7 @@ export default function SignUpForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign up
+              Registrarse
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Complete los datos para registrarse como conductor
@@ -196,7 +195,7 @@ export default function SignUpForm() {
                 {/* Emails */}
                 <div>
                   <Label>
-                    Email<span className="text-error-500">*</span>
+                    Correo<span className="text-error-500">*</span>
                   </Label>
                   <Input
                     type="email"
@@ -204,13 +203,13 @@ export default function SignUpForm() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="Ingresa tu email"
+                    placeholder="Ingresa tu correo"
                   />
                 </div>
 
                 <div>
                   <Label>
-                    Confirmar Email<span className="text-error-500">*</span>
+                    Confirmar Correo<span className="text-error-500">*</span>
                   </Label>
                   <Input
                     type="email"
@@ -218,7 +217,7 @@ export default function SignUpForm() {
                     name="confirmarEmail"
                     value={formData.confirmarEmail}
                     onChange={handleInputChange}
-                    placeholder="Confirma tu email"
+                    placeholder="Confirma tu correo"
                   />
                 </div>
 
@@ -278,7 +277,7 @@ export default function SignUpForm() {
                 {/* Tipo de Vehículo */}
                 <div>
                   <Label>
-                    Tipo de Vehículo<span className="text-error-500">*</span>
+                    Tipo de Vehículo (Opcional)
                   </Label>
                   <Select
                     placeholder="Selecciona un tipo de vehículo"

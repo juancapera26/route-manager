@@ -152,7 +152,7 @@ const useAuth = () => {
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
       } else if (tokenResult.claims.role === "2") {
-        navigate("/home");
+        navigate("/driver");
       } else {
         navigate("/");
       }

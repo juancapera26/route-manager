@@ -10,7 +10,7 @@ const center = {
   lng: 150.644,
 };
 
-export const Home = () => {
+export const Driver = () => {
   return (
     <LoadScript googleMapsApiKey="AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY">
       <GoogleMap
