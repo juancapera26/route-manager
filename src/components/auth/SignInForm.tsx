@@ -40,10 +40,10 @@ export default function SignInForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign In
+              Iniciar Sesión
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign in!
+              Ingresa tu correo y contraseña para iniciar sesión
             </p>
           </div>
           <div>
@@ -51,7 +51,7 @@ export default function SignInForm() {
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Email <span className="text-error-500">*</span>{" "}
+                    Correo <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input
                     type="email"
@@ -61,12 +61,12 @@ export default function SignInForm() {
                 </div>
                 <div>
                   <Label>
-                    Password <span className="text-error-500">*</span>{" "}
+                    Contraseña <span className="text-error-500">*</span>{" "}
                   </Label>
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="Ingresa tu contraseña"
                       onChange={(e) => setPassword(e.target.value)}
                     />
                     <span
@@ -86,14 +86,14 @@ export default function SignInForm() {
                   <div className="flex items-center gap-3">
                     <Checkbox checked={isChecked} onChange={setIsChecked} />
                     <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Keep me logged in
+                      Mantenerme conectado
                     </span>
                   </div>
                   <Link
                     to="/reset-password"
                     className="text-sm text-blue-600 hover:text-blue-600 dark:text-blue-400"
                   >
-                    Forgot password?
+                    Olvido su contraseña?
                   </Link>
                 </div>
                 <div>
@@ -101,7 +101,7 @@ export default function SignInForm() {
                     className="w-full bg-blue-500 hover:bg-blue-700"
                     size="sm"
                   >
-                    Sign in
+                    Iniciar sesión
                   </Button>
                 </div>
               </div>
@@ -109,12 +109,12 @@ export default function SignInForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {""}
+                ¿No tienes una cuenta? {""}
                 <Link
                   to="/signup"
                   className="text-blue-600 hover:text-blue-600 dark:text-blue-400"
                 >
-                  Sign Up
+                  Registrarse
                 </Link>
               </p>
             </div>

@@ -14,10 +14,10 @@ const ResetPasswordRequest = () => {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Reset Your Password
+              Recuperar Contraseña
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email to receive a password reset link.
+              Introduzca su correo para recibir un enlace para restablecer su contraseña.
             </p>
           </div>
           <div>
@@ -25,7 +25,7 @@ const ResetPasswordRequest = () => {
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Email <span className="text-error-500">*</span>
+                    Correo <span className="text-error-500">*</span>
                   </Label>
                   <Input
                     type="email"
@@ -42,14 +42,14 @@ const ResetPasswordRequest = () => {
                     size="sm"
                     disabled={loading}
                   >
-                    {loading ? "Sending..." : "Send recovery code"}
+                    {loading ? "Sending..." : "Enviar código de recuperación"}
                   </Button>
                 </div>
               </div>
             </form>
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Remember your password?{" "}
+                ¿Ya recuerda su contraseña?{" "}
                 <Link
                   to="/signin"
                   className="text-blue-500 hover:text-blue-600 dark:text-blue-500"
