@@ -1,3 +1,4 @@
+// src/hooks/useAuth.ts
 import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -130,12 +131,36 @@ const useAuth = () => {
         email,
         password
       );
-      const tokenResult = await getIdTokenResult(userCredential.user);
 
+      // 👇 1. Obtener el token JWT de Firebase
+      const token = await userCredential.user.getIdToken();
+      console.log("🔥 Token generado por Firebase:", token);
+
+      // 👇 2. Mandarlo al backend
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // enviamos JWT
+        },
+      });
+      console.log(" Response:", response);
+
+      const data = await response.json();
+      console.log(" Data:", data);
+
+      if (!response.ok || !data.success ) {
+        throw new Error("Usuario no válido en la base de datos****");
+      }
+
+      // 👇 3. Si todo bien, seguir como antes
+      const tokenResult = await getIdTokenResult(userCredential.user);
       const rawRole = tokenResult.claims.role;
       setRole(typeof rawRole === "string" ? rawRole : null);
 
-      // lógica de main para fullName
       const fullName = tokenResult.claims.name as string | undefined;
       if (fullName) {
         const partes = fullName.split(" ");
@@ -146,8 +171,8 @@ const useAuth = () => {
         setApellido(null);
       }
 
-      // correo
       setCorreo(userCredential.user.email || null);
+      console.log("🔥 TokenResult completo:", tokenResult);
 
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
@@ -159,7 +184,7 @@ const useAuth = () => {
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      // No ponemos setLoading(false) aquí, porque el onAuthStateChanged ya lo hará
+      // El `onAuthStateChanged` se encarga de setLoading(false)
     }
   };
 
