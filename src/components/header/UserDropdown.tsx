@@ -1,9 +1,9 @@
+// src/components/header/UserDropdown.tsx
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
 import useAuth from "../../hooks/useAuth";
 import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-
 
 export default function UserDropdown() {
   const { nombre, apellido, correo, role } = useAuth();
@@ -18,7 +18,8 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
-  const endpointPerfil = role === "1" ? "/admin/profile" : role === "2" ? "/driver/profile" : "/";
+  const endpointPerfil =
+    role === "1" ? "/admin/profile" : role === "2" ? "/driver/profile" : "/";
 
   return (
     <div className="relative">
@@ -56,7 +57,7 @@ export default function UserDropdown() {
         </svg>
       </button>
 
- <Dropdown
+      <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
@@ -75,7 +76,7 @@ export default function UserDropdown() {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              to={endpointPerfil}   // 👈 ahora apunta al perfil según rol
+              to={endpointPerfil} // 👈 ahora apunta al perfil según rol
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg

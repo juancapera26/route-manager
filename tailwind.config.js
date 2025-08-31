@@ -136,12 +136,6 @@ export default {
           900: "#7A2E0E",
           950: "#4E1D09",
         },
-        "theme-pink": {
-          500: "#EE46BC",
-        },
-        "theme-purple": {
-          500: "#7A5AF8",
-        },
       },
       backgroundColor: {
         primary: '#161950',
