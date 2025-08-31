@@ -1,40 +1,79 @@
+// Componente principal
+
+// Importa utilidades de enrutamiento desde react-router
 import { BrowserRouter as Router, Routes, Route } from "react-router";
+
+// Importa un componente que protege rutas (solo accesibles si el usuario está logueado y con rol permitido).
 import ProtectedRoute from "./hooks/protectedRoute";
+
+// Importa páginas de autenticación (inicio de sesión, registro, restablecer contraseña)
 import ResetPasswordForm from "./pages/AuthPages/ResetPasswordForm";
 import ResetRequest from "./pages/AuthPages/ResetRequest";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
+
+// Importa un layout general (estructura de la interfaz: header, sidebar, etc.)
 import AppLayout from "./layout/AppLayout";
+
+// Página de error 404 (cuando la ruta no existe)
 import NotFound from "./pages/otherPages/NotFound";
-import { Home } from "./pages/home/Home";
+
+// Páginas principales para el admin:
 import { Admin } from "./pages/admin/Admin";
-import AppLayout_home from "./pages/home/layout_conductor/AppLayout_home";
+import AdminProfile from "./pages/profile/AdminProfile";
+import OperationalMonitoring from "./pages/admin/OperationalMonitoring";
+import RoutesManagement from "./pages/admin/RouteManagement";
+import PackagesManagement from "./pages/admin/PackagesManagement";
+import DriversManagement from "./pages/admin/DriversManagement";
+import VehiclesManagement from "./pages/admin/VehiclesManagement";
+import RegisterPackages from "./pages/admin/RegisterPackages";
+import DeliveryHistory from "./pages/admin/DeliveryHistory";
+import Updates from "./pages/admin/Updates";
+
+// Páginas principales para el conductor:
+import { Driver } from "./pages/driver/Driver";
+import AppLayout_home from "./pages/driver/layout_conductor/AppLayout_home";
+import DriverProfile from "./pages/profile/DriverProfile"; 
+
+
 
 function App() {
   return (
     <Router basename="/">
       <Routes>
-        {/* Rutas públicas */}
+        {/* --- Rutas Públicas --- */}
         <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetRequest />} />
         <Route path="/reset-password-form" element={<ResetPasswordForm />} />
 
-        {/* Rutas protegidas */}
+        {/* --- Rutas Protegidas para Admin (rol "1") --- */}
         <Route element={<ProtectedRoute allowedRoles={["1"]} />}>
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Admin />} />
+            <Route path="profile" element={<AdminProfile />} />
+            <Route path="operational-monitoring" element={<OperationalMonitoring />} />
+            <Route path="routes-management" element={<RoutesManagement />} />
+            <Route path="packages-management" element={<PackagesManagement />} />
+            <Route path="drivers-management" element={<DriversManagement />} />
+            <Route path="vehicles-management" element={<VehiclesManagement />} />
+            <Route path="register-packages" element={<RegisterPackages />} />
+            <Route path="delivery-history" element={<DeliveryHistory />} />
+            <Route path="updates" element={<Updates />} />
           </Route>
         </Route>
 
+        {/* --- Rutas Protegidas para Usuario (rol "2") --- */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
-          <Route path="/home" element={<AppLayout_home />}>
-            <Route index element={<Home />} />
+          
+          <Route path="/driver" element={<AppLayout_home />}>
+            <Route index element={<Driver />} />
+            <Route path="profile" element={<DriverProfile />} />
           </Route>
         </Route>
 
-        {/* Fallback */}
+        {/* --- Ruta de Not Found --- */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

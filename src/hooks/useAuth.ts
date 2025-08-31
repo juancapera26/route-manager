@@ -1,3 +1,4 @@
+// src/hooks/useAuth.ts
 import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -11,16 +12,29 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { auth } from "../firebase/firebaseConfig";
 
+// Tipos para el registro
+export interface RegisterData {
+  nombre: string;
+  apellido: string;
+  documento: string;
+  numeroTelefono: string;
+  email: string;
+  confirmarEmail: string;
+  password: string;
+  repetirPassword: string;
+  tipoVehiculo: string; // Será el enum de tu MySQL
+}
+
 const useAuth = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [apellido, setApellido] = useState<string | null>(null);
-  const [correo, setCorreo] = useState<string | null>(null); // 👈 Nuevo
+  const [correo, setCorreo] = useState<string | null>(null); // ✅ agregado de main
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -32,6 +46,7 @@ const useAuth = () => {
 
           setRole((token.claims.role as string) || null);
 
+          // lógica de main para fullName
           const fullName = token.claims.name as string | undefined;
           if (fullName) {
             const partes = fullName.split(" ");
@@ -42,7 +57,8 @@ const useAuth = () => {
             setApellido(null);
           }
 
-          setCorreo(firebaseUser.email || null); // 👈 Guardamos correo
+          // correo
+          setCorreo(firebaseUser.email || null);
         } catch (err) {
           console.error("❌ Error al obtener claims:", err);
           setRole(null);
@@ -56,6 +72,8 @@ const useAuth = () => {
         setApellido(null);
         setCorreo(null);
       }
+
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -113,8 +131,33 @@ const useAuth = () => {
         email,
         password
       );
-      const tokenResult = await getIdTokenResult(userCredential.user);
 
+      // 👇 1. Obtener el token JWT de Firebase
+      const token = await userCredential.user.getIdToken();
+      console.log("🔥 Token generado por Firebase:", token);
+
+      // 👇 2. Mandarlo al backend
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // enviamos JWT
+        },
+      });
+      console.log(" Response:", response);
+
+      const data = await response.json();
+      console.log(" Data:", data);
+
+      if (!response.ok || !data.success ) {
+        throw new Error("Usuario no válido en la base de datos****");
+      }
+
+      // 👇 3. Si todo bien, seguir como antes
+      const tokenResult = await getIdTokenResult(userCredential.user);
       const rawRole = tokenResult.claims.role;
       setRole(typeof rawRole === "string" ? rawRole : null);
 
@@ -128,16 +171,80 @@ const useAuth = () => {
         setApellido(null);
       }
 
-      setCorreo(userCredential.user.email || null); // 👈 Guardamos correo
+      setCorreo(userCredential.user.email || null);
+      console.log("🔥 TokenResult completo:", tokenResult);
 
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
       } else if (tokenResult.claims.role === "2") {
-        navigate("/home");
+        navigate("/driver");
       } else {
         navigate("/");
       }
     } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      // El `onAuthStateChanged` se encarga de setLoading(false)
+    }
+  };
+
+  // NUEVA FUNCIÓN: Manejar registro de usuarios
+  const handleRegister = async (
+    registerData: RegisterData,
+    setError: React.Dispatch<React.SetStateAction<string>>,
+    setSuccess?: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    setError("");
+    setLoading(true);
+
+    try {
+      // Validaciones del frontend antes de enviar
+      if (registerData.email !== registerData.confirmarEmail) {
+        throw new Error("Los emails no coinciden");
+      }
+
+      if (registerData.password !== registerData.repetirPassword) {
+        throw new Error("Las contraseñas no coinciden");
+      }
+
+      if (registerData.password.length < 6) {
+        throw new Error("La contraseña debe tener al menos 6 caracteres");
+      }
+
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: registerData.nombre,
+          apellido: registerData.apellido,
+          documento: registerData.documento,
+          numeroTelefono: registerData.numeroTelefono,
+          email: registerData.email,
+          password: registerData.password,
+          tipoVehiculo: registerData.tipoVehiculo,
+          role: "2",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Error en el registro");
+
+      if (setSuccess)
+        setSuccess(
+          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
+        );
+      else
+        toast.success(
+          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
+        );
+
+      navigate("/signin");
+    } catch (err) {
+      console.error("❌ Error en el registro:", err);
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -170,8 +277,9 @@ const useAuth = () => {
   };
 
   return {
-    loading,
+    authLoading: loading,
     handleLogin,
+    handleRegister, // ✅ tu registro intacto
     logout,
     handlePasswordReset,
     getAccessToken,
@@ -179,7 +287,7 @@ const useAuth = () => {
     role,
     nombre,
     apellido,
-    correo, // 👈 lo devolvemos
+    correo, // ✅ agregado
     isAuthenticated: !!user,
   };
 };
