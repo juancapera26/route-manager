@@ -12,7 +12,7 @@
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/*.d.ts"],
+  "exclude": ["node_modules", "dist", "src/pages/**/*.d.ts"],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
