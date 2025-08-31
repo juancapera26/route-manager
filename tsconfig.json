@@ -9,15 +9,9 @@
     "allowJs": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-    "declaration": false
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/types/**/*.d.ts",
-    "src/pages/admin/**/*.d.ts"
-  ],
+  "include": ["src", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "./tsconfig.app.json" },
