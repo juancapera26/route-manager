@@ -1,59 +1,97 @@
-import React from 'react';
+import React from "react";
 
 interface ModalHistorialProps {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
+  isExpanded: boolean;
+  isHovered: boolean;
+  isMobileOpen: boolean;
 }
 
-const ModalHistorial: React.FC<ModalHistorialProps> = ({ open, onClose }) => {
-  if (!open) return null;
+const ModalHistorial: React.FC<ModalHistorialProps> = ({
+  isOpen,
+  onClose,
+  isExpanded,
+  isHovered,
+  isMobileOpen,
+}) => {
+  if (!isOpen) return null;
+
+  const leftPos = isExpanded || isHovered || isMobileOpen ? 290 : 90;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white dark:bg-gray-900 p-6 rounded shadow-lg max-w-lg w-full max-h-[80vh] overflow-auto">
-        <button 
-          onClick={onClose} 
-          className="mb-4 text-sm font-bold hover:text-red-500"
-          aria-label="Cerrar Modal"
+    <div
+      className="fixed top-16 z-[60] bg-gray-200 dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700
+        w-[400px] h-[calc(100vh-4rem)] transition-all animate-slide-in px-6 py-4 overflow-y-auto"
+      style={{ left: leftPos }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-bold text-lg text-gray-900 dark:text-white">
+          Historial de rutas
+        </h2>
+        <button
+          className="text-2xl font-bold hover:text-red-600 dark:hover:text-red-400"
+          onClick={onClose}
+          title="Cerrar"
         >
-          &larr; Cerrar
+          &times;
         </button>
-
-        <h2 className="text-lg font-bold mb-4">Historial de rutas</h2>
-
-        {/* Aquí puedes poner filtros por día, mes, año */}
-        {/* Ejemplo simple */}
-        <div className="mb-4 flex gap-2">
-          <select>
-            <option>Día</option>
-            {/* Opciones */}
-          </select>
-          <select>
-            <option>Mes</option>
-            {/* Opciones */}
-          </select>
-          <select>
-            <option>Año</option>
-            {/* Opciones */}
-          </select>
+      </div>
+      <div className="flex gap-2 mb-3 items-center px-2 text-gray-900 dark:text-white">
+        <span className="font-bold">Historial</span>
+        <div className="flex gap-2 items-center ml-4">
+          <input
+            type="text"
+            placeholder="día"
+            className="border w-12 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+          />
+          <input
+            type="text"
+            placeholder="mes"
+            className="border w-12 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+          />
+          <input
+            type="text"
+            placeholder="año"
+            className="border w-16 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+          />
         </div>
-
-        <table className="w-full border-collapse text-left">
+      </div>
+      <div className="overflow-x-auto max-h-[60vh]">
+        <table className="min-w-full border border-gray-300 dark:border-gray-700">
           <thead>
             <tr className="border-b border-gray-300 dark:border-gray-700">
-              <th className="py-2">Manifiesto</th>
-              <th className="py-2">Hora de inicio/final</th>
-              <th className="py-2">Fecha</th>
+              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
+                Manifiesto
+              </th>
+              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
+                Hora de inicio/final
+              </th>
+              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
+                Fecha
+              </th>
             </tr>
           </thead>
           <tbody>
-            {/* Ejemplo de filas - reemplaza con datos reales */}
-            <tr className="border-b border-gray-200 dark:border-gray-800">
-              <td className="py-2 text-primary cursor-pointer hover:underline">#15967</td>
-              <td className="py-2">1:30 am / 6:30 pm</td>
-              <td className="py-2">25/02/2025</td>
-            </tr>
-            {/* ... más filas ... */}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <tr
+                key={i}
+                className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <td>
+                  <a
+                    href="#"
+                    className="text-blue-700 dark:text-blue-300 underline hover:text-blue-900 dark:hover:text-blue-400"
+                  >
+                    #15967
+                  </a>
+                </td>
+                <td className="text-gray-900 dark:text-white">
+                  1:30 am / 6:30 pm
+                </td>
+                <td className="text-gray-900 dark:text-white">25/02/2025</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
