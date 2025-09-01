@@ -19,7 +19,7 @@ import AppLayout from "./layout/AppLayout";
 import NotFound from "./pages/otherPages/NotFound";
 
 // Páginas principales para el admin:
-import { Admin } from "./pages/admin/Admin";
+import  Admin  from "./pages/admin/Admin";
 import AdminProfile from "./pages/profile/AdminProfile";
 import OperationalMonitoring from "./pages/admin/OperationalMonitoring";
 import RoutesManagement from "./pages/admin/RouteManagement";

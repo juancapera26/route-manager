@@ -1,10 +1,7 @@
-import React from "react";
+import React from 'react';
 interface ModalHistorialProps {
-    isOpen: boolean;
+    open: boolean;
     onClose: () => void;
-    isExpanded: boolean;
-    isHovered: boolean;
-    isMobileOpen: boolean;
 }
 declare const ModalHistorial: React.FC<ModalHistorialProps>;
 export default ModalHistorial;
