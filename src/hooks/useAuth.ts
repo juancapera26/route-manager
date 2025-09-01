@@ -116,63 +116,75 @@ const useAuth = () => {
     };
   }, [resetIdleTimer]);
 
-const handleLogin = async (
-  e: { preventDefault: () => void },
-  email: string,
-  password: string,
-  setError: React.Dispatch<React.SetStateAction<string>>
-) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const handleLogin = async (
+    e: { preventDefault: () => void },
+    email: string,
+    password: string,
+    setError: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    // 👇 1. Obtener el token JWT de Firebase
-    const token = await userCredential.user.getIdToken();
-    console.log("🔥 Token generado por Firebase:", token);
+      // 👇 1. Obtener el token JWT de Firebase
+      const token = await userCredential.user.getIdToken();
 
-    // 👇 2. Mandarlo al backend
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      // 👇 2. Mandarlo al backend
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // enviamos JWT
-      },
-    });
+      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // enviamos JWT
+        },
+      });
 
-    const data = await response.json();
-    console.log(" Response:", response);
-    console.log(" Data:", data);
+      const data = await response.json();
 
-    if (!response.ok || !data.success) {
-      throw new Error("Usuario no válido en la base de datos");
+      if (!response.ok || !data.success) {
+  throw new Error(data.message || "Usuario no válido en la base de datos");
+}
+
+
+      // 👇 3. Si todo bien, seguir como antes
+      const tokenResult = await getIdTokenResult(userCredential.user);
+      const rawRole = tokenResult.claims.role;
+      setRole(typeof rawRole === "string" ? rawRole : null);
+
+      const fullName = tokenResult.claims.name as string | undefined;
+      if (fullName) {
+        const partes = fullName.split(" ");
+        setNombre(partes[0] || null);
+        setApellido(partes.slice(1).join(" ") || null);
+      } else {
+        setNombre(null);
+        setApellido(null);
+      }
+
+      setCorreo(userCredential.user.email || null);
+
+      if (tokenResult.claims.role === "1") {
+        navigate("/admin");
+      } else if (tokenResult.claims.role === "2") {
+        navigate("/driver");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      // El `onAuthStateChanged` se encarga de setLoading(false)
     }
+  };
 
-    // 👇 3. Usar la data de Prisma, no los claims
-    setRole(String(data.user.id_rol));
-    setNombre(data.user.nombre);
-    setApellido(data.user.apellido);
-    setCorreo(data.user.correo);
-
-    // 👇 4. Navegar según rol
-    if (String(data.user.id_rol) === "1") {
-      navigate("/admin");
-    } else if (String(data.user.id_rol) === "2") {
-      navigate("/driver");
-    } else {
-      navigate("/");
-    }
-  } catch (err) {
-    setError((err as Error).message);
-  } finally {
-    // El `onAuthStateChanged` se encarga de setLoading(false)
-  }
-};
-
-  // NUEVA FUNCIÓN: Manejar registro de usuarios
   const handleRegister = async (
     registerData: RegisterData,
     setError: React.Dispatch<React.SetStateAction<string>>,
