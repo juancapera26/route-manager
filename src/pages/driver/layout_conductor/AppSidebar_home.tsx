@@ -5,6 +5,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSidebar } from "../../../context/SidebarContext";
 
+import ModalRutas from "../ModalRutas";
 import ModalHistorial from "../ModalHistorial";
 import { HorizontaLDots } from "../../../icons";
 
@@ -23,9 +24,8 @@ type NavItem = {
   subItems?: SubItem[];
 };
 
-// otherItems si no se usan, se elimina para limpiar
-
 const AppSidebar: React.FC = () => {
+  const [isModalRutasOpen, setModalRutasOpen] = useState(false);
   const [isHistorialPanelOpen, setHistorialPanelOpen] = useState(false);
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
@@ -35,7 +35,7 @@ const AppSidebar: React.FC = () => {
     {
       icon: <PlaceIcon />,
       name: "Rutas",
-      path: "/",
+      action: () => setModalRutasOpen((prev) => !prev),
     },
     {
       name: "Historial",
@@ -48,8 +48,6 @@ const AppSidebar: React.FC = () => {
       path: "/campaigns",
     },
   ];
-
-  // Se elimina manejo de submenus y referencias (a menos que uses subitems)
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -145,6 +143,13 @@ const AppSidebar: React.FC = () => {
         </div>
       </aside>
 
+      <ModalRutas
+        isOpen={isModalRutasOpen}
+        onClose={() => setModalRutasOpen(false)}
+        isExpanded={isExpanded}
+        isHovered={isHovered}
+        isMobileOpen={isMobileOpen}
+      />
       <ModalHistorial
         isOpen={isHistorialPanelOpen}
         onClose={() => setHistorialPanelOpen(false)}
