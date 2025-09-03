@@ -92,7 +92,7 @@ const ElementoNotificacion = ({
       onItemClick={onClick}
       className={`
         flex gap-3 rounded-xl border-b border-gray-50 p-3 px-4 py-3 transition-all duration-200 
-        hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5
+        hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5
         ${!notificacion.leida ? "bg-blue-50/30 dark:bg-blue-900/10" : ""}
       `}
     >
