@@ -27,10 +27,10 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-secondary dropdown-toggle dark:text-gray-400"
       >
-        <span className="block mr-4 font-medium text-theme-sm">
+        <span className="inline-block mr-2 font-medium text-theme-sm max-w-[150px] truncate">
           {nombre ? `${nombre}${apellido ? " " + apellido : ""}` : "Usuario"}
         </span>
-        <span className="mr-2 overflow-hidden rounded-full h-11 w-11">
+        <span className="mr-2 overflow-hidden rounded-full h-11 w-11 flex-shrink-0">
           <img
             src={"/images/user/user_header.jpg"}
             alt="User profile"
