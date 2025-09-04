@@ -150,9 +150,10 @@ const useAuth = () => {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-  throw new Error(data.message || "Usuario no válido en la base de datos");
-}
-
+        throw new Error(
+          data.message || "Usuario no válido en la base de datos"
+        );
+      }
 
       // 👇 3. Si todo bien, seguir como antes
       const tokenResult = await getIdTokenResult(userCredential.user);
@@ -194,18 +195,30 @@ const useAuth = () => {
     setLoading(true);
 
     try {
-      // Validaciones del frontend antes de enviar
+      //  Validaciones del frontend antes de enviar
       if (registerData.email !== registerData.confirmarEmail) {
         throw new Error("Los emails no coinciden");
       }
-
       if (registerData.password !== registerData.repetirPassword) {
         throw new Error("Las contraseñas no coinciden");
       }
-
       if (registerData.password.length < 6) {
         throw new Error("La contraseña debe tener al menos 6 caracteres");
       }
+
+      //  Construir el payload como lo espera el backend
+      const payload = {
+        email: registerData.email,
+        password: registerData.password,
+        role: "2", 
+        isPublicRegistration: true,
+        nombre: registerData.nombre,
+        apellido: registerData.apellido,
+        telefono_movil: registerData.numeroTelefono, 
+        id_empresa: "1", 
+        tipo_documento: "CC", 
+        documento: registerData.documento,
+      };
 
       const API_BASE_URL =
         import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -213,34 +226,26 @@ const useAuth = () => {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre: registerData.nombre,
-          apellido: registerData.apellido,
-          documento: registerData.documento,
-          numeroTelefono: registerData.numeroTelefono,
-          email: registerData.email,
-          password: registerData.password,
-          tipoVehiculo: registerData.tipoVehiculo,
-          role: "2",
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "Error en el registro");
 
-      if (setSuccess)
+      if (setSuccess) {
         setSuccess(
           "Usuario registrado exitosamente. Ya puedes iniciar sesión."
         );
-      else
+      } else {
         toast.success(
           "Usuario registrado exitosamente. Ya puedes iniciar sesión."
         );
+      }
 
       navigate("/signin");
     } catch (err) {
-      console.error("❌ Error en el registro:", err);
+      console.error(" Error en el registro:", err);
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -275,7 +280,7 @@ const useAuth = () => {
   return {
     authLoading: loading,
     handleLogin,
-    handleRegister, // ✅ tu registro intacto
+    handleRegister, //  tu registro intacto
     logout,
     handlePasswordReset,
     getAccessToken,
@@ -283,7 +288,7 @@ const useAuth = () => {
     role,
     nombre,
     apellido,
-    correo, // ✅ agregado
+    correo, 
     isAuthenticated: !!user,
   };
 };
