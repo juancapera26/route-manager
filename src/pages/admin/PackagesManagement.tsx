@@ -46,10 +46,11 @@ interface ModalState {
 }
 
 const PackagesManagement: React.FC = () => {
-  // Estados principales
+  // Estados principales  
   const [paquetesPendientes, setPaquetesPendientes] = useState<Paquete[]>([]);
   const [paquetesAsignados, setPaquetesAsignados] = useState<Paquete[]>([]);
   const [paquetesEnRuta, setPaquetesEnRuta] = useState<Paquete[]>([]);
+  const [paquetesEntregados, setPaquetesEntregados] = useState<Paquete[]>([]);
   const [paquetesFallidos, setPaquetesFallidos] = useState<Paquete[]>([]);
   const [rutasDisponibles, setRutasDisponibles] = useState<Ruta[]>([]);
   const [conductores, setConductores] = useState<Conductor[]>([]);
@@ -65,7 +66,13 @@ const PackagesManagement: React.FC = () => {
     show: false,
     message: "",
     type: "info",
+  
   });
+
+  // Detalles de los paquetes
+  const [detallesPaquete, setDetallesPaquete] = useState<Paquete|null>(null);
+  const abrirModalDetalles = (paquete: Paquete) => setDetallesPaquete(paquete);
+  const cerrarModalDetalles = () => setDetallesPaquete(null);
 
   const navigate = useNavigate();
 
@@ -92,6 +99,9 @@ const PackagesManagement: React.FC = () => {
       );
       setPaquetesEnRuta(
         allPaquetes.filter((p) => p.estado === PaquetesEstados.EnRuta)
+      );
+      setPaquetesEntregados(
+        allPaquetes.filter((p) => p.estado === PaquetesEstados.Entregado)
       );
       setPaquetesFallidos(
         allPaquetes.filter((p) => p.estado === PaquetesEstados.Fallido)
@@ -174,65 +184,48 @@ const PackagesManagement: React.FC = () => {
     });
   };
 
-  const handleConfirmarAsignacion = async (rutaId: string) => {
-    if (!modalState.paqueteId) return;
+const handleConfirmarAsignacion = async (rutaId: string) => {
+  if (!modalState.paqueteId) return;
 
-    try {
-      const ruta = rutasDisponibles.find((r) => r.id_ruta === rutaId);
-      if (!ruta || !ruta.id_conductor_asignado) {
-        mostrarAlert(
-          "La ruta seleccionada no tiene conductor asignado",
-          "error"
-        );
-        return;
-      }
-
-      let success = false;
-      // En handleConfirmarAsignacion:
-      // En handleConfirmarAsignacion, reemplaza:
-      let result: any;
-      if (modalState.action === "assign") {
-        result = await assignPaquete(
-          modalState.paqueteId,
-          rutaId,
-          ruta.id_conductor_asignado
-        );
-      } else if (modalState.action === "reassign") {
-        result = await reassignPaquete(
-          modalState.paqueteId,
-          rutaId,
-          ruta.id_conductor_asignado
-        );
-      }
-
-      if (result.success) {
-        mostrarAlert(
-          `Paquete ${
-            modalState.action === "assign" ? "asignado" : "reasignado"
-          } correctamente`,
-          "success"
-        );
-        cargarDatos();
-        cerrarModal();
-      } else {
-        mostrarAlert(result.message || "Error en la asignación", "error");
-      }
-      if (success) {
-        mostrarAlert(
-          `Paquete ${
-            modalState.action === "assign" ? "asignado" : "reasignado"
-          } correctamente`,
-          "success"
-        );
-        cargarDatos();
-        cerrarModal();
-      } else {
-        mostrarAlert("Error en la asignación", "error");
-      }
-    } catch (error) {
-      mostrarAlert("Error en la operación", "error");
+  try {
+    const ruta = rutasDisponibles.find((r) => r.id_ruta === rutaId);
+    if (!ruta || !ruta.id_conductor_asignado) {
+      mostrarAlert("La ruta seleccionada no tiene conductor asignado", "error");
+      return;
     }
-  };
+
+    let result: any;
+    if (modalState.action === "assign") {
+      result = await assignPaquete(
+        modalState.paqueteId,
+        rutaId,
+        ruta.id_conductor_asignado
+      );
+    } else if (modalState.action === "reassign") {
+      result = await reassignPaquete(
+        modalState.paqueteId,
+        rutaId,
+        ruta.id_conductor_asignado
+      );
+    }
+
+    if (result.success) {
+      mostrarAlert(
+        `Paquete ${
+          modalState.action === "assign" ? "asignado" : "reasignado"
+        } correctamente`,
+        "success"
+      );
+      cargarDatos();
+      cerrarModal();
+    } else {
+      mostrarAlert(result.message || "Error en la asignación", "error");
+    }
+  } catch (error) {
+    mostrarAlert("Error en la operación", "error");
+  }
+};
+
 
   // Componente para renderizar tabla de paquetes
   const TablaPaquetes: React.FC<{
@@ -282,50 +275,33 @@ const PackagesManagement: React.FC = () => {
         <Table className="divide-y divide-gray-200 dark:divide-gray-700">
           <TableHeader>
             <TableRow className="bg-gray-50 dark:bg-gray-900">
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                ID Paquete
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                ID
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Conductor
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Ruta asignada
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Destinatario
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Tipo
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Estado
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Fecha Registro
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Valor Declarado
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Fecha Entrega
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Detalles
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Acciones
               </TableCell>
             </TableRow>
           </TableHeader>
+
           <TableBody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {paquetes.map((paquete) => (
               <TableRow
@@ -335,17 +311,42 @@ const PackagesManagement: React.FC = () => {
                 <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   {paquete.id_paquete}
                 </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                  {paquete.destinatario.nombre} {paquete.destinatario.apellido}
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  {paquete.id_conductor_asignado
+                    ? (() => {
+                        const c = conductores.find(
+                          (x) =>
+                            x.id_conductor === paquete.id_conductor_asignado
+                        );
+                        return c
+                          ? `${c.nombre} ${c.apellido}`
+                          : paquete.id_conductor_asignado;
+                      })()
+                    : "Sin asignar"}
                 </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap">
-                  <Badge
-                    color={getColorTipo(paquete.tipo_paquete)}
-                    variant="light"
-                  >
-                    {paquete.tipo_paquete}
-                  </Badge>
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  {paquete.id_rutas_asignadas.length
+                    ? paquete.id_rutas_asignadas.join(", ")
+                    : "Sin asignar"}
                 </TableCell>
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{paquete.destinatario.nombre} {paquete.destinatario.apellido}</TableCell>
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{new Date(paquete.fecha_registro).toLocaleDateString("es-ES")}</TableCell>
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  {paquete.fecha_entrega
+                    ? new Date(paquete.fecha_entrega).toLocaleDateString("es-ES")
+                    : "N/A"}
+                </TableCell>
+
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  <Button size="sm" onClick={() => abrirModalDetalles(paquete)}>Ver más</Button>
+                </TableCell>
+
+                {/**
                 <TableCell className="px-6 py-4 whitespace-nowrap">
                   <Badge color={getColorEstado(paquete.estado)} variant="light">
                     {paquete.estado}
@@ -357,11 +358,13 @@ const PackagesManagement: React.FC = () => {
                 <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                   ${paquete.valor_declarado.toLocaleString()}
                 </TableCell>
+                */}
+                
                 <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                   <div className="flex space-x-2">
                     {estado === PaquetesEstados.Pendiente && (
                       <>
-                        <Button size="sm" variant="outline" onClick={() => {}}>
+                        <Button size="sm" variant="outline" onClick={() => mostrarAlert("Recordatorio: Debo cambiar esta alerta por un modal mas adelante", "info")}>
                           Editar
                         </Button>
                         <Button
@@ -424,6 +427,49 @@ const PackagesManagement: React.FC = () => {
       </div>
     );
   };
+  
+  
+const ModalDetalles: React.FC = () => (
+  <Modal isOpen={!!detallesPaquete} onClose={cerrarModalDetalles}>
+    {detallesPaquete && (
+      <div className="p-6 space-y-3">
+        <h3 className="text-lg font-semibold">Detalles del paquete</h3>
+        
+        <p><strong>Tipo:</strong> {detallesPaquete.tipo_paquete}</p>
+        <p><strong>Cantidad:</strong> {detallesPaquete.cantidad}</p>
+        <p><strong>Valor declarado:</strong> ${detallesPaquete.valor_declarado.toLocaleString()}</p>
+        <p>
+          <strong>Dimensiones:</strong> 
+          {detallesPaquete.dimensiones.largo}x{detallesPaquete.dimensiones.ancho}x{detallesPaquete.dimensiones.alto} cm – {detallesPaquete.dimensiones.peso} kg
+        </p>
+
+        <div>
+          <h4 className="font-semibold mt-2">Destinatario</h4>
+          <p>{detallesPaquete.destinatario.nombre} {detallesPaquete.destinatario.apellido}</p>
+          <p>{detallesPaquete.destinatario.direccion}</p>
+          <p>{detallesPaquete.destinatario.correo}</p>
+          <p>{detallesPaquete.destinatario.telefono}</p>
+        </div>
+
+        {detallesPaquete.estado === PaquetesEstados.Entregado && (
+          <div className="mt-4">
+            <h4 className="font-semibold">Entrega</h4>
+            <p><strong>Observación conductor:</strong> {detallesPaquete.observacion_conductor || "N/A"}</p>
+            {detallesPaquete.imagen_adjunta && (
+              <img
+                src={detallesPaquete.imagen_adjunta}
+                alt="Prueba de entrega"
+                className="mt-2 max-h-48 rounded-lg shadow"
+              />
+            )}
+          </div>
+        )}
+      </div>
+    )}
+  </Modal>
+);
+
+  
 
   // Modal para asignar rutas
   const ModalAsignarRuta: React.FC = () => (
@@ -595,8 +641,17 @@ const PackagesManagement: React.FC = () => {
         />
       </section>
 
-      {/* Modal de asignación */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">
+          Entregados ({paquetesEntregados.length})
+        </h2>
+        <TablaPaquetes paquetes={paquetesEntregados} estado={PaquetesEstados.Entregado}/>
+      </section>
+
+      {/* Modal de asignación y detalles */}
       <ModalAsignarRuta />
+      <ModalDetalles />
+
     </div>
   );
 };
