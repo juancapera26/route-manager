@@ -73,8 +73,8 @@ C:.
 |      dependencias
 +---public
 |      \---images
-        vite.svg
-\---src
+|        vite.svg
+└───src
     │   App.css
     │   App.d.ts
     │   App.tsx
@@ -164,10 +164,6 @@ C:.
     │   │   │       ToggleSwitch.d.ts
     │   │   │       ToggleSwitch.tsx
     │   │   │
-    │   │   ├───group-input
-    │   │   │       PhoneInput.d.ts
-    │   │   │       PhoneInput.tsx
-    │   │   │
     │   │   ├───input
     │   │   │       Checkbox.d.ts
     │   │   │       Checkbox.tsx
@@ -191,6 +187,8 @@ C:.
     │   │       Header.tsx
     │   │       NotificationDropdown.d.ts
     │   │       NotificationDropdown.tsx
+    │   │       SearchBar.d.ts
+    │   │       SearchBar.tsx
     │   │       UserDropdown.d.ts
     │   │       UserDropdown.tsx
     │   │
@@ -274,70 +272,7 @@ C:.
     │       useAuth.ts
     │
     ├───icons
-    │   │   alert-hexa.svg
-    │   │   alert.svg
-    │   │   angle-down.svg
-    │   │   angle-left.svg
-    │   │   angle-right.svg
-    │   │   angle-up.svg
-    │   │   arrow-down.svg
-    │   │   arrow-right.svg
-    │   │   arrow-up.svg
-    │   │   audio.svg
-    │   │   bolt.svg
-    │   │   box-cube.svg
-    │   │   box-line.svg
-    │   │   box.svg
-    │   │   calendar.svg
-    │   │   calender-line.svg
-    │   │   chat.svg
-    │   │   check-circle.svg
-    │   │   check-line.svg
-    │   │   chevron-down.svg
-    │   │   chevron-left.svg
-    │   │   chevron-up.svg
-    │   │   close-line.svg
-    │   │   close.svg
-    │   │   copy.svg
-    │   │   docs.svg
-    │   │   dollar-line.svg
-    │   │   download.svg
-    │   │   envelope.svg
-    │   │   eye-close.svg
-    │   │   eye.svg
-    │   │   file.svg
-    │   │   folder.svg
-    │   │   grid.svg
-    │   │   group.svg
-    │   │   horizontal-dots.svg
-    │   │   index.d.ts
-    │   │   index.js
-    │   │   info-error.svg
-    │   │   info-hexa.svg
-    │   │   info.svg
-    │   │   list.svg
-    │   │   lock.svg
-    │   │   mail-line.svg
-    │   │   moredot.svg
-    │   │   page.svg
-    │   │   paper-plane.svg
-    │   │   pencil.svg
-    │   │   pie-chart.svg
-    │   │   plug-in.svg
-    │   │   plus.svg
-    │   │   README.MD
-    │   │   shooting-star.svg
-    │   │   table.svg
-    │   │   task-icon.svg
-    │   │   time.svg
-    │   │   trash.svg
-    │   │   user-circle.svg
-    │   │   user-line.svg
-    │   │   videos.svg
-    │   │
-    │   └───png
-    │           building.png
-    │           campaign.png
+    │        Muchos iconos
     │
     ├───layout
     │       AppHeader.d.ts
@@ -353,11 +288,27 @@ C:.
     │       SidebarWidget.tsx
     │
     └───pages
-        │   README.MD
+        │   README.md
         │
         ├───admin
         │       Admin.d.ts
         │       Admin.tsx
+        │       DeliveryHistory.d.ts
+        │       DeliveryHistory.tsx
+        │       DriversManagement.d.ts
+        │       DriversManagement.tsx
+        │       OperationalMonitoring.d.ts
+        │       OperationalMonitoring.tsx
+        │       PackagesManagement.d.ts
+        │       PackagesManagement.tsx
+        │       RegisterPackages.d.ts
+        │       RegisterPackages.tsx
+        │       RouteManagement.d.ts
+        │       RouteManagement.tsx
+        │       Updates.d.ts
+        │       Updates.tsx
+        │       VehiclesManagement.d.ts
+        │       VehiclesManagement.tsx
         │
         ├───AuthPages
         │       AuthPageLayout.d.ts
@@ -371,11 +322,16 @@ C:.
         │       SignUp.d.ts
         │       SignUp.tsx
         │
-        ├───home
-        │       Home.d.ts
-        │       Home.tsx
+        ├───driver
+        │       Paginas admin
         │
-        └───otherPages
-                NotFound.d.ts
-                NotFound.tsx
+        ├───otherPages
+        │       NotFound.d.ts
+        │       NotFound.tsx
+        │
+        └───profile
+                AdminProfile.d.ts
+                AdminProfile.tsx
+                DriverProfile.d.ts
+                DriverProfile.tsx
 ```

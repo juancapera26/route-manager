@@ -58,8 +58,6 @@ const AppHeader: React.FC = () => {
               <MenuIcon className="text-gray-500" />
             </button>
 
-            {/* Aquí el buscador */}
-            <SearchBar />
           </div>
 
           <div className="ml-auto flex items-center gap-3">
