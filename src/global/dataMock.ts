@@ -197,8 +197,7 @@ function generarDescripcion(titulo: TituloNotificacion): string {
       "El paquete #PKG-2024-001 tiene un retraso de 15 minutos en su entrega",
     "Fallo en entrega":
       "No se pudo completar la entrega del paquete #PKG-2024-002 - destinatario estaba ausente",
-    "Mantenimiento necesario":
-      "El vehículo ABC-123 necesita un mantenimiento",
+    "Mantenimiento necesario": "El vehículo ABC-123 necesita un mantenimiento",
     "Ruta completada":
       "La ruta Norte-01 ha sido completada exitosamente por Johann Gómez",
     "Nuevo paquete registrado":
@@ -274,3 +273,340 @@ export const obtenerNotificacionesNoLeidas = () =>
 // Función auxiliar para contar notificaciones no leídas
 export const contarNotificacionesNoLeidas = () =>
   obtenerNotificacionesNoLeidas().length;
+
+
+
+
+
+
+
+
+
+// ------ TIPADOS Modulos ------
+
+// Paquetes
+// =====================
+export interface Destinatario {
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  correo: string;
+  telefono: string;
+}
+
+export interface PaquetesDimensiones {
+  largo: number; // cm
+  ancho: number; // cm
+  alto: number; // cm
+  peso: number; // kg
+}
+
+export enum PaquetesEstados {
+  Pendiente = "Pendiente",
+  Asignado = "Asignado",
+  EnRuta = "En ruta",
+  Entregado = "Entregado",
+  Fallido = "Fallido",
+}
+
+export enum TipoPaquete {
+  Grande = "Grande",
+  Mediano = "Mediano",
+  Pequeño = "Pequeño",
+  Fragil = "Fragil",
+  Refrigerado = "Refrigerado",
+}
+
+export interface Paquete {
+  // Info de la tabla
+  id_paquete: string;
+  id_rutas_asignadas: string[]; // puede pasar por varias rutas
+  id_conductor_asignado: string | null;
+  destinatario: Destinatario;
+  fecha_registro: string; // ISO
+  fecha_entrega: string | null;
+
+  // Detalle del paquete
+  estado: PaquetesEstados;
+  tipo_paquete: TipoPaquete;
+  cantidad: number;
+  valor_declarado: number;
+  dimensiones: PaquetesDimensiones;
+
+  // Detalles adicionales Para paquetes entregados
+  observacion_conductor?: string;
+  imagen_adjunta?: string;
+}
+
+
+// Conductores
+// =====================
+export enum ConductorEstado {
+  Disponible = "Disponible",
+  EnRuta = "En ruta",
+  NoDisponible = "No disponible",
+}
+
+export interface HorarioConductor {
+  inicio: string; // ISO
+  fin: string;   // ISO
+}
+
+export interface Conductor {
+  // Info de la tabla
+  id_conductor: string;
+  nombre: string;
+  apellido: string;
+  estado: ConductorEstado;
+  horario?: HorarioConductor;
+  id_vehiculo_asignado?: string;
+
+  // Detalles del conductor
+  correo: string;
+  nombre_empresa: string;
+  telefono: string;
+  tipo_documento: string;
+  documento: string;
+}
+
+
+// Rutas
+// =====================
+export enum RutaEstado {
+  Pendiente = "Pendiente",
+  Completada = "Completada",
+  Fallida = "Fallida",
+}
+
+export interface HorarioRuta {
+  inicio: string; // ISO
+  fin: string;    // ISO
+}
+
+export enum ZonaRuta {
+  Sur = "Sur",
+  Centro = "Centro",
+  Norte = "Norte",
+}
+
+export interface Ruta {
+  // Info de la tabla
+  id_ruta: string;
+  id_conductor_asignado: string | null;
+  paquetes_asignados: string[]; // array de ids de paquetes
+  horario: HorarioRuta;
+  zona: ZonaRuta;
+  fecha_registro: string; // ISO
+  estado: RutaEstado
+
+  // Detalles de la ruta
+  puntos_entrega: string; // a futuro: coordenadas [{lat, lng, direccion}]
+}
+
+
+// Vehículos
+// =====================
+export enum VehiculoEstado {
+  Disponible = "Disponible",
+  EnRuta = "En ruta",
+  NoDisponible = "No disponible",
+}
+
+export type TipoVehiculo = "Camión" | "Furgón" | "Camioneta" | "Moto";
+
+export interface Vehiculo {
+  // Info de la tabla
+  id_vehiculo: string;
+  placa: string;
+  tipo_vehiculo: TipoVehiculo;
+  estado: VehiculoEstado;
+  fecha_mantenimiento: string; // ISO
+}
+
+
+
+// --- DATOS MOCK --- 
+
+// Destinatario
+export const mockDestinatarios: Destinatario[] = [
+  {
+    nombre: "Ana",
+    apellido: "López",
+    direccion: "Av. Siempre Viva 742",
+    correo: "ana.lopez@ejemplo.com",
+    telefono: "310-555-0101"
+  },
+  {
+    nombre: "Luis",
+    apellido: "Gómez",
+    direccion: "Carrera 5 #12-34",
+    correo: "luis.gomez@ejemplo.com",
+    telefono: "310-555-0102"
+  },
+  {
+    nombre: "Sofía",
+    apellido: "Ramírez",
+    direccion: "Calle 100 #25-67",
+    correo: "sofia.ramirez@ejemplo.com",
+    telefono: "310-555-0103"
+  }
+];
+// Paquetes
+export const mockPaquetes: Paquete[] = [
+  {
+    id_paquete: "PAQ-001",
+    id_rutas_asignadas: [],
+    id_conductor_asignado: null,
+    destinatario: mockDestinatarios[0],
+    fecha_registro: "2025-09-03T10:00:00Z",
+    fecha_entrega: null,
+    estado: PaquetesEstados.Pendiente,
+    tipo_paquete: TipoPaquete.Grande,
+    cantidad: 1,
+    valor_declarado: 150000,
+    dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 }
+  },
+  {
+    id_paquete: "PAQ-002",
+    id_rutas_asignadas: ["RTA-001"],
+    id_conductor_asignado: "CON-002",
+    destinatario: mockDestinatarios[1],
+    fecha_registro: "2025-09-03T12:30:00Z",
+    fecha_entrega: null,
+    estado: PaquetesEstados.Asignado,
+    tipo_paquete: TipoPaquete.Fragil,
+    cantidad: 1,
+    valor_declarado: 50000,
+    dimensiones: { largo: 15, ancho: 10, alto: 5, peso: 0.5 }
+  },
+  {
+    id_paquete: "PAQ-003",
+    id_rutas_asignadas: ["RTA-001"],
+    id_conductor_asignado: "CON-002",
+    destinatario: mockDestinatarios[2],
+    fecha_registro: "2025-09-03T14:45:00Z",
+    fecha_entrega: "2025-09-04T12:10:00Z", // para que se vea en la tabla
+    estado: PaquetesEstados.Entregado,
+    tipo_paquete: TipoPaquete.Mediano,
+    cantidad: 2,
+    valor_declarado: 80000,
+    dimensiones: { largo: 25, ancho: 15, alto: 8, peso: 1.5 },
+    observacion_conductor: "Entregado en portería.",
+    imagen_adjunta: "/evidencias/paq-003.jpg"
+  },
+  // NUEVOS
+  {
+    id_paquete: "PAQ-004",
+    id_rutas_asignadas: ["RTA-001"],
+    id_conductor_asignado: "CON-002",
+    destinatario: mockDestinatarios[0],
+    fecha_registro: "2025-09-04T08:05:00Z",
+    fecha_entrega: null,
+    estado: PaquetesEstados.EnRuta,
+    tipo_paquete: TipoPaquete.Refrigerado,
+    cantidad: 3,
+    valor_declarado: 120000,
+    dimensiones: { largo: 40, ancho: 25, alto: 20, peso: 5 }
+  },
+  {
+    id_paquete: "PAQ-005",
+    id_rutas_asignadas: ["RTA-002"],
+    id_conductor_asignado: "CON-001",
+    destinatario: mockDestinatarios[1],
+    fecha_registro: "2025-09-04T08:15:00Z",
+    fecha_entrega: null,
+    estado: PaquetesEstados.Fallido,
+    tipo_paquete: TipoPaquete.Pequeño,
+    cantidad: 1,
+    valor_declarado: 20000,
+    dimensiones: { largo: 10, ancho: 8, alto: 5, peso: 0.3 },
+    observacion_conductor: "Dirección incorrecta, requiere verificación."
+  }
+];
+
+// Ajusta rutas para reflejar los nuevos pedidos
+export const mockRutas: Ruta[] = [
+  {
+    id_ruta: "RTA-001",
+    id_conductor_asignado: "CON-002",
+    paquetes_asignados: ["PAQ-002", "PAQ-003", "PAQ-004"],
+    horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T14:00:00Z" },
+    zona: ZonaRuta.Norte,
+    fecha_registro: "2025-09-04T08:30:00Z",
+    estado: RutaEstado.Pendiente, // <-- NUEVO
+    puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30"
+  },
+  {
+    id_ruta: "RTA-002",
+    id_conductor_asignado: "CON-001",
+    paquetes_asignados: ["PAQ-005"],
+    horario: { inicio: "2025-09-04T10:00:00Z", fin: "2025-09-04T15:00:00Z" },
+    zona: ZonaRuta.Sur,
+    fecha_registro: "2025-09-04T09:00:00Z",
+    estado: RutaEstado.Pendiente, // <-- NUEVO
+    puntos_entrega: "Av. Siempre Viva 742"
+  }
+];
+
+
+
+// Conductores
+export const mockConductores: Conductor[] = [
+  {
+    id_conductor: "CON-001",
+    nombre: "Juan",
+    apellido: "Pérez",
+    estado: ConductorEstado.Disponible,
+    id_vehiculo_asignado: "VEH-001",
+    correo: "juan.perez@empresa.com",
+    nombre_empresa: "Logística Rápida",
+    telefono: "310-123-4567",
+    tipo_documento: "Cédula de Ciudadanía",
+    documento: "1018456789",
+    horario: {
+      inicio: "2025-09-04T08:00:00Z",
+      fin: "2025-09-04T17:00:00Z"
+    }
+  },
+  {
+    id_conductor: "CON-002",
+    nombre: "María",
+    apellido: "García",
+    estado: ConductorEstado.EnRuta,
+    id_vehiculo_asignado: "VEH-002",
+    correo: "maria.garcia@empresa.com",
+    nombre_empresa: "Entrega Express",
+    telefono: "310-987-6543",
+    tipo_documento: "Cédula de Ciudadanía",
+    documento: "1018987654",
+    horario: {
+      inicio: "2025-09-04T09:00:00Z",
+      fin: "2025-09-04T18:00:00Z"
+    }
+  }
+]
+
+// Vehiculos
+export const mockVehiculos: Vehiculo[] = [
+  {
+    id_vehiculo: "VEH-001",
+    placa: "ABC-123",
+    tipo_vehiculo: "Camioneta",
+    estado: VehiculoEstado.Disponible,
+    fecha_mantenimiento: "2025-08-01T00:00:00Z"
+  },
+  {
+    id_vehiculo: "VEH-002",
+    placa: "DEF-456",
+    tipo_vehiculo: "Furgón",
+    estado: VehiculoEstado.EnRuta,
+    fecha_mantenimiento: "2025-07-15T00:00:00Z"
+  },
+  {
+    id_vehiculo: "VEH-003",
+    placa: "GHI-789",
+    tipo_vehiculo: "Moto",
+    estado: VehiculoEstado.Disponible,
+    fecha_mantenimiento: "2025-09-02T00:00:00Z"
+  }
+];
