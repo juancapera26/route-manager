@@ -22,7 +22,7 @@ export interface RegisterData {
   confirmarEmail: string;
   password: string;
   repetirPassword: string;
-  tipoVehiculo: string; // Será el enum de tu MySQL
+  tipoVehiculo: string;
 }
 
 const useAuth = () => {
@@ -34,19 +34,20 @@ const useAuth = () => {
   const [role, setRole] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [apellido, setApellido] = useState<string | null>(null);
-  const [correo, setCorreo] = useState<string | null>(null); // ✅ agregado de main
+  const [correo, setCorreo] = useState<string | null>(null);
 
+  // ✅ Detectar login/logout
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+
       if (firebaseUser) {
         try {
           const token = await getIdTokenResult(firebaseUser);
-          console.log("🔥 TOKEN CLAIMS:", token.claims);
 
           setRole((token.claims.role as string) || null);
 
-          // lógica de main para fullName
+          // Extraer nombre/apellido
           const fullName = token.claims.name as string | undefined;
           if (fullName) {
             const partes = fullName.split(" ");
@@ -57,7 +58,6 @@ const useAuth = () => {
             setApellido(null);
           }
 
-          // correo
           setCorreo(firebaseUser.email || null);
         } catch (err) {
           console.error("❌ Error al obtener claims:", err);
@@ -79,6 +79,7 @@ const useAuth = () => {
     return () => unsubscribe();
   }, []);
 
+  // ✅ Logout
   const logout = useCallback(async () => {
     if (idleTimerRef.current) {
       clearTimeout(idleTimerRef.current);
@@ -88,15 +89,15 @@ const useAuth = () => {
     navigate("/signin");
   }, [navigate]);
 
+  // ✅ Timer de inactividad
   const resetIdleTimer = useCallback(() => {
     if (!user) return;
-
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
 
     idleTimerRef.current = setTimeout(() => {
       toast.info("Sesión cerrada por inactividad.");
       logout();
-    }, 10 * 60 * 1000); // 10 minutos
+    }, 10 * 60 * 1000); // 10 min
   }, [logout, user]);
 
   useEffect(() => {
@@ -116,6 +117,7 @@ const useAuth = () => {
     };
   }, [resetIdleTimer]);
 
+  // ✅ LOGIN
   const handleLogin = async (
     e: { preventDefault: () => void },
     email: string,
@@ -125,6 +127,7 @@ const useAuth = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -132,46 +135,47 @@ const useAuth = () => {
         password
       );
 
-      // 👇 1. Obtener el token JWT de Firebase
+      // 1. Token Firebase
       const token = await userCredential.user.getIdToken();
 
-      // 👇 2. Mandarlo al backend
+      // 2. Enviar al backend
       const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3000";
+        import.meta.env.VITE_API_URL || "https://router-manager-bakend.vercel.app/";
 
       const response = await fetch(`${API_BASE_URL}/auth/verify`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // enviamos JWT
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errMsg = await response.text();
+        throw new Error(errMsg || "Usuario no válido en la base de datos");
+      }
 
-      if (!response.ok || !data.success) {
+      const data = await response.json();
+      if (!data.success) {
         throw new Error(
           data.message || "Usuario no válido en la base de datos"
         );
       }
 
-      // 👇 3. Si todo bien, seguir como antes
+      // 3. Claims
       const tokenResult = await getIdTokenResult(userCredential.user);
-      const rawRole = tokenResult.claims.role;
-      setRole(typeof rawRole === "string" ? rawRole : null);
+      setRole((tokenResult.claims.role as string) || null);
 
       const fullName = tokenResult.claims.name as string | undefined;
       if (fullName) {
         const partes = fullName.split(" ");
         setNombre(partes[0] || null);
         setApellido(partes.slice(1).join(" ") || null);
-      } else {
-        setNombre(null);
-        setApellido(null);
       }
 
       setCorreo(userCredential.user.email || null);
 
+      // 4. Redirección por rol
       if (tokenResult.claims.role === "1") {
         navigate("/admin");
       } else if (tokenResult.claims.role === "2") {
@@ -182,10 +186,11 @@ const useAuth = () => {
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      // El `onAuthStateChanged` se encarga de setLoading(false)
+      setLoading(false); // 👈 importante: liberar loading
     }
   };
 
+  // ✅ REGISTRO
   const handleRegister = async (
     registerData: RegisterData,
     setError: React.Dispatch<React.SetStateAction<string>>,
@@ -195,7 +200,6 @@ const useAuth = () => {
     setLoading(true);
 
     try {
-      //  Validaciones del frontend antes de enviar
       if (registerData.email !== registerData.confirmarEmail) {
         throw new Error("Los emails no coinciden");
       }
@@ -206,17 +210,16 @@ const useAuth = () => {
         throw new Error("La contraseña debe tener al menos 6 caracteres");
       }
 
-      //  Construir el payload como lo espera el backend
       const payload = {
         email: registerData.email,
         password: registerData.password,
-        role: "2", 
+        role: "2",
         isPublicRegistration: true,
         nombre: registerData.nombre,
         apellido: registerData.apellido,
-        telefono_movil: registerData.numeroTelefono, 
-        id_empresa: "1", 
-        tipo_documento: "CC", 
+        telefono_movil: registerData.numeroTelefono,
+        id_empresa: "1",
+        tipo_documento: "CC",
         documento: registerData.documento,
       };
 
@@ -229,9 +232,10 @@ const useAuth = () => {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message || "Error en el registro");
+      if (!response.ok) {
+        const errMsg = await response.text();
+        throw new Error(errMsg || "Error en el registro");
+      }
 
       if (setSuccess) {
         setSuccess(
@@ -245,13 +249,14 @@ const useAuth = () => {
 
       navigate("/signin");
     } catch (err) {
-      console.error(" Error en el registro:", err);
+      console.error("❌ Error en el registro:", err);
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ RESET PASSWORD
   const handlePasswordReset = async (
     email: string,
     setError: React.Dispatch<React.SetStateAction<string>>,
@@ -270,17 +275,14 @@ const useAuth = () => {
   };
 
   const getAccessToken = async () => {
-    if (user) {
-      const token = await user.getIdToken();
-      return token;
-    }
+    if (user) return user.getIdToken();
     return null;
   };
 
   return {
     authLoading: loading,
     handleLogin,
-    handleRegister, //  tu registro intacto
+    handleRegister,
     logout,
     handlePasswordReset,
     getAccessToken,
@@ -288,7 +290,7 @@ const useAuth = () => {
     role,
     nombre,
     apellido,
-    correo, 
+    correo,
     isAuthenticated: !!user,
   };
 };
