@@ -244,3 +244,6 @@ const setEstado = async (id: string, estado: PaquetesEstados, extra: Partial<Paq
   mockPaquetes[i] = { ...mockPaquetes[i], estado, ...extra };
   return simulateRequest(true);
 };
+
+
+// ===================== Filtros =======================
