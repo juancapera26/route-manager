@@ -32,6 +32,15 @@ import Button from "../../components/ui/button/Button";
 import Badge from "../../components/ui/badge/Badge";
 import Alert from "../../components/ui/alert/Alert";
 
+// Nuevas importaciones para el filtro
+import { useEstadoFilter } from "../../hooks/useEstadoFilter";
+import EstadoFilter from "../../components/common/EstadoFilter";
+import { 
+  opcionesFiltorPaquetes, 
+  obtenerEstadoPaquete 
+} from "../../global/filterConfigs";
+import EstadoFilterDropdown from "../../components/common/EstadoFilter";
+
 // Interfaces locales
 interface AlertState {
   show: boolean;
@@ -47,13 +56,16 @@ interface ModalState {
 
 const PackagesManagement: React.FC = () => {
   // Estados principales  
-  const [paquetesPendientes, setPaquetesPendientes] = useState<Paquete[]>([]);
-  const [paquetesAsignados, setPaquetesAsignados] = useState<Paquete[]>([]);
-  const [paquetesEnRuta, setPaquetesEnRuta] = useState<Paquete[]>([]);
-  const [paquetesEntregados, setPaquetesEntregados] = useState<Paquete[]>([]);
-  const [paquetesFallidos, setPaquetesFallidos] = useState<Paquete[]>([]);
+  const [todosLosPaquetes, setTodosLosPaquetes] = useState<Paquete[]>([]);
   const [rutasDisponibles, setRutasDisponibles] = useState<Ruta[]>([]);
   const [conductores, setConductores] = useState<Conductor[]>([]);
+
+  // Hook del filtro - NUEVA FUNCIONALIDAD
+  const filtroEstado = useEstadoFilter({
+    opciones: opcionesFiltorPaquetes,
+    valorInicial: null, // Mostrar todos por defecto
+    obtenerEstado: obtenerEstadoPaquete
+  });
 
   // Estados de UI
   const [loading, setLoading] = useState(true);
@@ -66,7 +78,6 @@ const PackagesManagement: React.FC = () => {
     show: false,
     message: "",
     type: "info",
-  
   });
 
   // Detalles de los paquetes
@@ -90,23 +101,7 @@ const PackagesManagement: React.FC = () => {
         getConductores(),
       ]);
 
-      // Filtrar paquetes por estado
-      setPaquetesPendientes(
-        allPaquetes.filter((p) => p.estado === PaquetesEstados.Pendiente)
-      );
-      setPaquetesAsignados(
-        allPaquetes.filter((p) => p.estado === PaquetesEstados.Asignado)
-      );
-      setPaquetesEnRuta(
-        allPaquetes.filter((p) => p.estado === PaquetesEstados.EnRuta)
-      );
-      setPaquetesEntregados(
-        allPaquetes.filter((p) => p.estado === PaquetesEstados.Entregado)
-      );
-      setPaquetesFallidos(
-        allPaquetes.filter((p) => p.estado === PaquetesEstados.Fallido)
-      );
-
+      setTodosLosPaquetes(allPaquetes);
       setRutasDisponibles(rutas);
       setConductores(conductoresList);
     } catch (error) {
@@ -116,12 +111,25 @@ const PackagesManagement: React.FC = () => {
     }
   };
 
+  // Filtrar paquetes basado en el estado seleccionado
+  const paquetesFiltrados = filtroEstado.filtrarPorEstado(todosLosPaquetes);
+  
+  // Separar por estados para mantener la funcionalidad existente
+  const paquetesPendientes = paquetesFiltrados.filter(p => p.estado === PaquetesEstados.Pendiente);
+  const paquetesAsignados = paquetesFiltrados.filter(p => p.estado === PaquetesEstados.Asignado);
+  const paquetesEnRuta = paquetesFiltrados.filter(p => p.estado === PaquetesEstados.EnRuta);
+  const paquetesEntregados = paquetesFiltrados.filter(p => p.estado === PaquetesEstados.Entregado);
+  const paquetesFallidos = paquetesFiltrados.filter(p => p.estado === PaquetesEstados.Fallido);
+
+  // Contadores para el filtro
+  const contadores = filtroEstado.contarPorEstado(todosLosPaquetes);
+
   const mostrarAlert = (message: string, type: AlertState["type"]) => {
     setAlert({ show: true, message, type });
     setTimeout(() => setAlert((prev) => ({ ...prev, show: false })), 4000);
   };
 
-  // Funciones de gestión de paquetes
+  // Funciones de gestión de paquetes (sin cambios)
   const handleEliminarPaquete = async (paqueteId: string) => {
     if (window.confirm("¿Estás seguro de eliminar este paquete?")) {
       try {
@@ -161,7 +169,6 @@ const PackagesManagement: React.FC = () => {
   };
 
   const handleMonitorear = (paqueteId: string) => {
-    // Simulamos redirección a página de monitoreo
     navigate(`/admin/monitoring/${paqueteId}`);
   };
 
@@ -184,50 +191,49 @@ const PackagesManagement: React.FC = () => {
     });
   };
 
-const handleConfirmarAsignacion = async (rutaId: string) => {
-  if (!modalState.paqueteId) return;
+  const handleConfirmarAsignacion = async (rutaId: string) => {
+    if (!modalState.paqueteId) return;
 
-  try {
-    const ruta = rutasDisponibles.find((r) => r.id_ruta === rutaId);
-    if (!ruta || !ruta.id_conductor_asignado) {
-      mostrarAlert("La ruta seleccionada no tiene conductor asignado", "error");
-      return;
+    try {
+      const ruta = rutasDisponibles.find((r) => r.id_ruta === rutaId);
+      if (!ruta || !ruta.id_conductor_asignado) {
+        mostrarAlert("La ruta seleccionada no tiene conductor asignado", "error");
+        return;
+      }
+
+      let result: any;
+      if (modalState.action === "assign") {
+        result = await assignPaquete(
+          modalState.paqueteId,
+          rutaId,
+          ruta.id_conductor_asignado
+        );
+      } else if (modalState.action === "reassign") {
+        result = await reassignPaquete(
+          modalState.paqueteId,
+          rutaId,
+          ruta.id_conductor_asignado
+        );
+      }
+
+      if (result.success) {
+        mostrarAlert(
+          `Paquete ${
+            modalState.action === "assign" ? "asignado" : "reasignado"
+          } correctamente`,
+          "success"
+        );
+        cargarDatos();
+        cerrarModal();
+      } else {
+        mostrarAlert(result.message || "Error en la asignación", "error");
+      }
+    } catch (error) {
+      mostrarAlert("Error en la operación", "error");
     }
+  };
 
-    let result: any;
-    if (modalState.action === "assign") {
-      result = await assignPaquete(
-        modalState.paqueteId,
-        rutaId,
-        ruta.id_conductor_asignado
-      );
-    } else if (modalState.action === "reassign") {
-      result = await reassignPaquete(
-        modalState.paqueteId,
-        rutaId,
-        ruta.id_conductor_asignado
-      );
-    }
-
-    if (result.success) {
-      mostrarAlert(
-        `Paquete ${
-          modalState.action === "assign" ? "asignado" : "reasignado"
-        } correctamente`,
-        "success"
-      );
-      cargarDatos();
-      cerrarModal();
-    } else {
-      mostrarAlert(result.message || "Error en la asignación", "error");
-    }
-  } catch (error) {
-    mostrarAlert("Error en la operación", "error");
-  }
-};
-
-
-  // Componente para renderizar tabla de paquetes
+  // Componente para renderizar tabla de paquetes (sin cambios)
   const TablaPaquetes: React.FC<{
     paquetes: Paquete[];
     estado: PaquetesEstados;
@@ -345,20 +351,6 @@ const handleConfirmarAsignacion = async (rutaId: string) => {
                 <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   <Button size="sm" onClick={() => abrirModalDetalles(paquete)}>Ver más</Button>
                 </TableCell>
-
-                {/**
-                <TableCell className="px-6 py-4 whitespace-nowrap">
-                  <Badge color={getColorEstado(paquete.estado)} variant="light">
-                    {paquete.estado}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                  {new Date(paquete.fecha_registro).toLocaleDateString("es-ES")}
-                </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                  ${paquete.valor_declarado.toLocaleString()}
-                </TableCell>
-                */}
                 
                 <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                   <div className="flex space-x-2">
@@ -428,50 +420,47 @@ const handleConfirmarAsignacion = async (rutaId: string) => {
     );
   };
   
-  
-const ModalDetalles: React.FC = () => (
-  <Modal isOpen={!!detallesPaquete} onClose={cerrarModalDetalles}>
-    {detallesPaquete && (
-      <div className="p-6 space-y-3">
-        <h3 className="text-lg font-semibold">Detalles del paquete</h3>
-        
-        <p><strong>Tipo:</strong> {detallesPaquete.tipo_paquete}</p>
-        <p><strong>Cantidad:</strong> {detallesPaquete.cantidad}</p>
-        <p><strong>Valor declarado:</strong> ${detallesPaquete.valor_declarado.toLocaleString()}</p>
-        <p>
-          <strong>Dimensiones:</strong> 
-          {detallesPaquete.dimensiones.largo}x{detallesPaquete.dimensiones.ancho}x{detallesPaquete.dimensiones.alto} cm – {detallesPaquete.dimensiones.peso} kg
-        </p>
+  const ModalDetalles: React.FC = () => (
+    <Modal isOpen={!!detallesPaquete} onClose={cerrarModalDetalles}>
+      {detallesPaquete && (
+        <div className="p-6 space-y-3">
+          <h3 className="text-lg font-semibold">Detalles del paquete</h3>
+          
+          <p><strong>Tipo:</strong> {detallesPaquete.tipo_paquete}</p>
+          <p><strong>Cantidad:</strong> {detallesPaquete.cantidad}</p>
+          <p><strong>Valor declarado:</strong> ${detallesPaquete.valor_declarado.toLocaleString()}</p>
+          <p>
+            <strong>Dimensiones:</strong> 
+            {detallesPaquete.dimensiones.largo}x{detallesPaquete.dimensiones.ancho}x{detallesPaquete.dimensiones.alto} cm – {detallesPaquete.dimensiones.peso} kg
+          </p>
 
-        <div>
-          <h4 className="font-semibold mt-2">Destinatario</h4>
-          <p>{detallesPaquete.destinatario.nombre} {detallesPaquete.destinatario.apellido}</p>
-          <p>{detallesPaquete.destinatario.direccion}</p>
-          <p>{detallesPaquete.destinatario.correo}</p>
-          <p>{detallesPaquete.destinatario.telefono}</p>
-        </div>
-
-        {detallesPaquete.estado === PaquetesEstados.Entregado && (
-          <div className="mt-4">
-            <h4 className="font-semibold">Entrega</h4>
-            <p><strong>Observación conductor:</strong> {detallesPaquete.observacion_conductor || "N/A"}</p>
-            {detallesPaquete.imagen_adjunta && (
-              <img
-                src={detallesPaquete.imagen_adjunta}
-                alt="Prueba de entrega"
-                className="mt-2 max-h-48 rounded-lg shadow"
-              />
-            )}
+          <div>
+            <h4 className="font-semibold mt-2">Destinatario</h4>
+            <p>{detallesPaquete.destinatario.nombre} {detallesPaquete.destinatario.apellido}</p>
+            <p>{detallesPaquete.destinatario.direccion}</p>
+            <p>{detallesPaquete.destinatario.correo}</p>
+            <p>{detallesPaquete.destinatario.telefono}</p>
           </div>
-        )}
-      </div>
-    )}
-  </Modal>
-);
 
-  
+          {detallesPaquete.estado === PaquetesEstados.Entregado && (
+            <div className="mt-4">
+              <h4 className="font-semibold">Entrega</h4>
+              <p><strong>Observación conductor:</strong> {detallesPaquete.observacion_conductor || "N/A"}</p>
+              {detallesPaquete.imagen_adjunta && (
+                <img
+                  src={detallesPaquete.imagen_adjunta}
+                  alt="Prueba de entrega"
+                  className="mt-2 max-h-48 rounded-lg shadow"
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
 
-  // Modal para asignar rutas
+  // Modal para asignar rutas (sin cambios)
   const ModalAsignarRuta: React.FC = () => (
     <Modal isOpen={modalState.isOpen} onClose={cerrarModal}>
       <div className="p-6">
@@ -575,10 +564,15 @@ const ModalDetalles: React.FC = () => (
 
   return (
     <div className="p-6 space-y-8">
-      {/* Alert */}
+      {/* Título principal */}
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        Gestión de paquetes
+      </h1>
+
+      {/* Alert - MOVIDO: Ahora aparece debajo del h1 */}
       {alert.show && (
         <div
-          className={`mb-4 p-4 rounded-lg ${
+          className={`p-4 rounded-lg ${
             alert.type === "success"
               ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
               : alert.type === "error"
@@ -592,66 +586,196 @@ const ModalDetalles: React.FC = () => (
         </div>
       )}
 
-      {/* Título principal */}
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-        Gestión de paquetes
-      </h1>
+      {/* Renderizado condicional basado en el filtro */}
+      {filtroEstado.estadoSeleccionado === null && (
+        <>
+          {/* Primera sección con filtro */}
+          <section>
+            <div className="mb-6">
+              {/* En móvil: filtro arriba, en escritorio: en línea con separación natural */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-15 gap-4 mb-4">
+                {/* Filtro PRIMERO en móvil (order se puede omitir porque ya está primero) */}
+                <div className="sm:order-2">
+                  <EstadoFilterDropdown
+                    opciones={filtroEstado.opciones}
+                    valorSeleccionado={filtroEstado.estadoSeleccionado}
+                    onCambio={filtroEstado.setEstadoSeleccionado}
+                    contadores={contadores}
+                  />
+                </div>
+                {/* Título SEGUNDO en móvil, PRIMERO en escritorio */}
+                <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                  Pendientes
+                </h2>
+              </div>
+            </div>
+            <TablaPaquetes
+              paquetes={paquetesPendientes}
+              estado={PaquetesEstados.Pendiente}
+            />
+          </section>
 
-      {/* Sección Pendientes */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          Pendientes ({paquetesPendientes.length})
-        </h2>
-        <TablaPaquetes
-          paquetes={paquetesPendientes}
-          estado={PaquetesEstados.Pendiente}
-        />
-      </section>
+          {/* Resto de secciones SIN filtro */}
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              Asignados
+            </h2>
+            <TablaPaquetes
+              paquetes={paquetesAsignados}
+              estado={PaquetesEstados.Asignado}
+            />
+          </section>
 
-      {/* Sección Asignados */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          Asignados ({paquetesAsignados.length})
-        </h2>
-        <TablaPaquetes
-          paquetes={paquetesAsignados}
-          estado={PaquetesEstados.Asignado}
-        />
-      </section>
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              En ruta
+            </h2>
+            <TablaPaquetes
+              paquetes={paquetesEnRuta}
+              estado={PaquetesEstados.EnRuta}
+            />
+          </section>
 
-      {/* Sección En Ruta */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          En ruta ({paquetesEnRuta.length})
-        </h2>
-        <TablaPaquetes
-          paquetes={paquetesEnRuta}
-          estado={PaquetesEstados.EnRuta}
-        />
-      </section>
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              Fallidos
+            </h2>
+            <TablaPaquetes
+              paquetes={paquetesFallidos}
+              estado={PaquetesEstados.Fallido}
+            />
+          </section>
 
-      {/* Sección Fallidos */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          Fallidos ({paquetesFallidos.length})
-        </h2>
-        <TablaPaquetes
-          paquetes={paquetesFallidos}
-          estado={PaquetesEstados.Fallido}
-        />
-      </section>
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              Entregados
+            </h2>
+            <TablaPaquetes paquetes={paquetesEntregados} estado={PaquetesEstados.Entregado} />
+          </section>
+        </>
+      )}
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">
-          Entregados ({paquetesEntregados.length})
-        </h2>
-        <TablaPaquetes paquetes={paquetesEntregados} estado={PaquetesEstados.Entregado}/>
-      </section>
+      {/* Para cuando SÍ HAY filtro específico (cualquier estado) */}
+      {filtroEstado.estadoSeleccionado === PaquetesEstados.Pendiente && (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="sm:order-2">
+                <EstadoFilterDropdown
+                  opciones={filtroEstado.opciones}
+                  valorSeleccionado={filtroEstado.estadoSeleccionado}
+                  onCambio={filtroEstado.setEstadoSeleccionado}
+                  contadores={contadores}
+                />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                Pendientes
+              </h2>
+            </div>
+          </div>
+          <TablaPaquetes
+            paquetes={paquetesPendientes}
+            estado={PaquetesEstados.Pendiente}
+          />
+        </section>
+      )}
+
+      {filtroEstado.estadoSeleccionado === PaquetesEstados.Asignado && (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="sm:order-2">
+                <EstadoFilterDropdown
+                  opciones={filtroEstado.opciones}
+                  valorSeleccionado={filtroEstado.estadoSeleccionado}
+                  onCambio={filtroEstado.setEstadoSeleccionado}
+                  contadores={contadores}
+                />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                Asignados
+              </h2>
+            </div>
+          </div>
+          <TablaPaquetes
+            paquetes={paquetesAsignados}
+            estado={PaquetesEstados.Asignado}
+          />
+        </section>
+      )}
+
+      {filtroEstado.estadoSeleccionado === PaquetesEstados.EnRuta && (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="sm:order-2">
+                <EstadoFilterDropdown
+                  opciones={filtroEstado.opciones}
+                  valorSeleccionado={filtroEstado.estadoSeleccionado}
+                  onCambio={filtroEstado.setEstadoSeleccionado}
+                  contadores={contadores}
+                />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                En ruta
+              </h2>
+            </div>
+          </div>
+          <TablaPaquetes
+            paquetes={paquetesEnRuta}
+            estado={PaquetesEstados.EnRuta}
+          />
+        </section>
+      )}
+
+      {filtroEstado.estadoSeleccionado === PaquetesEstados.Fallido && (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="sm:order-2">
+                <EstadoFilterDropdown
+                  opciones={filtroEstado.opciones}
+                  valorSeleccionado={filtroEstado.estadoSeleccionado}
+                  onCambio={filtroEstado.setEstadoSeleccionado}
+                  contadores={contadores}
+                />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                Fallidos
+              </h2>
+            </div>
+          </div>
+          <TablaPaquetes
+            paquetes={paquetesFallidos}
+            estado={PaquetesEstados.Fallido}
+          />
+        </section>
+      )}
+
+      {filtroEstado.estadoSeleccionado === PaquetesEstados.Entregado && (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="sm:order-2">
+                <EstadoFilterDropdown
+                  opciones={filtroEstado.opciones}
+                  valorSeleccionado={filtroEstado.estadoSeleccionado}
+                  onCambio={filtroEstado.setEstadoSeleccionado}
+                  contadores={contadores}
+                />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 sm:order-1">
+                Entregados
+              </h2>
+            </div>
+          </div>
+          <TablaPaquetes paquetes={paquetesEntregados} estado={PaquetesEstados.Entregado} />
+        </section>
+      )}
 
       {/* Modal de asignación y detalles */}
       <ModalAsignarRuta />
       <ModalDetalles />
-
     </div>
   );
 };
