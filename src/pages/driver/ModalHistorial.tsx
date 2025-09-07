@@ -1,4 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Paper,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TextField,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface ModalHistorialProps {
   isOpen: boolean;
@@ -8,6 +21,13 @@ interface ModalHistorialProps {
   isMobileOpen: boolean;
 }
 
+// Datos simulados de manifiestos
+const manifiestos = [
+  { codigo: "#15967", fecha: "25/02/2025", hora: "6:30 am / 6:30 pm" },
+  { codigo: "#15968", fecha: "26/02/2025", hora: "7:00 am / 5:30 pm" },
+  { codigo: "#15969", fecha: "27/02/2025", hora: "8:00 am / 4:00 pm" },
+];
+
 const ModalHistorial: React.FC<ModalHistorialProps> = ({
   isOpen,
   onClose,
@@ -15,87 +35,139 @@ const ModalHistorial: React.FC<ModalHistorialProps> = ({
   isHovered,
   isMobileOpen,
 }) => {
+  const [filters, setFilters] = useState({ dia: "", mes: "", anio: "" });
+
   if (!isOpen) return null;
 
   const leftPos = isExpanded || isHovered || isMobileOpen ? 290 : 90;
 
+  // 👉 Filtrar manifiestos en base a día, mes y año
+  const filtered = manifiestos.filter((m) => {
+    const [d, mth, y] = m.fecha.split("/"); // descomponer la fecha
+    return (
+      (filters.dia === "" || filters.dia === d) &&
+      (filters.mes === "" || filters.mes === mth) &&
+      (filters.anio === "" || filters.anio === y)
+    );
+  });
+
+  const noResults = filtered.length === 0;
+
   return (
-    <div
-      className="fixed top-16 z-[60] bg-gray-200 dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700
-        w-[400px] h-[calc(100vh-4rem)] transition-all animate-slide-in px-6 py-4 overflow-y-auto"
-      style={{ left: leftPos }}
+    <Paper
+      elevation={6}
+      sx={{
+        position: "fixed",
+        top: 64,
+        left: leftPos,
+        zIndex: 60,
+        width: 420,
+        height: "calc(100vh - 64px)",
+        borderRadius: 3,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-lg text-gray-900 dark:text-white">
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          p: 2,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Typography variant="h6" fontWeight="600">
           Historial de rutas
-        </h2>
-        <button
-          className="text-2xl font-bold hover:text-red-600 dark:hover:text-red-400"
-          onClick={onClose}
-          title="Cerrar"
-        >
-          &times;
-        </button>
-      </div>
-      <div className="flex gap-2 mb-3 items-center px-2 text-gray-900 dark:text-white">
-        <span className="font-bold">Historial</span>
-        <div className="flex gap-2 items-center ml-4">
-          <input
-            type="text"
-            placeholder="día"
-            className="border w-12 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+        </Typography>
+        <IconButton color="error" onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      {/* 🔎 Filtros */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}>
+        <Typography variant="body1" fontWeight="500">
+          Filtrar por fecha
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            size="small"
+            label="Día"
+            value={filters.dia}
+            onChange={(e) => setFilters({ ...filters, dia: e.target.value })}
+            sx={{ width: 70 }}
           />
-          <input
-            type="text"
-            placeholder="mes"
-            className="border w-12 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+          <TextField
+            size="small"
+            label="Mes"
+            value={filters.mes}
+            onChange={(e) => setFilters({ ...filters, mes: e.target.value })}
+            sx={{ width: 70 }}
           />
-          <input
-            type="text"
-            placeholder="año"
-            className="border w-16 px-1 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+          <TextField
+            size="small"
+            label="Año"
+            value={filters.anio}
+            onChange={(e) => setFilters({ ...filters, anio: e.target.value })}
+            sx={{ width: 90 }}
           />
-        </div>
-      </div>
-      <div className="overflow-x-auto max-h-[60vh]">
-        <table className="min-w-full border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr className="border-b border-gray-300 dark:border-gray-700">
-              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
-                Manifiesto
-              </th>
-              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
-                Hora de inicio/final
-              </th>
-              <th className="font-bold px-2 py-1 text-left text-gray-900 dark:text-white">
-                Fecha
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 7 }).map((_, i) => (
-              <tr
-                key={i}
-                className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <td>
-                  <a
-                    href="#"
-                    className="text-blue-700 dark:text-blue-300 underline hover:text-blue-900 dark:hover:text-blue-400"
-                  >
-                    #15967
-                  </a>
-                </td>
-                <td className="text-gray-900 dark:text-white">
-                  1:30 am / 6:30 pm
-                </td>
-                <td className="text-gray-900 dark:text-white">25/02/2025</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+        </Box>
+      </Box>
+
+      {/* Tabla o mensaje de error */}
+      <Box sx={{ flex: 1, overflowX: "auto", px: 2, pb: 2 }}>
+        {noResults ? (
+          <Typography
+            variant="body2"
+            color="error"
+            align="center"
+            sx={{ mt: 2, fontWeight: "600" }}
+          >
+            Fecha de ruta no encontrada
+          </Typography>
+        ) : (
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Manifiesto</TableCell>
+                <TableCell>Hora inicio / fin</TableCell>
+                <TableCell>Fecha</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filtered.map((m, i) => (
+                <TableRow
+                  key={i}
+                  hover
+                  sx={{ "&:hover": { bgcolor: "action.hover", cursor: "pointer" } }}
+                >
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      color="primary"
+                      fontWeight="500"
+                      sx={{ cursor: "pointer" }}
+                    >
+                      {m.codigo}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{m.hora}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{m.fecha}</Typography>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Box>
+    </Paper>
   );
 };
 

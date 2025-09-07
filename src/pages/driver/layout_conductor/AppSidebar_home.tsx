@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useLocation, Link } from "react-router";
 import PlaceIcon from "@mui/icons-material/Place";
 import ArticleIcon from "@mui/icons-material/Article";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import InfoIcon from '@mui/icons-material/Info';
 import { useSidebar } from "../../../context/SidebarContext";
 
 import ModalRutas from "../ModalRutas";
 import ModalHistorial from "../ModalHistorial";
 import { HorizontaLDots } from "../../../icons";
+import ModalReporte from "../ModalReporte";
 
 type SubItem = {
   name: string;
@@ -27,6 +28,7 @@ type NavItem = {
 const AppSidebar: React.FC = () => {
   const [isModalRutasOpen, setModalRutasOpen] = useState(false);
   const [isHistorialPanelOpen, setHistorialPanelOpen] = useState(false);
+  const [isReporteOpen, setReporteOpen] = useState(false);
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
   const IconStudyImpetus = "/public/images/logo/logo.png";
@@ -43,9 +45,9 @@ const AppSidebar: React.FC = () => {
       action: () => setHistorialPanelOpen(true),
     },
     {
-      name: "indefinido",
-      icon: <ArrowBackIcon htmlColor="white" />,
-      path: "/campaigns",
+      name: "Reporte",
+      icon: <InfoIcon/>,
+      action: () => setReporteOpen ((prev) => !prev),
     },
   ];
 
@@ -157,6 +159,10 @@ const AppSidebar: React.FC = () => {
         isExpanded={isExpanded}
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
+      />
+      <ModalReporte
+        isOpen={isReporteOpen}
+        onClose={() => setReporteOpen(false)}
       />
     </>
   );
