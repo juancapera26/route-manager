@@ -63,16 +63,18 @@ function EstadoFilterDropdown<T>({
             min-w-[140px] max-w-[200px]
           `}
         >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="font-medium text-gray-900 dark:text-white truncate">
-              {opcionSeleccionada.etiqueta}
-            </span>
-            {contadores && (
-              <span className="inline-flex items-center justify-center min-w-[18px] h-5 px-1.5 text-xs font-semibold bg-brand-100 text-brand-700 rounded-full dark:bg-brand-900/30 dark:text-brand-400 flex-shrink-0">
-                {contadorSeleccionado}
-              </span>
-            )}
-          </div>
+<div className="flex items-center gap-2 flex-1 min-w-0">
+  <span className="font-medium text-gray-900 dark:text-white truncate">
+    {opcionSeleccionada.etiqueta}
+  </span>
+  {contadores && valorSeleccionado === null && (
+    <span className="inline-flex items-center justify-center min-w-[18px] h-5 px-1.5 text-xs font-semibold bg-brand-100 text-brand-700 rounded-full dark:bg-brand-900/30 dark:text-brand-400 flex-shrink-0">
+      {contadorSeleccionado}
+    </span>
+  )}
+</div>
+
+
           <svg
             className={`w-4 h-4 text-gray-500 dark:text-gray-400 transform transition-transform duration-200 flex-shrink-0 ${
               isOpen ? 'rotate-180' : ''

@@ -491,7 +491,7 @@ export const mockPaquetes: Paquete[] = [
     cantidad: 2,
     valor_declarado: 80000,
     dimensiones: { largo: 25, ancho: 15, alto: 8, peso: 1.5 },
-    observacion_conductor: "Entregado en portería.",
+    observacion_conductor: "Reibido por el destinatario",
     imagen_adjunta: "/evidencias/paq-003.jpg"
   },
   // NUEVOS
@@ -520,7 +520,7 @@ export const mockPaquetes: Paquete[] = [
     cantidad: 1,
     valor_declarado: 20000,
     dimensiones: { largo: 10, ancho: 8, alto: 5, peso: 0.3 },
-    observacion_conductor: "Dirección incorrecta, requiere verificación."
+    observacion_conductor: "Habia paro en la nacho, la via estaba bloqueada y por ende no pude entregar."
   }
 ];
 
