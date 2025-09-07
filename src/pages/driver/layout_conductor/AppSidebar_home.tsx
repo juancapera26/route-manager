@@ -37,12 +37,12 @@ const AppSidebar: React.FC = () => {
     {
       icon: <PlaceIcon />,
       name: "Rutas",
-      action: () => setModalRutasOpen((prev) => !prev),
+      action: () => setModalRutasOpen(true), // 👈 forzar apertura
     },
     {
       name: "Historial",
       icon: <ArticleIcon />,
-      action: () => setHistorialPanelOpen((prev) => !prev),
+      action: () => setHistorialPanelOpen(true),
     },
     {
       name: "Reporte",
@@ -152,6 +152,7 @@ const AppSidebar: React.FC = () => {
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
       />
+
       <ModalHistorial
         isOpen={isHistorialPanelOpen}
         onClose={() => setHistorialPanelOpen(false)}
