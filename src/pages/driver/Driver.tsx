@@ -9,11 +9,12 @@ const libraries: "marker"[] = ["marker"];
 const containerStyle = { width: "100%", height: "100vh" };
 const MAP_ID = "TU_MAP_ID_AQUI"; // opcional
 
-export const  Driver = () => {
+export const Driver = () => {
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(
     null
   );
   const mapRef = useRef<google.maps.Map | null>(null);
+  const streetViewRef = useRef<google.maps.StreetViewPanorama | null>(null);
   const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(
     null
   );
@@ -23,7 +24,7 @@ export const  Driver = () => {
     libraries,
   });
 
-  // Función para obtener la ubicación y centrar el mapa
+  // Obtener ubicación y centrar mapa
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       console.error("Geolocalización no soportada");
@@ -39,10 +40,9 @@ export const  Driver = () => {
         };
         setCenter(coords);
 
-        // Mover el mapa suavemente
         if (mapRef.current) {
           mapRef.current.panTo(coords);
-          mapRef.current.setZoom(18); // zoom cercano
+          mapRef.current.setZoom(18);
         }
 
         if (markerRef.current) {
@@ -50,11 +50,7 @@ export const  Driver = () => {
         }
       },
       (error) => {
-        console.error(
-          "Error obteniendo ubicación: ",
-          error.code,
-          error.message
-        );
+        console.error("Error obteniendo ubicación:", error.code, error.message);
         setCenter({ lat: 4.711, lng: -74.0721 });
       },
       { enableHighAccuracy: true }
@@ -76,14 +72,23 @@ export const  Driver = () => {
           center,
           zoom: 15,
           disableDefaultUI: true,
-          streetViewControl: true,
           minZoom: 3,
           maxZoom: 20,
           mapId: MAP_ID || undefined,
         }
       );
 
-      // Crear contenido del marcador usando MUI
+      // Crear instancia estable de Street View y enlazarla al mapa
+      streetViewRef.current = new google.maps.StreetViewPanorama(
+        document.getElementById("map") as HTMLElement,
+        {
+          pov: { heading: 0, pitch: 0 },
+          visible: false,
+        }
+      );
+      mapRef.current.setStreetView(streetViewRef.current);
+
+      // Crear contenido del marcador con MUI
       const content = document.createElement("div");
       const root = createRoot(content);
       root.render(
@@ -104,7 +109,6 @@ export const  Driver = () => {
         </Box>
       );
 
-      // Crear marcador avanzado
       markerRef.current = new google.maps.marker.AdvancedMarkerElement({
         position: center,
         map: mapRef.current,
@@ -112,11 +116,9 @@ export const  Driver = () => {
         content,
       });
 
-      // Crear botón junto a la “personita” de Street View (BOTTOM_LEFT)
+      // --- Botón ubicación ---
       const buttonDiv = document.createElement("div");
-      buttonDiv.style.marginLeft = "10px"; // separarlo un poco del borde
       buttonDiv.style.marginBottom = "10px";
-
       const buttonRoot = createRoot(buttonDiv);
       buttonRoot.render(
         <IconButton
@@ -134,13 +136,123 @@ export const  Driver = () => {
           <MyLocationIcon />
         </IconButton>
       );
-
       mapRef.current.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
         buttonDiv
       );
+
+      // --- Controles de Zoom ---
+      const zoomDiv = document.createElement("div");
+      zoomDiv.style.display = "flex";
+      zoomDiv.style.flexDirection = "column";
+      zoomDiv.style.alignItems = "center";
+      zoomDiv.style.gap = "4px";
+
+      const zoomRoot = createRoot(zoomDiv);
+      zoomRoot.render(
+        <>
+          <IconButton
+            size="small"
+            sx={{
+              backgroundColor: "white",
+              width: 40,
+              height: 30,
+              borderRadius: 2,
+              boxShadow: 2,
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+            onClick={() => {
+              const map = mapRef.current;
+              if (map) {
+                const zoom = map.getZoom();
+                if (zoom !== undefined && zoom !== null) {
+                  map.setZoom(zoom + 1);
+                }
+              }
+            }}
+          >
+            +
+          </IconButton>
+          <IconButton
+            size="small"
+            sx={{
+              backgroundColor: "white",
+              width: 40,
+              height: 30,
+              borderRadius: 2,
+              boxShadow: 2,
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+            onClick={() => {
+              const map = mapRef.current;
+              if (map) {
+                const zoom = map.getZoom();
+                if (zoom !== undefined && zoom !== null) {
+                  map.setZoom(zoom - 1);
+                }
+              }
+            }}
+          >
+            -
+          </IconButton>
+        </>
+      );
+      mapRef.current.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
+        zoomDiv
+      );
+
+      // --- Botón Street View ---
+      const svDiv = document.createElement("div");
+      const svRoot = createRoot(svDiv);
+      svRoot.render(
+        <IconButton
+          size="small"
+          sx={{
+            backgroundColor: "white",
+            width: 40,
+            height: 40,
+            borderRadius: "8px",
+            boxShadow: 2,
+            "&:hover": { backgroundColor: "#e0e0e0" },
+          }}
+          onClick={() => {
+  if (center && streetViewRef.current) {
+    const svService = new google.maps.StreetViewService();
+    svService.getPanorama(
+      { location: center, radius: 50, source: google.maps.StreetViewSource.OUTDOOR }, // 👈 solo panoramas de calle
+      (data, status) => {
+        if (status === "OK" && data?.location?.latLng) {
+          // Solo abrir si tiene navegación
+          if (data.links && data.links.length > 0) {
+            streetViewRef.current!.setPosition(data.location.latLng);
+            streetViewRef.current!.setPov({ heading: 0, pitch: 0 });
+            streetViewRef.current!.setZoom(1); // 👈 zoom se maneja aparte
+            streetViewRef.current!.setVisible(true);
+          } else {
+            alert("No hay Street View navegable en este punto 🚫");
+          }
+        } else {
+          alert("No panorama disponible cerca de esta ubicación ❌");
+        }
+      }
+    );
+  }
+}}
+
+        >
+          <svg width={20} height={20} viewBox="0 0 24 24">
+            <circle cx="12" cy="7" r="4" fill="#1976d2" />
+            <rect x="9" y="12" width="6" height="8" rx="3" fill="#1976d2" />
+          </svg>
+        </IconButton>
+      );
+      mapRef.current.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
+        svDiv
+      );
     } else if (markerRef.current) {
       markerRef.current.position = center;
-      mapRef.current.panTo(center); // mantener centrado si cambia
+      mapRef.current.panTo(center);
     }
   }, [isLoaded, center]);
 
