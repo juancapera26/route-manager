@@ -63,20 +63,17 @@ const PackagesManagement: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false); // Bloquea el boton de agregar paquetes
-  const handleAgregarPaquete = async (
-    data: Omit<Paquete, "id_paquete" | "estado">
-  ) => {
+  const handleAgregarPaquete = async () => {
     setSaving(true);
     try {
-      const nuevo = await createPaquete(data); // 👈 usa tu API simulada
-      setTodosLosPaquetes((prev) => [nuevo, ...prev]);
+      await cargarDatos();
 
-      setIsModalOpen(false); // 👈 cerrar modal inmediatamente
-      mostrarAlert("Paquete creado correctamente", "success"); // 👈 feedback
+      setIsModalOpen(false);
+      mostrarAlert("Paquete creado correctamente", "success");
     } catch (error) {
       mostrarAlert("Error al crear el paquete", "error");
     } finally {
-      setSaving(false); // 👈 vuelve a habilitar el botón
+      setSaving(false);
     }
   };
 
