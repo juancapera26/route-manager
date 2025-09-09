@@ -1,0 +1,536 @@
+import React, { useState } from "react";
+import { Modal } from "../ui/modal";
+import Button from "../ui/button/Button";
+import Label from "../form/Label";
+import Input from "../form/input/InputField";
+import Alert from "../ui/alert/Alert"; // Asumiendo que Alert está en ui/
+import { createPaquete } from "../../global/apis";
+import { Paquete, TipoPaquete } from "../../global/dataMock";
+import { Add } from "@mui/icons-material"; // Icono de Material UI
+
+interface ModalAgregarPaqueteProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (nuevo: Paquete) => void;
+  isLoading?: boolean;
+}
+
+interface FormErrors {
+  nombre?: string;
+  apellido?: string;
+  direccion?: string;
+  correo?: string;
+  telefono?: string;
+  cantidad?: string;
+  valor_declarado?: string;
+  dimensiones?: {
+    largo?: string;
+    ancho?: string;
+    alto?: string;
+    peso?: string;
+  };
+}
+
+const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  isLoading = false,
+}) => {
+  const [formData, setFormData] = useState({
+    nombre: "",
+    apellido: "",
+    direccion: "",
+    correo: "",
+    telefono: "",
+    tipo_paquete: TipoPaquete.Pequeño,
+    cantidad: 1,
+    valor_declarado: 0,
+    dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [mensaje, setMensaje] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  // Validaciones específicas
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    // Acepta números de teléfono colombianos (10 dígitos) o internacionales básicos
+    const phoneRegex = /^\+?[\d\s\-()]{7,15}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ""));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Validar nombre
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = "El nombre es requerido";
+    } else if (formData.nombre.trim().length < 2) {
+      newErrors.nombre = "El nombre debe tener al menos 2 caracteres";
+    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.nombre.trim())) {
+      newErrors.nombre = "El nombre solo puede contener letras";
+    }
+
+    // Validar apellido
+    if (!formData.apellido.trim()) {
+      newErrors.apellido = "El apellido es requerido";
+    } else if (formData.apellido.trim().length < 2) {
+      newErrors.apellido = "El apellido debe tener al menos 2 caracteres";
+    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.apellido.trim())) {
+      newErrors.apellido = "El apellido solo puede contener letras";
+    }
+
+    // Validar dirección
+    if (!formData.direccion.trim()) {
+      newErrors.direccion = "La dirección es requerida";
+    } else if (formData.direccion.trim().length < 5) {
+      newErrors.direccion = "La dirección debe tener al menos 5 caracteres";
+    }
+
+    // Validar correo
+    if (!formData.correo.trim()) {
+      newErrors.correo = "El correo es requerido";
+    } else if (!validateEmail(formData.correo)) {
+      newErrors.correo = "Formato de correo inválido";
+    }
+
+    // Validar teléfono
+    if (!formData.telefono.trim()) {
+      newErrors.telefono = "El teléfono es requerido";
+    } else if (!validatePhone(formData.telefono)) {
+      newErrors.telefono = "Formato de teléfono inválido";
+    }
+
+    // Validar cantidad
+    if (formData.cantidad < 1) {
+      newErrors.cantidad = "La cantidad debe ser mayor a 0";
+    } else if (formData.cantidad > 100) {
+      newErrors.cantidad = "La cantidad no puede ser mayor a 100";
+    }
+
+    // Validar valor declarado
+    if (formData.valor_declarado < 0) {
+      newErrors.valor_declarado = "El valor no puede ser negativo";
+    } else if (formData.valor_declarado > 10000000) {
+      newErrors.valor_declarado = "El valor declarado es muy alto";
+    }
+
+    // Validar dimensiones
+    const dimensionesErrors: FormErrors["dimensiones"] = {};
+
+    if (formData.dimensiones.largo < 0) {
+      dimensionesErrors.largo = "No puede ser negativo";
+    } else if (formData.dimensiones.largo > 200) {
+      dimensionesErrors.largo = "Máximo 200cm";
+    }
+
+    if (formData.dimensiones.ancho < 0) {
+      dimensionesErrors.ancho = "No puede ser negativo";
+    } else if (formData.dimensiones.ancho > 200) {
+      dimensionesErrors.ancho = "Máximo 200cm";
+    }
+
+    if (formData.dimensiones.alto < 0) {
+      dimensionesErrors.alto = "No puede ser negativo";
+    } else if (formData.dimensiones.alto > 200) {
+      dimensionesErrors.alto = "Máximo 200cm";
+    }
+
+    if (formData.dimensiones.peso < 0) {
+      dimensionesErrors.peso = "No puede ser negativo";
+    } else if (formData.dimensiones.peso > 50) {
+      dimensionesErrors.peso = "Máximo 50kg";
+    }
+
+    if (Object.keys(dimensionesErrors).length > 0) {
+      newErrors.dimensiones = dimensionesErrors;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+
+    if (["largo", "ancho", "alto", "peso"].includes(name)) {
+      setFormData((prev) => ({
+        ...prev,
+        dimensiones: {
+          ...prev.dimensiones,
+          [name]: Math.max(0, Number(value)),
+        },
+      }));
+
+      // Limpiar errores de dimensiones
+      if (errors.dimensiones?.[name as keyof FormErrors["dimensiones"]]) {
+        setErrors((prev) => ({
+          ...prev,
+          dimensiones: { ...prev.dimensiones, [name]: undefined },
+        }));
+      }
+    } else if (["cantidad", "valor_declarado"].includes(name)) {
+      setFormData((prev) => ({ ...prev, [name]: Math.max(0, Number(value)) }));
+    } else if (name === "tipo_paquete") {
+      setFormData((prev) => ({
+        ...prev,
+        tipo_paquete: value as TipoPaquete,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      setMensaje({
+        text: "Por favor corrige los errores en el formulario",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      const nuevoPaquete = await createPaquete({
+        ...formData,
+        destinatario: {
+          nombre: formData.nombre.trim(),
+          apellido: formData.apellido.trim(),
+          direccion: formData.direccion.trim(),
+          correo: formData.correo.trim().toLowerCase(),
+          telefono: formData.telefono.trim(),
+        },
+      });
+
+      onSuccess(nuevoPaquete);
+      setMensaje({ text: "Paquete creado exitosamente", type: "success" });
+
+      // Resetear formulario
+      setFormData({
+        nombre: "",
+        apellido: "",
+        direccion: "",
+        correo: "",
+        telefono: "",
+        tipo_paquete: TipoPaquete.Pequeño,
+        cantidad: 1,
+        valor_declarado: 0,
+        dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+      });
+      setErrors({});
+
+      setTimeout(() => {
+        setMensaje(null);
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error("Error al crear paquete:", error);
+      setMensaje({ text: "Error al crear paquete", type: "error" });
+    }
+  };
+
+  const handleClose = () => {
+    if (!isLoading) {
+      setMensaje(null);
+      setErrors({});
+      onClose();
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={handleClose}>
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500/10 rounded-lg">
+            <Add className="text-blue-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Agregar nuevo paquete
+          </h3>
+        </div>
+
+        {mensaje && (
+          <Alert
+            variant={mensaje.type}
+            title={mensaje.type === "success" ? "Éxito" : "Error"}
+            message={mensaje.text}
+            className="mb-4"
+          />
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Datos del destinatario */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Datos del destinatario
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Nombre *</Label>
+                <Input
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleInputChange}
+                  className={errors.nombre ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.nombre && (
+                  <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
+                )}
+              </div>
+
+              <div>
+                <Label>Apellido *</Label>
+                <Input
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleInputChange}
+                  className={errors.apellido ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.apellido && (
+                  <p className="text-red-500 text-xs mt-1">{errors.apellido}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <Label>Dirección *</Label>
+              <Input
+                name="direccion"
+                value={formData.direccion}
+                onChange={handleInputChange}
+                placeholder="Ej: Calle 123 #45-67, Bogotá"
+                className={errors.direccion ? "border-red-500" : ""}
+                disabled={isLoading}
+              />
+              {errors.direccion && (
+                <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <Label>Correo electrónico *</Label>
+                <Input
+                  type="email"
+                  name="correo"
+                  value={formData.correo}
+                  onChange={handleInputChange}
+                  placeholder="ejemplo@correo.com"
+                  className={errors.correo ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.correo && (
+                  <p className="text-red-500 text-xs mt-1">{errors.correo}</p>
+                )}
+              </div>
+
+              <div>
+                <Label>Teléfono *</Label>
+                <Input
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleInputChange}
+                  placeholder="3001234567"
+                  className={errors.telefono ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.telefono && (
+                  <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Información del paquete */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Información del paquete
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label>Tipo de paquete</Label>
+                <select
+                  name="tipo_paquete"
+                  value={formData.tipo_paquete}
+                  onChange={handleInputChange}
+                  className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  disabled={isLoading}
+                >
+                  {Object.values(TipoPaquete).map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {tipo}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Cantidad *</Label>
+                <Input
+                  type="number"
+                  name="cantidad"
+                  value={formData.cantidad}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="100"
+                  className={errors.cantidad ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.cantidad && (
+                  <p className="text-red-500 text-xs mt-1">{errors.cantidad}</p>
+                )}
+              </div>
+
+              <div>
+                <Label>Valor declarado (COP)</Label>
+                <Input
+                  type="number"
+                  name="valor_declarado"
+                  value={formData.valor_declarado}
+                  onChange={handleInputChange}
+                  min="0"
+                  step={1000}
+                  className={errors.valor_declarado ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.valor_declarado && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.valor_declarado}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Dimensiones del paquete */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Dimensiones del paquete
+            </h4>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <Label>Largo (cm)</Label>
+                <Input
+                  type="number"
+                  name="largo"
+                  value={formData.dimensiones.largo}
+                  onChange={handleInputChange}
+                  min="0"
+                  step={0.1}
+                  className={errors.dimensiones?.largo ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.dimensiones?.largo && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.dimensiones.largo}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>Ancho (cm)</Label>
+                <Input
+                  type="number"
+                  name="ancho"
+                  value={formData.dimensiones.ancho}
+                  onChange={handleInputChange}
+                  min="0"
+                  step={0.1}
+                  className={errors.dimensiones?.ancho ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.dimensiones?.ancho && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.dimensiones.ancho}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>Alto (cm)</Label>
+                <Input
+                  type="number"
+                  name="alto"
+                  value={formData.dimensiones.alto}
+                  onChange={handleInputChange}
+                  min="0"
+                  step={0.1}
+                  className={errors.dimensiones?.alto ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.dimensiones?.alto && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.dimensiones.alto}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>Peso (kg)</Label>
+                <Input
+                  type="number"
+                  name="peso"
+                  value={formData.dimensiones.peso}
+                  onChange={handleInputChange}
+                  min="0"
+                  step={0.1}
+                  className={errors.dimensiones?.peso ? "border-red-500" : ""}
+                  disabled={isLoading}
+                />
+                {errors.dimensiones?.peso && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.dimensiones.peso}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Botones */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-w-[120px]"
+            >
+              {isLoading ? "Creando..." : "Crear paquete"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Modal>
+  );
+};
+
+export default ModalAgregarPaquete;
