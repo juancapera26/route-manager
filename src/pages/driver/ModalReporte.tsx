@@ -6,11 +6,23 @@ import {
   Button,
   IconButton,
   TextField,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 // ✅ Importamos lista externa
 import PALABRAS_PROHIBIDAS from "../../data/palabrasProhibidas.json";
+
+interface Reporte {
+  descripcion: string;
+  archivo?: File | null;
+  fecha: string;
+  estado: "pendiente" | "enviado" | "rechazado";
+}
 
 interface ModalReporteProps {
   isOpen: boolean;
@@ -22,12 +34,14 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
 
   const [descripcion, setDescripcion] = useState("");
   const [archivo, setArchivo] = useState<File | null>(null);
-  const [step, setStep] = useState<"form" | "confirm" | "success">("form");
+  const [step, setStep] = useState<"form" | "confirm" | "success" | "historial">("form"); 
+  // 👆 Agregamos nuevo paso "historial"
   const [error, setError] = useState("");
+  const [reportes, setReportes] = useState<Reporte[]>([]); 
+  // 👆 Lista local de reportes enviados (simulación antes de backend)
 
   // Validar y pasar a confirmación
   const handleEnviar = () => {
-    // 🔍 Recorremos lista y verificamos si alguna palabra está en la descripción
     const contieneProhibidas = PALABRAS_PROHIBIDAS.some((p) =>
       descripcion.toLowerCase().includes(p.toLowerCase())
     );
@@ -41,16 +55,21 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
     setStep("confirm");
   };
 
-  // Confirmar y enviar reporte
+  // Confirmar y guardar reporte
   const handleConfirmarEnvio = () => {
-    const nuevoReporte = {
+    const nuevoReporte: Reporte = {
       descripcion,
       archivo,
-      fecha: new Date().toISOString(),
-      estado: "enviado" as const,
+      fecha: new Date().toLocaleDateString(),
+      estado: "enviado",
     };
 
-    console.log("Reporte generado:", nuevoReporte);
+    // ✅ Guardamos en memoria local
+    setReportes((prev) => [...prev, nuevoReporte]);
+
+    // Reseteamos formulario
+    setDescripcion("");
+    setArchivo(null);
     setStep("success");
   };
 
@@ -67,7 +86,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
           bgcolor: "rgba(0,0,0,0.5)",
           zIndex: 50,
         }}
-        onClick={onClose} // clic afuera cierra modal
+        onClick={onClose}
       />
 
       {/* Ventana modal */}
@@ -143,6 +162,15 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
             >
               Enviar
             </Button>
+
+            {/* ✅ Nuevo botón para historial */}
+            <Button
+              variant="text"
+              sx={{ mt: 0.5 }}
+              onClick={() => setStep("historial")}
+            >
+              Ver mis reportes
+            </Button>
           </>
         )}
 
@@ -179,6 +207,59 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
             <Typography variant="h6" color="success.main" fontWeight="600">
               ¡Tu reporte ha sido enviado correctamente!
             </Typography>
+
+            {/* ✅ Botón para ver historial tras enviar */}
+            <Button
+              variant="text"
+              sx={{ mt: 2 }}
+              onClick={() => setStep("historial")}
+            >
+              Ver mis reportes
+            </Button>
+          </Box>
+        )}
+
+        {/* Paso 4: Historial */}
+        {step === "historial" && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Mis reportes
+            </Typography>
+
+            {reportes.length === 0 ? (
+              <Typography color="text.secondary">
+                No tienes reportes...
+              </Typography>
+            ) : (
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Fecha</TableCell>
+                    <TableCell>Descripción</TableCell>
+                    <TableCell>Evidencia</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {reportes.map((r, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{r.fecha}</TableCell>
+                      <TableCell>{r.descripcion}</TableCell>
+                      <TableCell>
+                        {r.archivo ? r.archivo.name : "NO CONTIENE"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+
+            <Button
+              variant="outlined"
+              sx={{ mt: 2 }}
+              onClick={() => setStep("form")}
+            >
+              Hacer nuevo reporte
+            </Button>
           </Box>
         )}
       </Paper>

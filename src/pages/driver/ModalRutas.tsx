@@ -25,6 +25,7 @@ enum Steps {
 
 const ModalRutas: React.FC<ModalRutasProps> = ({
   isOpen,
+  onClose,
   isExpanded,
   isHovered,
   isMobileOpen,
@@ -147,28 +148,31 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         }}
       >
         <IconButton
-          onClick={() => {
-            const confirmar = window.confirm(
-              "¿Está seguro que desea cancelar la ruta y volver a ingresar el manifiesto?"
-            );
+  onClick={() => {
+    if (activeStep === Steps.Formulario) {
+      // 👉 Si estoy en formulario, cierro modal
+      onClose();
+    } else {
+      // 👉 Si estoy en otra vista, pregunto antes de volver al formulario
+      const confirmar = window.confirm(
+        "¿Está seguro que desea cancelar la ruta y volver a ingresar el manifiesto?"
+      );
 
-            if (confirmar) {
-              // 🔹 Limpiamos todo y volvemos al formulario
-              setCodigo("");
-              setPaquetes([]);
-              setCurrentIndex(0);
-              setMostrarLetras(false);
-              setMensajeError("");
-              setActiveStep(Steps.Formulario);
+      if (confirmar) {
+        setCodigo("");
+        setPaquetes([]);
+        setCurrentIndex(0);
+        setMostrarLetras(false);
+        setMensajeError("");
+        setActiveStep(Steps.Formulario);
+      }
+    }
+  }}
+  color="error"
+>
+  <CloseIcon />
+</IconButton>
 
-              // ❌ No cerramos el modal
-              // onClose();
-            }
-          }}
-          color="error"
-        >
-          <CloseIcon />
-        </IconButton>
       </Box>
 
       {views[activeStep]}
