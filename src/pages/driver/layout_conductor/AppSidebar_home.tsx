@@ -37,12 +37,12 @@ const AppSidebar: React.FC = () => {
     {
       icon: <PlaceIcon />,
       name: "Rutas",
-      action: () => setModalRutasOpen(true), // 👈 forzar apertura
+      action: () => setModalRutasOpen((prev) => !prev),
     },
     {
       name: "Historial",
       icon: <ArticleIcon />,
-      action: () => setHistorialPanelOpen(true),
+      action: () => setHistorialPanelOpen((prev) => !prev),
     },
     {
       name: "Reporte",
