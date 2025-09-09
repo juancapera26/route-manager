@@ -11,7 +11,7 @@ import { Add } from "@mui/icons-material"; // Icono de Material UI
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (nuevo: Paquete) => void;
+  onSuccess: () => void;
   isLoading?: boolean;
 }
 
@@ -117,8 +117,8 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     }
 
     // Validar valor declarado
-    if (formData.valor_declarado < 0) {
-      newErrors.valor_declarado = "El valor no puede ser negativo";
+    if (formData.valor_declarado <= 0) {
+      newErrors.valor_declarado = "La cantidad debe ser mayor a 0";
     } else if (formData.valor_declarado > 10000000) {
       newErrors.valor_declarado = "El valor declarado es muy alto";
     }
@@ -126,26 +126,26 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     // Validar dimensiones
     const dimensionesErrors: FormErrors["dimensiones"] = {};
 
-    if (formData.dimensiones.largo < 0) {
-      dimensionesErrors.largo = "No puede ser negativo";
+    if (formData.dimensiones.largo <= 0) {
+      dimensionesErrors.largo = "La cantidad debe ser mayor a 0";
     } else if (formData.dimensiones.largo > 200) {
       dimensionesErrors.largo = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.ancho < 0) {
-      dimensionesErrors.ancho = "No puede ser negativo";
+    if (formData.dimensiones.ancho <= 0) {
+      dimensionesErrors.ancho = "La cantidad debe ser mayor a 0";
     } else if (formData.dimensiones.ancho > 200) {
       dimensionesErrors.ancho = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.alto < 0) {
-      dimensionesErrors.alto = "No puede ser negativo";
+    if (formData.dimensiones.alto <= 0) {
+      dimensionesErrors.alto = "La cantidad debe ser mayor a 0";
     } else if (formData.dimensiones.alto > 200) {
       dimensionesErrors.alto = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.peso < 0) {
-      dimensionesErrors.peso = "No puede ser negativo";
+    if (formData.dimensiones.peso <= 0) {
+      dimensionesErrors.peso = "La cantidad debe ser mayor a 0";
     } else if (formData.dimensiones.peso > 50) {
       dimensionesErrors.peso = "Máximo 50kg";
     }
@@ -198,7 +198,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
       setMensaje({
         text: "Por favor corrige los errores en el formulario",
@@ -206,9 +205,8 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       });
       return;
     }
-
     try {
-      const nuevoPaquete = await createPaquete({
+      await createPaquete({
         ...formData,
         destinatario: {
           nombre: formData.nombre.trim(),
@@ -218,8 +216,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           telefono: formData.telefono.trim(),
         },
       });
-
-      onSuccess(nuevoPaquete);
+      onSuccess(); // Solo notifica que la operación fue un éxito
       setMensaje({ text: "Paquete creado exitosamente", type: "success" });
 
       // Resetear formulario
