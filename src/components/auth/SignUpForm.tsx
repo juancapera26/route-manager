@@ -70,6 +70,8 @@ export default function SignUpForm() {
     if (formData.password.length < 6) return "La contraseña debe tener al menos 6 caracteres";
     if (formData.password !== formData.repetirPassword) return "Las contraseñas no coinciden";
     if (!isChecked) return "Debe aceptar los términos y condiciones";
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
+    if (!hasSpecialChar) return "La contraseña debe contener al menos un carácter especial";
 
     return null;
   };
