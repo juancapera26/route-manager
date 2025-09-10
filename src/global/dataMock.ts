@@ -282,6 +282,13 @@ export const contarNotificacionesNoLeidas = () =>
 
 
 
+
+
+
+
+
+
+
 // ------ TIPADOS Modulos ------
 
 // Paquetes
@@ -338,7 +345,6 @@ export interface Paquete {
   imagen_adjunta?: string;
 }
 
-
 // Conductores
 // =====================
 export enum ConductorEstado {
@@ -349,7 +355,7 @@ export enum ConductorEstado {
 
 export interface HorarioConductor {
   inicio: string; // ISO
-  fin: string;   // ISO
+  fin: string; // ISO
 }
 
 export interface Conductor {
@@ -369,18 +375,18 @@ export interface Conductor {
   documento: string;
 }
 
-
 // Rutas
 // =====================
 export enum RutaEstado {
   Pendiente = "Pendiente",
+  asignada = "Asignada",
   Completada = "Completada",
   Fallida = "Fallida",
 }
 
 export interface HorarioRuta {
   inicio: string; // ISO
-  fin: string;    // ISO
+  fin: string; // ISO
 }
 
 export enum ZonaRuta {
@@ -397,12 +403,11 @@ export interface Ruta {
   horario: HorarioRuta;
   zona: ZonaRuta;
   fecha_registro: string; // ISO
-  estado: RutaEstado
+  estado: RutaEstado;
 
   // Detalles de la ruta
   puntos_entrega: string; // a futuro: coordenadas [{lat, lng, direccion}]
 }
-
 
 // Vehículos
 // =====================
@@ -423,9 +428,7 @@ export interface Vehiculo {
   fecha_mantenimiento: string; // ISO
 }
 
-
-
-// --- DATOS MOCK --- 
+// --- DATOS MOCK ---
 
 // Destinatario
 export const mockDestinatarios: Destinatario[] = [
@@ -434,22 +437,22 @@ export const mockDestinatarios: Destinatario[] = [
     apellido: "López",
     direccion: "Av. Siempre Viva 742",
     correo: "ana.lopez@ejemplo.com",
-    telefono: "310-555-0101"
+    telefono: "310-555-0101",
   },
   {
     nombre: "Luis",
     apellido: "Gómez",
     direccion: "Carrera 5 #12-34",
     correo: "luis.gomez@ejemplo.com",
-    telefono: "310-555-0102"
+    telefono: "310-555-0102",
   },
   {
     nombre: "Sofía",
     apellido: "Ramírez",
     direccion: "Calle 100 #25-67",
     correo: "sofia.ramirez@ejemplo.com",
-    telefono: "310-555-0103"
-  }
+    telefono: "310-555-0103",
+  },
 ];
 // Paquetes
 export const mockPaquetes: Paquete[] = [
@@ -464,7 +467,7 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Grande,
     cantidad: 1,
     valor_declarado: 150000,
-    dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 }
+    dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 },
   },
   {
     id_paquete: "PAQ-002",
@@ -477,7 +480,7 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Fragil,
     cantidad: 1,
     valor_declarado: 50000,
-    dimensiones: { largo: 15, ancho: 10, alto: 5, peso: 0.5 }
+    dimensiones: { largo: 15, ancho: 10, alto: 5, peso: 0.5 },
   },
   {
     id_paquete: "PAQ-003",
@@ -492,7 +495,7 @@ export const mockPaquetes: Paquete[] = [
     valor_declarado: 80000,
     dimensiones: { largo: 25, ancho: 15, alto: 8, peso: 1.5 },
     observacion_conductor: "Reibido por el destinatario",
-    imagen_adjunta: "/evidencias/paq-003.jpg"
+    imagen_adjunta: "/evidencias/paq-003.jpg",
   },
   // NUEVOS
   {
@@ -506,7 +509,7 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Refrigerado,
     cantidad: 3,
     valor_declarado: 120000,
-    dimensiones: { largo: 40, ancho: 25, alto: 20, peso: 5 }
+    dimensiones: { largo: 40, ancho: 25, alto: 20, peso: 5 },
   },
   {
     id_paquete: "PAQ-005",
@@ -520,8 +523,9 @@ export const mockPaquetes: Paquete[] = [
     cantidad: 1,
     valor_declarado: 20000,
     dimensiones: { largo: 10, ancho: 8, alto: 5, peso: 0.3 },
-    observacion_conductor: "Habia paro en la nacho, la via estaba bloqueada y por ende no pude entregar."
-  }
+    observacion_conductor:
+      "Habia paro en la nacho, la via estaba bloqueada y por ende no pude entregar.",
+  },
 ];
 
 // Ajusta rutas para reflejar los nuevos pedidos
@@ -534,21 +538,29 @@ export const mockRutas: Ruta[] = [
     zona: ZonaRuta.Norte,
     fecha_registro: "2025-09-04T08:30:00Z",
     estado: RutaEstado.Pendiente, // <-- NUEVO
-    puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30"
+    puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30",
   },
   {
     id_ruta: "RTA-002",
+    id_conductor_asignado: null,
+    paquetes_asignados: [],
+    horario: { inicio: "2025-09-05T10:00:00Z", fin: "2025-09-05T15:00:00Z" },
+    zona: ZonaRuta.Norte,
+    fecha_registro: "2025-09-05T09:00:00Z",
+    estado: RutaEstado.Pendiente,
+    puntos_entrega: "",
+  },
+  {
+    id_ruta: "RTA-003",
     id_conductor_asignado: "CON-001",
     paquetes_asignados: ["PAQ-005"],
     horario: { inicio: "2025-09-04T10:00:00Z", fin: "2025-09-04T15:00:00Z" },
     zona: ZonaRuta.Sur,
     fecha_registro: "2025-09-04T09:00:00Z",
     estado: RutaEstado.Pendiente, // <-- NUEVO
-    puntos_entrega: "Av. Siempre Viva 742"
-  }
+    puntos_entrega: "Av. Siempre Viva 742",
+  },
 ];
-
-
 
 // Conductores
 export const mockConductores: Conductor[] = [
@@ -565,8 +577,8 @@ export const mockConductores: Conductor[] = [
     documento: "1018456789",
     horario: {
       inicio: "2025-09-04T08:00:00Z",
-      fin: "2025-09-04T17:00:00Z"
-    }
+      fin: "2025-09-04T17:00:00Z",
+    },
   },
   {
     id_conductor: "CON-002",
@@ -581,10 +593,10 @@ export const mockConductores: Conductor[] = [
     documento: "1018987654",
     horario: {
       inicio: "2025-09-04T09:00:00Z",
-      fin: "2025-09-04T18:00:00Z"
-    }
-  }
-]
+      fin: "2025-09-04T18:00:00Z",
+    },
+  },
+];
 
 // Vehiculos
 export const mockVehiculos: Vehiculo[] = [
@@ -593,20 +605,20 @@ export const mockVehiculos: Vehiculo[] = [
     placa: "ABC-123",
     tipo_vehiculo: "Camioneta",
     estado: VehiculoEstado.Disponible,
-    fecha_mantenimiento: "2025-08-01T00:00:00Z"
+    fecha_mantenimiento: "2025-08-01T00:00:00Z",
   },
   {
     id_vehiculo: "VEH-002",
     placa: "DEF-456",
     tipo_vehiculo: "Furgón",
     estado: VehiculoEstado.EnRuta,
-    fecha_mantenimiento: "2025-07-15T00:00:00Z"
+    fecha_mantenimiento: "2025-07-15T00:00:00Z",
   },
   {
     id_vehiculo: "VEH-003",
     placa: "GHI-789",
     tipo_vehiculo: "Moto",
     estado: VehiculoEstado.Disponible,
-    fecha_mantenimiento: "2025-09-02T00:00:00Z"
-  }
+    fecha_mantenimiento: "2025-09-02T00:00:00Z",
+  },
 ];
