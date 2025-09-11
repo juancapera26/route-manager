@@ -537,7 +537,7 @@ export const mockRutas: Ruta[] = [
     horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T14:00:00Z" },
     zona: ZonaRuta.Norte,
     fecha_registro: "2025-09-04T08:30:00Z",
-    estado: RutaEstado.Pendiente, // <-- NUEVO
+    estado: RutaEstado.Pendiente,
     puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30",
   },
   {
