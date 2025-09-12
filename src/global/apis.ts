@@ -20,15 +20,6 @@ export {
   FIREBASE_MEASUREMENT_ID,
 };
 
-
-
-
-
-
-
-
-
-
 // ---- Api simulada, Gestión de Paquetes ----
 import {
   mockPaquetes,
@@ -41,7 +32,6 @@ import {
   ConductorEstado,
   RutaEstado,
 } from "./dataMock";
-
 
 const SIMULATED_DELAY = 120;
 const simulateRequest = <T>(data: T): Promise<T> =>

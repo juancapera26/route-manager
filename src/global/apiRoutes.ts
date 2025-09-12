@@ -4,7 +4,7 @@ import {
   mockConductores,
   Ruta,
   RutaEstado,
-  ConductorEstado,
+  ConductorEstado
 } from "./dataMock";
 
 const SIMULATED_DELAY = 120;

@@ -12,6 +12,7 @@ import {
   RutaEstado,
   Conductor,
   mockConductores,
+  mockVehiculos,
 } from "../../global/dataMock";
 import {
   createRuta,
@@ -644,8 +645,10 @@ const RouteManagement: React.FC = () => {
       <ModalAsignarConductor
         isOpen={modalState.isOpen && modalState.action === "assign"}
         onClose={cerrarModal}
-        onConfirm={handleConfirmarAsignacion}
-        conductores={conductores}
+        onConfirm={handleConfirmarAsignacion} // 👈 Tu función ya existente
+        conductores={mockConductores}
+        vehiculos={mockVehiculos} // 👈 Solo falta esta constante
+        titulo="Asignar Conductor a Ruta"
       />
       <ModalDetallesRuta
         isOpen={modalState.isOpen && modalState.action === "details"}
