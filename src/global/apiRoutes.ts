@@ -4,7 +4,6 @@ import {
   mockConductores,
   Ruta,
   RutaEstado,
-  Conductor,
   ConductorEstado,
 } from "./dataMock";
 
@@ -135,15 +134,14 @@ export const completarRuta = async (idRuta: string): Promise<Result> => {
 
   ruta.estado = RutaEstado.Completada;
 
-  // liberar conductor
   if (ruta.id_conductor_asignado) {
     const conductor = getConductorById(ruta.id_conductor_asignado);
     if (conductor) conductor.estado = ConductorEstado.Disponible;
-    ruta.id_conductor_asignado = null;
   }
 
   return simulateRequest({ success: true, message: "Ruta completada." });
 };
+
 
 export const marcarRutaFallida = async (idRuta: string): Promise<Result> => {
   const rIdx = findRutaIndex(idRuta);
@@ -153,12 +151,12 @@ export const marcarRutaFallida = async (idRuta: string): Promise<Result> => {
   const ruta = mockRutas[rIdx];
   ruta.estado = RutaEstado.Fallida;
 
-  // liberar conductor
   if (ruta.id_conductor_asignado) {
     const conductor = getConductorById(ruta.id_conductor_asignado);
     if (conductor) conductor.estado = ConductorEstado.Disponible;
-    ruta.id_conductor_asignado = null;
+    // Ojo: NO borramos ruta.id_conductor_asignado
   }
 
   return simulateRequest({ success: true, message: "Ruta marcada como fallida." });
 };
+
