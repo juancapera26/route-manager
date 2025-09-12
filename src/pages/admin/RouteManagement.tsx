@@ -654,7 +654,6 @@ const RouteManagement: React.FC = () => {
         isOpen={modalState.isOpen && modalState.action === "details"}
         onClose={cerrarModal}
         ruta={detallesRuta}
-        conductores={conductores}
       />
     </div>
   );
