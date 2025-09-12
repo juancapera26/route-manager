@@ -274,14 +274,6 @@ export const obtenerNotificacionesNoLeidas = () =>
 export const contarNotificacionesNoLeidas = () =>
   obtenerNotificacionesNoLeidas().length;
 
-
-
-
-
-
-
-
-
 // ------ TIPADOS Modulos ------
 
 // Paquetes
@@ -338,7 +330,6 @@ export interface Paquete {
   imagen_adjunta?: string;
 }
 
-
 // Conductores
 // =====================
 export enum ConductorEstado {
@@ -349,7 +340,7 @@ export enum ConductorEstado {
 
 export interface HorarioConductor {
   inicio: string; // ISO
-  fin: string;   // ISO
+  fin: string; // ISO
 }
 
 export interface Conductor {
@@ -369,18 +360,18 @@ export interface Conductor {
   documento: string;
 }
 
-
 // Rutas
 // =====================
 export enum RutaEstado {
   Pendiente = "Pendiente",
+  asignada = "Asignada",
   Completada = "Completada",
   Fallida = "Fallida",
 }
 
 export interface HorarioRuta {
   inicio: string; // ISO
-  fin: string;    // ISO
+  fin: string; // ISO
 }
 
 export enum ZonaRuta {
@@ -397,12 +388,11 @@ export interface Ruta {
   horario: HorarioRuta;
   zona: ZonaRuta;
   fecha_registro: string; // ISO
-  estado: RutaEstado
+  estado: RutaEstado;
 
   // Detalles de la ruta
   puntos_entrega: string; // a futuro: coordenadas [{lat, lng, direccion}]
 }
-
 
 // Vehículos
 // =====================
@@ -423,40 +413,44 @@ export interface Vehiculo {
   fecha_mantenimiento: string; // ISO
 }
 
-
-
-// --- DATOS MOCK --- 
-
-// Destinatario
+// === Destinatarios ===
 export const mockDestinatarios: Destinatario[] = [
   {
-    nombre: "Ana",
-    apellido: "López",
+    nombre: "Maria",
+    apellido: "Liliana",
     direccion: "Av. Siempre Viva 742",
-    correo: "ana.lopez@ejemplo.com",
-    telefono: "310-555-0101"
+    correo: "maria@gmail.com",
+    telefono: "310-555-0101",
   },
   {
-    nombre: "Luis",
-    apellido: "Gómez",
+    nombre: "Linus",
+    apellido: "Torvals",
     direccion: "Carrera 5 #12-34",
     correo: "luis.gomez@ejemplo.com",
-    telefono: "310-555-0102"
+    telefono: "310-555-0102",
   },
   {
-    nombre: "Sofía",
-    apellido: "Ramírez",
+    nombre: "Laura",
+    apellido: "Sofia",
     direccion: "Calle 100 #25-67",
-    correo: "sofia.ramirez@ejemplo.com",
-    telefono: "310-555-0103"
-  }
+    correo: "laurasofiasanchezorozco8@gmail.com",
+    telefono: "310-555-0103",
+  },
+  {
+    nombre: "Johann",
+    apellido: "Gómez",
+    direccion: "Cra. 45 #80-12",
+    correo: "johanns.gomeze@gmail.com",
+    telefono: "310-555-0104",
+  },
 ];
-// Paquetes
+
+// === Paquetes ===
 export const mockPaquetes: Paquete[] = [
   {
     id_paquete: "PAQ-001",
-    id_rutas_asignadas: [],
-    id_conductor_asignado: null,
+    id_rutas_asignadas: [], // aún no asignado
+    id_conductor_asignado: null, // sin conductor
     destinatario: mockDestinatarios[0],
     fecha_registro: "2025-09-03T10:00:00Z",
     fecha_entrega: null,
@@ -464,12 +458,12 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Grande,
     cantidad: 1,
     valor_declarado: 150000,
-    dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 }
+    dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 },
   },
   {
     id_paquete: "PAQ-002",
     id_rutas_asignadas: ["RTA-001"],
-    id_conductor_asignado: "CON-002",
+    id_conductor_asignado: null, // asignado a ruta, pero aún no hay conductor
     destinatario: mockDestinatarios[1],
     fecha_registro: "2025-09-03T12:30:00Z",
     fecha_entrega: null,
@@ -477,7 +471,7 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Fragil,
     cantidad: 1,
     valor_declarado: 50000,
-    dimensiones: { largo: 15, ancho: 10, alto: 5, peso: 0.5 }
+    dimensiones: { largo: 15, ancho: 10, alto: 5, peso: 0.5 },
   },
   {
     id_paquete: "PAQ-003",
@@ -485,16 +479,15 @@ export const mockPaquetes: Paquete[] = [
     id_conductor_asignado: "CON-002",
     destinatario: mockDestinatarios[2],
     fecha_registro: "2025-09-03T14:45:00Z",
-    fecha_entrega: "2025-09-04T12:10:00Z", // para que se vea en la tabla
+    fecha_entrega: "2025-09-04T12:10:00Z",
     estado: PaquetesEstados.Entregado,
     tipo_paquete: TipoPaquete.Mediano,
     cantidad: 2,
     valor_declarado: 80000,
     dimensiones: { largo: 25, ancho: 15, alto: 8, peso: 1.5 },
-    observacion_conductor: "Reibido por el destinatario",
-    imagen_adjunta: "/evidencias/paq-003.jpg"
+    observacion_conductor: "Recibido por el destinatario",
+    imagen_adjunta: "/evidencias/paq-003.jpg",
   },
-  // NUEVOS
   {
     id_paquete: "PAQ-004",
     id_rutas_asignadas: ["RTA-001"],
@@ -506,7 +499,7 @@ export const mockPaquetes: Paquete[] = [
     tipo_paquete: TipoPaquete.Refrigerado,
     cantidad: 3,
     valor_declarado: 120000,
-    dimensiones: { largo: 40, ancho: 25, alto: 20, peso: 5 }
+    dimensiones: { largo: 40, ancho: 25, alto: 20, peso: 5 },
   },
   {
     id_paquete: "PAQ-005",
@@ -520,58 +513,29 @@ export const mockPaquetes: Paquete[] = [
     cantidad: 1,
     valor_declarado: 20000,
     dimensiones: { largo: 10, ancho: 8, alto: 5, peso: 0.3 },
-    observacion_conductor: "Habia paro en la nacho, la via estaba bloqueada y por ende no pude entregar."
-  }
-];
-
-// Ajusta rutas para reflejar los nuevos pedidos
-export const mockRutas: Ruta[] = [
-  {
-    id_ruta: "RTA-001",
-    id_conductor_asignado: "CON-002",
-    paquetes_asignados: ["PAQ-002", "PAQ-003", "PAQ-004"],
-    horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T14:00:00Z" },
-    zona: ZonaRuta.Norte,
-    fecha_registro: "2025-09-04T08:30:00Z",
-    estado: RutaEstado.Pendiente, // <-- NUEVO
-    puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30"
+    observacion_conductor: "La vía estaba bloqueada, no se pudo entregar.",
   },
-  {
-    id_ruta: "RTA-002",
-    id_conductor_asignado: "CON-001",
-    paquetes_asignados: ["PAQ-005"],
-    horario: { inicio: "2025-09-04T10:00:00Z", fin: "2025-09-04T15:00:00Z" },
-    zona: ZonaRuta.Sur,
-    fecha_registro: "2025-09-04T09:00:00Z",
-    estado: RutaEstado.Pendiente, // <-- NUEVO
-    puntos_entrega: "Av. Siempre Viva 742"
-  }
 ];
 
-
-
-// Conductores
+// === Conductores ===
 export const mockConductores: Conductor[] = [
   {
     id_conductor: "CON-001",
-    nombre: "Juan",
-    apellido: "Pérez",
-    estado: ConductorEstado.Disponible,
+    nombre: "Cesar",
+    apellido: "Gómez",
+    estado: ConductorEstado.EnRuta,
     id_vehiculo_asignado: "VEH-001",
     correo: "juan.perez@empresa.com",
     nombre_empresa: "Logística Rápida",
     telefono: "310-123-4567",
     tipo_documento: "Cédula de Ciudadanía",
     documento: "1018456789",
-    horario: {
-      inicio: "2025-09-04T08:00:00Z",
-      fin: "2025-09-04T17:00:00Z"
-    }
+    horario: { inicio: "2025-09-04T08:00:00Z", fin: "2025-09-04T17:00:00Z" },
   },
   {
     id_conductor: "CON-002",
-    nombre: "María",
-    apellido: "García",
+    nombre: "Kevin",
+    apellido: "David",
     estado: ConductorEstado.EnRuta,
     id_vehiculo_asignado: "VEH-002",
     correo: "maria.garcia@empresa.com",
@@ -579,34 +543,112 @@ export const mockConductores: Conductor[] = [
     telefono: "310-987-6543",
     tipo_documento: "Cédula de Ciudadanía",
     documento: "1018987654",
-    horario: {
-      inicio: "2025-09-04T09:00:00Z",
-      fin: "2025-09-04T18:00:00Z"
-    }
-  }
-]
+    horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T18:00:00Z" },
+  },
+  {
+    id_conductor: "CON-003",
+    nombre: "Jared",
+    apellido: "Estrada",
+    estado: ConductorEstado.Disponible,
+    id_vehiculo_asignado: "VEH-003",
+    correo: "carlos.torres@empresa.com",
+    nombre_empresa: "Transportes Seguros",
+    telefono: "310-555-0199",
+    tipo_documento: "Cédula de Ciudadanía",
+    documento: "1023456789",
+    horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T18:00:00Z" },
+  },
+    {
+    id_conductor: "CON-004",
+    nombre: "Dayanna",
+    apellido: "Estrada",
+    estado: ConductorEstado.Disponible,
+    id_vehiculo_asignado: "VEH-002",
+    correo: "carlos.torres@empresa.com",
+    nombre_empresa: "Transportes Seguros",
+    telefono: "310-555-0199",
+    tipo_documento: "Cédula de Ciudadanía",
+    documento: "1023456789",
+  },
+    {
+    id_conductor: "CON-005",
+    nombre: "Adriana",
+    apellido: "Estrada",
+    estado: ConductorEstado.Disponible,
+    id_vehiculo_asignado: "VEH-001",
+    correo: "carlos.torres@empresa.com",
+    nombre_empresa: "Transportes Seguros",
+    telefono: "310-555-0199",
+    tipo_documento: "Cédula de Ciudadanía",
+    documento: "1023456789",
+  },
+];
 
-// Vehiculos
+// === Vehículos ===
 export const mockVehiculos: Vehiculo[] = [
   {
     id_vehiculo: "VEH-001",
     placa: "ABC-123",
     tipo_vehiculo: "Camioneta",
-    estado: VehiculoEstado.Disponible,
-    fecha_mantenimiento: "2025-08-01T00:00:00Z"
+    estado: VehiculoEstado.EnRuta, // porque CON-001 está en ruta
+    fecha_mantenimiento: "2025-08-01T00:00:00Z",
   },
   {
     id_vehiculo: "VEH-002",
     placa: "DEF-456",
     tipo_vehiculo: "Furgón",
-    estado: VehiculoEstado.EnRuta,
-    fecha_mantenimiento: "2025-07-15T00:00:00Z"
+    estado: VehiculoEstado.EnRuta, // porque CON-002 está en ruta
+    fecha_mantenimiento: "2025-07-15T00:00:00Z",
   },
   {
     id_vehiculo: "VEH-003",
     placa: "GHI-789",
     tipo_vehiculo: "Moto",
-    estado: VehiculoEstado.Disponible,
-    fecha_mantenimiento: "2025-09-02T00:00:00Z"
-  }
+    estado: VehiculoEstado.Disponible, // porque CON-003 está disponible
+    fecha_mantenimiento: "2025-09-02T00:00:00Z",
+  },
+];
+
+// === Rutas ===
+export const mockRutas: Ruta[] = [
+  {
+    id_ruta: "RTA-001",
+    id_conductor_asignado: null, // pendiente → sin conductor
+    paquetes_asignados: ["PAQ-002"], // ya tiene paquetes
+    horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T14:00:00Z" },
+    zona: ZonaRuta.Norte,
+    fecha_registro: "2025-09-04T08:30:00Z",
+    estado: RutaEstado.Pendiente,
+    puntos_entrega: "Calle 100 #25-67, Calle 80 #15-30",
+  },
+  {
+    id_ruta: "RTA-002",
+    id_conductor_asignado: "CON-001",
+    paquetes_asignados: ["PAQ-005"],
+    horario: { inicio: "2025-09-05T10:00:00Z", fin: "2025-09-05T15:00:00Z" },
+    zona: ZonaRuta.Sur,
+    fecha_registro: "2025-09-05T09:00:00Z",
+    estado: RutaEstado.Fallida,
+    puntos_entrega: "Av. Siempre Viva 742",
+  },
+  {
+    id_ruta: "RTA-003",
+    id_conductor_asignado: "CON-002",
+    paquetes_asignados: ["PAQ-003", "PAQ-004"],
+    horario: { inicio: "2025-09-06T08:00:00Z", fin: "2025-09-06T13:00:00Z" },
+    zona: ZonaRuta.Centro,
+    fecha_registro: "2025-09-06T07:30:00Z",
+    estado: RutaEstado.Completada,
+    puntos_entrega: "Cra. 45 #80-12",
+  },
+  {
+    id_ruta: "RTA-004",
+    id_conductor_asignado: "CON-003",
+    paquetes_asignados: ["PAQ-001"],
+    horario: { inicio: "2025-09-05T10:00:00Z", fin: "2025-09-05T15:00:00Z" },
+    zona: ZonaRuta.Sur,
+    fecha_registro: "2025-09-05T09:00:00Z",
+    estado: RutaEstado.asignada,
+    puntos_entrega: "calle 77sur",
+  },
 ];

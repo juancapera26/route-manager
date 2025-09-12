@@ -11,7 +11,6 @@ import {
   Conductor,
 } from "../../global/dataMock";
 import {
-  createPaquete,
   getPaquetes,
   assignPaquete,
   reassignPaquete,
@@ -38,7 +37,6 @@ import { Add } from "@mui/icons-material";
 
 // Nuevas importaciones para el filtro
 import { useEstadoFilter } from "../../hooks/useEstadoFilter";
-import EstadoFilter from "../../components/common/EstadoFilter";
 import {
   opcionesFiltorPaquetes,
   obtenerEstadoPaquete,
@@ -534,7 +532,7 @@ const PackagesManagement: React.FC = () => {
                             }
                             className="ml-2"
                           >
-                            Asignar
+                            Asignar ruta
                           </Button>
                         </>
                       )}

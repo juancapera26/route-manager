@@ -37,6 +37,7 @@ export const obtenerEstadoConductor = (conductor: Conductor): ConductorEstado =>
 export const opcionesFiltroRutas: OpcionesFiltro<RutaEstado> = [
   { valor: null, etiqueta: 'Todas' },
   { valor: RutaEstado.Pendiente, etiqueta: 'Pendientes' },
+  { valor: RutaEstado.asignada, etiqueta: "Asignadas"},
   { valor: RutaEstado.Completada, etiqueta: 'Completadas' },
   { valor: RutaEstado.Fallida, etiqueta: 'Fallidas' }
 ];
