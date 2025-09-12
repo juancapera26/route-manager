@@ -51,11 +51,6 @@ const navItems: NavItem[] = [
     path: "/admin/vehicles-management",
   },
   {
-    icon: <AddBoxIcon className="menu-item-icon-size fill-current" />,
-    name: "Registrar paquetes",
-    path: "/admin/register-packages",
-  },
-  {
     icon: <History className="menu-item-icon-size fill-current" />,
     name: "Historial de entregas",
     path: "/admin/delivery-history",
