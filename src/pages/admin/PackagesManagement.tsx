@@ -29,7 +29,7 @@ import {
   TableCell,
 } from "../../components/ui/table";
 import { Modal } from "../../components/ui/modal";
-import ModalAgregarPaquete from "../../components/admin/ModalAgregarPaquete";
+import ModalAgregarPaquete from "../../components/admin/packages/ModalAgregarPaquete";
 import Button from "../../components/ui/button/Button";
 import Badge from "../../components/ui/badge/Badge";
 import Alert from "../../components/ui/alert/Alert";

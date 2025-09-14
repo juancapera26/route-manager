@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Label from "../form/Label";
-import Input from "../form/input/InputField";
-import Alert from "../ui/alert/Alert"; // Asumiendo que Alert está en ui/
-import { createPaquete } from "../../global/apis";
-import { Paquete, TipoPaquete } from "../../global/dataMock";
+import { Modal } from "../../ui/modal";
+import Button from "../../ui/button/Button";
+import Label from "../../form/Label";
+import Input from "../../form/input/InputField";
+import Alert from "../../ui/alert/Alert"; // Asumiendo que Alert está en ui/
+import { createPaquete } from "../../../global/apis";
+import { Paquete, TipoPaquete } from "../../../global/dataMock";
 import { Add } from "@mui/icons-material"; // Icono de Material UI
 
 interface ModalAgregarPaqueteProps {

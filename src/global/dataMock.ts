@@ -276,6 +276,11 @@ export const contarNotificacionesNoLeidas = () =>
 
 // ------ TIPADOS Modulos ------
 
+// Empresa
+export enum Empresa {
+  Servientrega = "Servientrega",
+}
+
 // Paquetes
 // =====================
 export interface Destinatario {
@@ -353,8 +358,8 @@ export interface Conductor {
   id_vehiculo_asignado?: string;
 
   // Detalles del conductor
+  nombre_empresa: Empresa;
   correo: string;
-  nombre_empresa: string;
   telefono: string;
   tipo_documento: string;
   documento: string;
@@ -391,14 +396,13 @@ export interface Ruta {
   estado: RutaEstado;
 
   // Detalles de la ruta
-  puntos_entrega: string; // a futuro: coordenadas [{lat, lng, direccion}]
+  puntos_entrega: string;
 }
 
 // Vehículos
 // =====================
 export enum VehiculoEstado {
   Disponible = "Disponible",
-  EnRuta = "En ruta",
   NoDisponible = "No disponible",
 }
 
@@ -517,6 +521,7 @@ export const mockPaquetes: Paquete[] = [
   },
 ];
 
+
 // === Conductores ===
 export const mockConductores: Conductor[] = [
   {
@@ -525,8 +530,8 @@ export const mockConductores: Conductor[] = [
     apellido: "Gómez",
     estado: ConductorEstado.EnRuta,
     id_vehiculo_asignado: "VEH-001",
-    correo: "juan.perez@empresa.com",
-    nombre_empresa: "Logística Rápida",
+    nombre_empresa: Empresa.Servientrega,
+    correo: "cesar.gomez@servientrega.com",
     telefono: "310-123-4567",
     tipo_documento: "Cédula de Ciudadanía",
     documento: "1018456789",
@@ -538,8 +543,8 @@ export const mockConductores: Conductor[] = [
     apellido: "David",
     estado: ConductorEstado.EnRuta,
     id_vehiculo_asignado: "VEH-002",
-    correo: "maria.garcia@empresa.com",
-    nombre_empresa: "Entrega Express",
+    correo: "kevin.david@servientrega.com",
+    nombre_empresa: Empresa.Servientrega,
     telefono: "310-987-6543",
     tipo_documento: "Cédula de Ciudadanía",
     documento: "1018987654",
@@ -551,36 +556,36 @@ export const mockConductores: Conductor[] = [
     apellido: "Estrada",
     estado: ConductorEstado.Disponible,
     id_vehiculo_asignado: "VEH-003",
-    correo: "carlos.torres@empresa.com",
-    nombre_empresa: "Transportes Seguros",
+    correo: "jared.estrada@servientrega.com",
+    nombre_empresa: Empresa.Servientrega,
     telefono: "310-555-0199",
     tipo_documento: "Cédula de Ciudadanía",
     documento: "1023456789",
     horario: { inicio: "2025-09-04T09:00:00Z", fin: "2025-09-04T18:00:00Z" },
   },
-    {
+  {
     id_conductor: "CON-004",
     nombre: "Dayanna",
     apellido: "Estrada",
     estado: ConductorEstado.Disponible,
     id_vehiculo_asignado: "VEH-002",
-    correo: "carlos.torres@empresa.com",
-    nombre_empresa: "Transportes Seguros",
+    correo: "dayanna.estrada@servientrega.com",
+    nombre_empresa: Empresa.Servientrega,
     telefono: "310-555-0199",
     tipo_documento: "Cédula de Ciudadanía",
-    documento: "1023456789",
+    documento: "1023456790",
   },
-    {
+  {
     id_conductor: "CON-005",
     nombre: "Adriana",
     apellido: "Estrada",
     estado: ConductorEstado.Disponible,
     id_vehiculo_asignado: "VEH-001",
-    correo: "carlos.torres@empresa.com",
-    nombre_empresa: "Transportes Seguros",
+    correo: "adriana.estrada@servientrega.com",
+    nombre_empresa: Empresa.Servientrega,
     telefono: "310-555-0199",
     tipo_documento: "Cédula de Ciudadanía",
-    documento: "1023456789",
+    documento: "1023456791",
   },
 ];
 
@@ -590,14 +595,14 @@ export const mockVehiculos: Vehiculo[] = [
     id_vehiculo: "VEH-001",
     placa: "ABC-123",
     tipo_vehiculo: "Camioneta",
-    estado: VehiculoEstado.EnRuta, // porque CON-001 está en ruta
+    estado: VehiculoEstado.Disponible, // porque CON-001 está en ruta
     fecha_mantenimiento: "2025-08-01T00:00:00Z",
   },
   {
     id_vehiculo: "VEH-002",
     placa: "DEF-456",
     tipo_vehiculo: "Furgón",
-    estado: VehiculoEstado.EnRuta, // porque CON-002 está en ruta
+    estado: VehiculoEstado.Disponible, // porque CON-002 está en ruta
     fecha_mantenimiento: "2025-07-15T00:00:00Z",
   },
   {
