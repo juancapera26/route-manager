@@ -1,6 +1,7 @@
+// src/hooks/useManifiestos.ts
 import { useState } from "react";
 
-
+// Tipo definido dentro del manifiesto
 export interface Paquete {
   codigo_rastreo: string;
   direccion: string;
@@ -17,13 +18,11 @@ interface ApiResponse {
   paquetes: Paquete[];
 }
 
-
 export function useManifiestos() {
   const [data, setData] = useState<Paquete[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Llamada a la API
   const fetchManifiesto = async (codigo: string): Promise<Paquete[]> => {
     setLoading(true);
     setError(null);
@@ -33,9 +32,12 @@ export function useManifiestos() {
         `http://localhost:3000/api/manifiestos/${codigo}`
       );
       if (!res.ok) throw new Error("Manifiesto no encontrado");
+
       const result: ApiResponse = await res.json();
+
       if (!result.paquetes || result.paquetes.length === 0)
         throw new Error("Manifiesto no encontrado");
+
       setData(result.paquetes);
       return result.paquetes;
     } catch (err) {

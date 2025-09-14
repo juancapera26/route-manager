@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, IconButton } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Paquete } from "../../../../../hooks/useManifiestos";
+import { Paquete } from "../../../../hooks/useManifiestos";
 
 interface VistaMinimizadaProps {
   codigo: string;

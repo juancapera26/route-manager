@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import { useLocation, Link } from "react-router";
 import PlaceIcon from "@mui/icons-material/Place";
 import ArticleIcon from "@mui/icons-material/Article";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
 import { useSidebar } from "../../../context/SidebarContext";
-
-import ModalRutas from "../ModalRutas";
-import ModalHistorial from "../ModalHistorial";
 import { HorizontaLDots } from "../../../icons";
-import ModalReporte from "../ModalReporte";
+import ModalHistorial from "../modals/ModalHistorial";
+import ModalReporte from "../modals/ModalReporte";
+import ModalRutas from "../modals/ModalRutas";
 
 type SubItem = {
   name: string;
@@ -46,8 +45,8 @@ const AppSidebar: React.FC = () => {
     },
     {
       name: "Reporte",
-      icon: <InfoIcon/>,
-      action: () => setReporteOpen ((prev) => !prev),
+      icon: <InfoIcon />,
+      action: () => setReporteOpen((prev) => !prev),
     },
   ];
 
@@ -151,6 +150,7 @@ const AppSidebar: React.FC = () => {
         isExpanded={isExpanded}
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
+        onIniciarRutaEnDrive={() => {}}
       />
 
       <ModalHistorial
@@ -160,10 +160,10 @@ const AppSidebar: React.FC = () => {
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
       />
-      <ModalReporte
+       <ModalReporte
         isOpen={isReporteOpen}
         onClose={() => setReporteOpen(false)}
-      />
+      /> 
     </>
   );
 };

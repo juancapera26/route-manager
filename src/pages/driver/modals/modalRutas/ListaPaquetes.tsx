@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Paper, Button } from "@mui/material";
-import { Paquete } from "../../../../../hooks/useManifiestos";
+import { Paquete } from "../../../../hooks/useManifiestos";
 
 interface ListaPaquetesProps {
   paquetes: Paquete[];
@@ -66,7 +66,6 @@ const ListaPaquetes: React.FC<ListaPaquetesProps> = ({
             alignItems: "center",
             p: 1.5,
             borderRadius: 2,
-            
           }}
         >
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>

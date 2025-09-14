@@ -14,8 +14,13 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-// ✅ Importamos lista externa
-import PALABRAS_PROHIBIDAS from "../../data/palabrasProhibidas.json";
+// 🚫 Lista de palabras prohibidas directamente en el código
+const PALABRAS_PROHIBIDAS: string[] = [
+  "groseria1",
+  "groseria2",
+  "maldicion",
+  "insulto",
+];
 
 interface Reporte {
   descripcion: string;
@@ -30,19 +35,21 @@ interface ModalReporteProps {
 }
 
 const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
+  // 👇 Hooks SIEMPRE primero
   const [descripcion, setDescripcion] = useState("");
   const [archivo, setArchivo] = useState<File | null>(null);
-  const [step, setStep] = useState<"form" | "confirm" | "success" | "historial">("form"); 
-  // 👆 Agregamos nuevo paso "historial"
+  const [step, setStep] = useState<
+    "form" | "confirm" | "success" | "historial"
+  >("form");
   const [error, setError] = useState("");
-  const [reportes, setReportes] = useState<Reporte[]>([]); 
-  // 👆 Lista local de reportes enviados (simulación antes de backend)
+  const [reportes, setReportes] = useState<Reporte[]>([]);
+
+  // 👇 Validación después de los hooks
+  if (!isOpen) return null;
 
   // Validar y pasar a confirmación
   const handleEnviar = () => {
-    const contieneProhibidas = PALABRAS_PROHIBIDAS.some((p) =>
+    const contieneProhibidas = PALABRAS_PROHIBIDAS.some((p: string) =>
       descripcion.toLowerCase().includes(p.toLowerCase())
     );
 
@@ -64,10 +71,8 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
       estado: "enviado",
     };
 
-    // ✅ Guardamos en memoria local
     setReportes((prev) => [...prev, nuevoReporte]);
 
-    // Reseteamos formulario
     setDescripcion("");
     setArchivo(null);
     setStep("success");
@@ -163,7 +168,6 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
               Enviar
             </Button>
 
-            {/* ✅ Nuevo botón para historial */}
             <Button
               variant="text"
               sx={{ mt: 0.5 }}
@@ -207,8 +211,6 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
             <Typography variant="h6" color="success.main" fontWeight="600">
               ¡Tu reporte ha sido enviado correctamente!
             </Typography>
-
-            {/* ✅ Botón para ver historial tras enviar */}
             <Button
               variant="text"
               sx={{ mt: 2 }}
