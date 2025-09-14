@@ -1,5 +1,5 @@
 import React from "react";
-import PerfilConductor from "../driver/PerfilConductor";
+import PerfilConductor from "../driver/modals/PerfilConductor";
 
 const DriverProfile: React.FC = () => {
   return (

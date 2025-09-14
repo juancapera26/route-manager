@@ -13,7 +13,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
 } from "@mui/icons-material";
-import { Paquete } from "../../../../../hooks/useManifiestos";
+import { Paquete } from "../../../../hooks/useManifiestos";
 
 interface InicioRutaProps {
   paqueteActual?: Paquete;

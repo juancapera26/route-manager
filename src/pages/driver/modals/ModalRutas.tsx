@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Paper, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import Formulario from "./layout_conductor/components/modalRutas/Formulario";
-import VistaMinimizada from "./layout_conductor/components/modalRutas/VistaMinimizada";
-import { Paquete } from "../../hooks/useManifiestos";
-import ListaPaquetes from "./layout_conductor/components/modalRutas/ListaPaquetes";
-import InicioRuta from "./layout_conductor/components/modalRutas/InicioRuta";
+import Formulario from "./modalRutas/Formulario";
+import InicioRuta from "./modalRutas/InicioRuta";
+import ListaPaquetes from "./modalRutas/ListaPaquetes";
+import VistaMinimizada from "./modalRutas/VistaMinimizada";
+import { Paquete } from "../../../hooks/useManifiestos";
 
 interface ModalRutasProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ interface ModalRutasProps {
   isExpanded: boolean;
   isHovered: boolean;
   isMobileOpen: boolean;
+  onIniciarRutaEnDrive: (destino: string) => void;
 }
 
 // Enum para steps
@@ -29,6 +30,7 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
   isExpanded,
   isHovered,
   isMobileOpen,
+  onIniciarRutaEnDrive,
 }) => {
   const [codigo, setCodigo] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
@@ -113,6 +115,10 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
           setMostrarLetras(true);
           setCurrentIndex(0);
           setActiveStep(Steps.Colapsada);
+
+          if (paquetes.length > 0) {
+            onIniciarRutaEnDrive(paquetes[0].direccion); // 👈 mandamos dirección al padre
+          }
         }}
       />
     ),
@@ -148,31 +154,30 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         }}
       >
         <IconButton
-  onClick={() => {
-    if (activeStep === Steps.Formulario) {
-      // 👉 Si estoy en formulario, cierro modal
-      onClose();
-    } else {
-      // 👉 Si estoy en otra vista, pregunto antes de volver al formulario
-      const confirmar = window.confirm(
-        "¿Está seguro que desea cancelar la ruta y volver a ingresar el manifiesto?"
-      );
+          onClick={() => {
+            if (activeStep === Steps.Formulario) {
+              // 👉 Si estoy en formulario, cierro modal
+              onClose();
+            } else {
+              // 👉 Si estoy en otra vista, pregunto antes de volver al formulario
+              const confirmar = window.confirm(
+                "¿Está seguro que desea cancelar la ruta y volver a ingresar el manifiesto?"
+              );
 
-      if (confirmar) {
-        setCodigo("");
-        setPaquetes([]);
-        setCurrentIndex(0);
-        setMostrarLetras(false);
-        setMensajeError("");
-        setActiveStep(Steps.Formulario);
-      }
-    }
-  }}
-  color="error"
->
-  <CloseIcon />
-</IconButton>
-
+              if (confirmar) {
+                setCodigo("");
+                setPaquetes([]);
+                setCurrentIndex(0);
+                setMostrarLetras(false);
+                setMensajeError("");
+                setActiveStep(Steps.Formulario);
+              }
+            }
+          }}
+          color="error"
+        >
+          <CloseIcon />
+        </IconButton>
       </Box>
 
       {views[activeStep]}

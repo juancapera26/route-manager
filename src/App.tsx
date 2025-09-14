@@ -19,7 +19,7 @@ import AppLayout from "./layout/AppLayout";
 import NotFound from "./pages/otherPages/NotFound";
 
 // Páginas principales para el admin:
-import  Admin  from "./pages/admin/Admin";
+import Admin from "./pages/admin/Admin";
 import AdminProfile from "./pages/profile/AdminProfile";
 import OperationalMonitoring from "./pages/admin/OperationalMonitoring";
 import RoutesManagement from "./pages/admin/RouteManagement";
@@ -31,11 +31,9 @@ import DeliveryHistory from "./pages/admin/DeliveryHistory";
 import Updates from "./pages/admin/Updates";
 
 // Páginas principales para el conductor:
-import { Driver } from "./pages/driver/Driver";
 import AppLayout_home from "./pages/driver/layout_conductor/AppLayout_home";
-import DriverProfile from "./pages/profile/DriverProfile"; 
-
-
+import DriverProfile from "./pages/profile/DriverProfile";
+import { Driver } from "./pages/driver/Driver";
 
 function App() {
   return (
@@ -53,11 +51,20 @@ function App() {
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Admin />} />
             <Route path="profile" element={<AdminProfile />} />
-            <Route path="operational-monitoring" element={<OperationalMonitoring />} />
+            <Route
+              path="operational-monitoring"
+              element={<OperationalMonitoring />}
+            />
             <Route path="routes-management" element={<RoutesManagement />} />
-            <Route path="packages-management" element={<PackagesManagement />} />
+            <Route
+              path="packages-management"
+              element={<PackagesManagement />}
+            />
             <Route path="drivers-management" element={<DriversManagement />} />
-            <Route path="vehicles-management" element={<VehiclesManagement />} />
+            <Route
+              path="vehicles-management"
+              element={<VehiclesManagement />}
+            />
             <Route path="register-packages" element={<RegisterPackages />} />
             <Route path="delivery-history" element={<DeliveryHistory />} />
             <Route path="updates" element={<Updates />} />
@@ -66,7 +73,6 @@ function App() {
 
         {/* --- Rutas Protegidas para Usuario (rol "2") --- */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
-          
           <Route path="/driver" element={<AppLayout_home />}>
             <Route index element={<Driver />} />
             <Route path="profile" element={<DriverProfile />} />
