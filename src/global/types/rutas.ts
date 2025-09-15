@@ -1,4 +1,4 @@
-import { ZonaRuta } from "../dataMock";
+import { ZonaRuta } from "../types";
 
 export interface RutaFormData {
   zona: ZonaRuta;

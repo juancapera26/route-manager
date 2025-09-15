@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
-import { Ruta, RutaEstado } from '../../global/dataMock';
+import { Ruta, RutaEstado } from '../../global/types';
 
 // ===================== TIPOS DEL HOOK =====================
 interface UseRutasConfig {

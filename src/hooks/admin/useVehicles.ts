@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
-import { Vehiculo, VehiculoEstado, TipoVehiculo } from '../../global/dataMock';
+import { Vehiculo, VehiculoEstado, TipoVehiculo } from '../../global/types';
 
 // ===================== TIPOS DEL HOOK =====================
 interface UseVehiclesConfig {

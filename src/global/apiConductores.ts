@@ -1,14 +1,16 @@
 // ---- Api simulada, Gestión de Conductores ----
 import {
-  mockConductores,
-  mockVehiculos,
-  mockRutas,
-  mockPaquetes,
   Conductor,
   ConductorEstado,
   Empresa,
   RutaEstado,
   PaquetesEstados,
+} from "./types";
+import {
+  mockConductores,
+  mockVehiculos,
+  mockRutas,
+  mockPaquetes,
 } from "./dataMock";
 
 const SIMULATED_DELAY = 120;
@@ -28,7 +30,9 @@ export const getConductorById = async (id: string) => {
   if (!conductor) return simulateRequest(null);
 
   const vehiculo = conductor.id_vehiculo_asignado
-    ? mockVehiculos.find((v) => v.id_vehiculo === conductor.id_vehiculo_asignado)
+    ? mockVehiculos.find(
+        (v) => v.id_vehiculo === conductor.id_vehiculo_asignado
+      )
     : null;
 
   return simulateRequest({
@@ -58,11 +62,16 @@ export const asignarRutaAConductor = async (
   const conductor = mockConductores.find((c) => c.id_conductor === idConductor);
   const ruta = mockRutas.find((r) => r.id_ruta === idRuta);
 
-  if (!conductor) return simulateRequest({ success: false, message: "Conductor no existe." });
-  if (!ruta) return simulateRequest({ success: false, message: "Ruta no existe." });
+  if (!conductor)
+    return simulateRequest({ success: false, message: "Conductor no existe." });
+  if (!ruta)
+    return simulateRequest({ success: false, message: "Ruta no existe." });
 
   if (conductor.estado !== ConductorEstado.Disponible)
-    return simulateRequest({ success: false, message: "Conductor no disponible." });
+    return simulateRequest({
+      success: false,
+      message: "Conductor no disponible.",
+    });
 
   if (ruta.estado !== RutaEstado.Pendiente)
     return simulateRequest({ success: false, message: "Ruta no disponible." });
@@ -83,5 +92,8 @@ export const asignarRutaAConductor = async (
     }
   });
 
-  return simulateRequest({ success: true, message: "Ruta asignada al conductor." });
+  return simulateRequest({
+    success: true,
+    message: "Ruta asignada al conductor.",
+  });
 };

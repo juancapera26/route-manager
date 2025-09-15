@@ -1,5 +1,5 @@
 import React from "react";
-import { Ruta, RutaEstado, Conductor } from "../../../global/dataMock"; // Ajusta la ruta relativa según tu estructura
+import { Ruta, RutaEstado, Conductor } from "../../../global/types"; // Ajusta la ruta relativa según tu estructura
 import {
   Table,
   TableHeader,

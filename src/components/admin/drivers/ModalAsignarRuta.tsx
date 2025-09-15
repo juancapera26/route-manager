@@ -1,4 +1,4 @@
-import { Ruta } from "../../../global/dataMock";
+import { Ruta } from "../../../global/types";
 
 interface Props {
   routes: Ruta[];

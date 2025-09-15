@@ -11,9 +11,11 @@ import {
   Ruta,
   RutaEstado,
   Conductor,
-  mockConductores,
+} from "../../global/types";
+import {
+    mockConductores,
   mockVehiculos,
-} from "../../global/dataMock";
+} from "../../global/dataMock"
 import {
   createRuta,
   getRutas,

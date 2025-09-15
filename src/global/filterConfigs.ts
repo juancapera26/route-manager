@@ -6,7 +6,7 @@ import {
   Paquete, 
   Conductor, 
   Ruta 
-} from './dataMock';
+} from './types';
 import { OpcionesFiltro } from '../hooks/useEstadoFilter';
 
 // ===================== Configuración para Paquetes =====================

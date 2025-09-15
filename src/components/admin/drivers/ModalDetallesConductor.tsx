@@ -1,4 +1,4 @@
-import { Conductor } from "../../../global/dataMock";
+import { Conductor } from "../../../global/types";
 
 interface Props {
   driver: Conductor | null;

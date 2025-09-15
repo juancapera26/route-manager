@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
-import { Paquete, PaquetesEstados } from '../../global/dataMock';
+import { Paquete, PaquetesEstados } from '../../global/types';
 
 // ===================== TIPOS DEL HOOK =====================
 interface UsePaquetesConfig {

@@ -4,8 +4,8 @@ import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import Alert from "../../ui/alert/Alert"; // Asumiendo que Alert está en ui/
-import { createPaquete } from "../../../global/apis";
-import { Paquete, TipoPaquete } from "../../../global/dataMock";
+import { api } from "../../../global/apis";
+import { Paquete, TipoPaquete } from "../../../global/types";
 import { Add } from "@mui/icons-material"; // Icono de Material UI
 
 interface ModalAgregarPaqueteProps {
@@ -206,7 +206,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       return;
     }
     try {
-      await createPaquete({
+      await api.paquetes.create({
         ...formData,
         destinatario: {
           nombre: formData.nombre.trim(),
@@ -216,7 +216,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           telefono: formData.telefono.trim(),
         },
       });
-      onSuccess(); // Solo notifica que la operación fue un éxito
+      onSuccess();
       setMensaje({ text: "Paquete creado exitosamente", type: "success" });
 
       // Resetear formulario

@@ -9,16 +9,8 @@ import {
   TipoPaquete,
   Ruta,
   Conductor,
-} from "../../global/dataMock";
-import {
-  getPaquetes,
-  assignPaquete,
-  reassignPaquete,
-  cancelPaqueteAssignment,
-  deletePaquete,
-  getRutas,
-  getConductores,
-} from "../../global/apis";
+} from "../../global/types";
+import { api } from "../../global/apis";
 
 // Componentes UI
 import {
@@ -116,9 +108,9 @@ const PackagesManagement: React.FC = () => {
     setLoading(true);
     try {
       const [allPaquetes, rutas, conductoresList] = await Promise.all([
-        getPaquetes(),
-        getRutas(),
-        getConductores(),
+        api.paquetes.getAll(),
+        api.rutas.getAll(),
+        api.conductores.getAll(),
       ]);
 
       setTodosLosPaquetes(allPaquetes);
@@ -163,7 +155,7 @@ const PackagesManagement: React.FC = () => {
   const handleEliminarPaquete = async (paqueteId: string) => {
     if (window.confirm("¿Estás seguro de eliminar este paquete?")) {
       try {
-        const result = await deletePaquete(paqueteId);
+        const result = await api.paquetes.delete(paqueteId);
         if (result.success) {
           mostrarAlert("Paquete eliminado correctamente", "success");
           cargarDatos();
@@ -184,12 +176,15 @@ const PackagesManagement: React.FC = () => {
         );
         if (paquete && paquete.id_rutas_asignadas.length > 0) {
           const rutaId = paquete.id_rutas_asignadas[0];
-          const success = await cancelPaqueteAssignment(paqueteId, rutaId);
-          if (success) {
+          const result = await api.paquetes.cancelAssignment(paqueteId, rutaId);
+          if (result.success) {
             mostrarAlert("Asignación cancelada correctamente", "success");
             cargarDatos();
           } else {
-            mostrarAlert("Error al cancelar la asignación", "error");
+            mostrarAlert(
+              result.message || "Error al cancelar la asignación",
+              "error"
+            );
           }
         }
       } catch (error) {
@@ -236,13 +231,13 @@ const PackagesManagement: React.FC = () => {
 
       let result: any;
       if (modalState.action === "assign") {
-        result = await assignPaquete(
+        result = await api.paquetes.assign(
           modalState.paqueteId,
           rutaId,
           ruta.id_conductor_asignado
         );
       } else if (modalState.action === "reassign") {
-        result = await reassignPaquete(
+        result = await api.paquetes.reassign(
           modalState.paqueteId,
           rutaId,
           ruta.id_conductor_asignado

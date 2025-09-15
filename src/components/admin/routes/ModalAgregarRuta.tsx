@@ -5,7 +5,7 @@ import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import TextArea from "../../form/input/TextArea";
 import Alert from "../../ui/alert/Alert";
-import { ZonaRuta } from "../../../global/dataMock";
+import { ZonaRuta } from "../../../global/types";
 import { RutaFormData } from "../../../global/types/rutas";
 import { Add } from "@mui/icons-material"; // Asegúrate de tener este icono o usa uno similar
 

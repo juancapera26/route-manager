@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Ruta, Paquete } from "../../../global/dataMock";
-import { getPaquetes } from "../../../global/apis";
+import { Ruta, Paquete } from "../../../global/types";
+import { api } from "../../../global/apis";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
 
@@ -33,7 +33,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
 
       setCargandoPaquetes(true);
       try {
-        const todosPaquetes = await getPaquetes();
+        const todosPaquetes = await api.paquetes.getAll();
         const paquetesFiltrados = todosPaquetes.filter((paquete) =>
           ruta.paquetes_asignados.includes(paquete.id_paquete)
         );
