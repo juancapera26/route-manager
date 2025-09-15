@@ -43,13 +43,23 @@ import {
   Empresa,
 } from "./types";
 
+
 // ===================== TIPOS COMUNES =====================
 const SIMULATED_DELAY = 120;
 
 type ApiResponse<T> = Promise<T>;
-type ApiResult =
-  | { success: true; message?: string }
-  | { success: false; message: string };
+
+// Nueva interfaz estandarizada para todas las respuestas de mutaciones
+interface ApiResult<T> {
+  entidadPrincipal: T;
+  entidadesRelacionadas?: {
+    ruta?: Ruta;
+    conductor?: Conductor;
+    vehiculo?: Vehiculo;
+    paquetes?: Paquete[];
+  };
+  mensaje: string;
+}
 
 const simulateRequest = <T>(data: T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(data), SIMULATED_DELAY));
@@ -69,50 +79,11 @@ const generateId = (prefix: string, lastItem?: any, idField = "id"): string => {
   return `${prefix}-${String(lastNum + 1).padStart(3, "0")}`;
 };
 
+
 // ===================== API DE PAQUETES =====================
 const paquetesAPI = {
-  // Listados y filtros
-  async getAll(
-    searchQuery?: string,
-    estado?: PaquetesEstados | null,
-    fromDate?: string,
-    toDate?: string
-  ): ApiResponse<Paquete[]> {
-    let paquetes = [...mockPaquetes];
-
-    // Filtros
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      paquetes = paquetes.filter(
-        (p) =>
-          p.id_paquete.toLowerCase().includes(q) ||
-          p.destinatario.nombre.toLowerCase().includes(q) ||
-          p.destinatario.apellido.toLowerCase().includes(q)
-      );
-    }
-
-    if (estado) {
-      paquetes = paquetes.filter((p) => p.estado === estado);
-    }
-
-    if (fromDate) {
-      paquetes = paquetes.filter(
-        (p) => new Date(p.fecha_registro) >= new Date(fromDate)
-      );
-    }
-
-    if (toDate) {
-      paquetes = paquetes.filter(
-        (p) => new Date(p.fecha_registro) <= new Date(toDate)
-      );
-    }
-
-    // Ordenar por fecha de registro (más reciente primero)
-    paquetes.sort(
-      (a, b) => +new Date(b.fecha_registro) - +new Date(a.fecha_registro)
-    );
-
-    return simulateRequest(paquetes);
+  async getAll(): ApiResponse<Paquete[]> {
+    return simulateRequest([...mockPaquetes]);
   },
 
   async getById(id: string): ApiResponse<Paquete | null> {
@@ -125,18 +96,9 @@ const paquetesAPI = {
     return simulateRequest(paquetes);
   },
 
-  // CRUD
   async create(
-    data: Omit<
-      Paquete,
-      | "id_paquete"
-      | "fecha_registro"
-      | "estado"
-      | "fecha_entrega"
-      | "id_rutas_asignadas"
-      | "id_conductor_asignado"
-    >
-  ): ApiResponse<Paquete> {
+    data: Omit<Paquete, "id_paquete" | "fecha_registro" | "estado" | "fecha_entrega" | "id_rutas_asignadas" | "id_conductor_asignado">
+  ): ApiResponse<ApiResult<Paquete>> {
     const nuevo: Paquete = {
       ...data,
       id_paquete: generateId("PAQ", mockPaquetes.at(-1), "id_paquete"),
@@ -148,298 +110,232 @@ const paquetesAPI = {
     };
 
     mockPaquetes.push(nuevo);
-    return simulateRequest(nuevo);
+    
+    return simulateRequest({
+      entidadPrincipal: nuevo,
+      mensaje: "Paquete creado exitosamente"
+    });
   },
 
-  async update(id: string, data: Partial<Paquete>): ApiResponse<ApiResult> {
+  async update(id: string, data: Partial<Paquete>): ApiResponse<ApiResult<Paquete>> {
     const index = findEntityIndex(mockPaquetes, "id_paquete", id);
 
     if (index === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete no encontrado",
-      });
+      throw new Error("Paquete no encontrado");
     }
 
-    const paquete = mockPaquetes[index];
-    const estadosEditables = [
-      PaquetesEstados.Pendiente,
-      PaquetesEstados.Fallido,
-    ];
+    const paqueteOriginal = mockPaquetes[index];
+    const estadosEditables = [PaquetesEstados.Pendiente, PaquetesEstados.Fallido];
 
-    if (!estadosEditables.includes(paquete.estado)) {
-      return simulateRequest({
-        success: false,
-        message: "No se puede editar un paquete en este estado",
-      });
+    if (!estadosEditables.includes(paqueteOriginal.estado)) {
+      throw new Error("No se puede editar un paquete en este estado");
     }
 
-    mockPaquetes[index] = { ...paquete, ...data };
-    return simulateRequest({ success: true, message: "Paquete actualizado" });
+    const paqueteActualizado = {
+      ...paqueteOriginal,
+      ...data,
+      fecha_actualizacion: nowISO(),
+    };
+
+    mockPaquetes[index] = paqueteActualizado;
+    
+    return simulateRequest({
+      entidadPrincipal: paqueteActualizado,
+      mensaje: "Paquete actualizado exitosamente"
+    });
   },
 
-  async delete(id: string): ApiResponse<ApiResult> {
+  async delete(id: string): ApiResponse<ApiResult<string>> {
     const index = findEntityIndex(mockPaquetes, "id_paquete", id);
 
     if (index === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete no encontrado",
-      });
+      throw new Error("Paquete no encontrado");
     }
 
     const paquete = mockPaquetes[index];
-    const estadosEliminables = [
-      PaquetesEstados.Pendiente,
-      PaquetesEstados.Fallido,
-    ];
+    const estadosEliminables = [PaquetesEstados.Pendiente, PaquetesEstados.Fallido];
 
     if (!estadosEliminables.includes(paquete.estado)) {
-      return simulateRequest({
-        success: false,
-        message: "No se puede eliminar un paquete en este estado",
-      });
+      throw new Error("No se puede eliminar un paquete en este estado");
     }
 
     mockPaquetes.splice(index, 1);
-    return simulateRequest({ success: true, message: "Paquete eliminado" });
+    
+    return simulateRequest({
+      entidadPrincipal: id,
+      mensaje: "Paquete eliminado exitosamente"
+    });
   },
 
-  // Flujo de asignación
   async assign(
-    paqueteId: string,
+    paqueteId: string, 
     rutaId: string,
     conductorId?: string
-  ): ApiResponse<ApiResult> {
+  ): ApiResponse<ApiResult<Paquete>> {
     const paqueteIndex = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
     const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
 
     if (paqueteIndex === -1 || rutaIndex === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete o ruta no encontrados",
-      });
+      throw new Error("Paquete o ruta no encontrados");
     }
 
     const paquete = mockPaquetes[paqueteIndex];
     const ruta = mockRutas[rutaIndex];
 
-    // Validaciones
-    const estadosAsignables = [
-      PaquetesEstados.Pendiente,
-      PaquetesEstados.Fallido,
-    ];
+    const estadosAsignables = [PaquetesEstados.Pendiente, PaquetesEstados.Fallido];
     if (!estadosAsignables.includes(paquete.estado)) {
-      return simulateRequest({
-        success: false,
-        message: "El paquete no se puede asignar en su estado actual",
-      });
+      throw new Error("El paquete no se puede asignar en su estado actual");
     }
 
-    if (ruta.estado !== RutaEstado.Pendiente) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no está disponible para asignaciones",
-      });
+    if (ruta.estado !== RutaEstado.Pendiente && ruta.estado !== RutaEstado.Asignada) {
+      throw new Error("La ruta no está disponible para asignaciones");
     }
 
-    // Buscar conductor disponible si no se especifica
-    let conductor = conductorId
-      ? mockConductores.find((c) => c.id_conductor === conductorId)
-      : mockConductores.find((c) => c.estado === ConductorEstado.Disponible);
-
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "No hay conductores disponibles",
-      });
+    let conductor: Conductor | undefined;
+    if (conductorId) {
+      conductor = mockConductores.find((c) => c.id_conductor === conductorId);
+      if (!conductor) {
+        throw new Error("Conductor no encontrado");
+      }
+      if (conductor.estado === ConductorEstado.NoDisponible) {
+        throw new Error("El conductor seleccionado no está disponible");
+      }
+    } else if (ruta.id_conductor_asignado) {
+      conductor = mockConductores.find((c) => c.id_conductor === ruta.id_conductor_asignado);
     }
 
-    if (conductor.estado === ConductorEstado.NoDisponible) {
-      return simulateRequest({
-        success: false,
-        message: "El conductor seleccionado no está disponible",
-      });
-    }
+    const paqueteActualizado = {
+      ...paquete,
+      id_rutas_asignadas: [...paquete.id_rutas_asignadas, rutaId],
+      id_conductor_asignado: conductor ? conductor.id_conductor : null,
+      estado: conductor ? PaquetesEstados.Asignado : paquete.estado,
+      fecha_asignacion: nowISO(),
+    };
 
-    // Asignación
-    if (!ruta.paquetes_asignados.includes(paqueteId)) {
-      ruta.paquetes_asignados.push(paqueteId);
-    }
-    ruta.id_conductor_asignado = conductor.id_conductor;
+    const rutaActualizada = {
+      ...ruta,
+      paquetes_asignados: [...ruta.paquetes_asignados, paqueteId],
+      id_conductor_asignado: conductor ? conductor.id_conductor : ruta.id_conductor_asignado,
+    };
 
-    paquete.id_rutas_asignadas.push(rutaId);
-    paquete.id_conductor_asignado = conductor.id_conductor;
-    paquete.estado = PaquetesEstados.Asignado;
+    mockPaquetes[paqueteIndex] = paqueteActualizado;
+    mockRutas[rutaIndex] = rutaActualizada;
 
     return simulateRequest({
-      success: true,
-      message: "Paquete asignado exitosamente",
+      entidadPrincipal: paqueteActualizado,
+      entidadesRelacionadas: {
+        ruta: rutaActualizada,
+        conductor: conductor,
+      },
+      mensaje: "Paquete asignado exitosamente"
     });
   },
 
   async cancelAssignment(
-    paqueteId: string,
+    paqueteId: string, 
     rutaId: string
-  ): ApiResponse<ApiResult> {
+  ): ApiResponse<ApiResult<Paquete>> {
     const paqueteIndex = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
     const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
 
     if (paqueteIndex === -1 || rutaIndex === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete o ruta no encontrados",
-      });
+      throw new Error("Paquete o ruta no encontrados");
     }
 
     const paquete = mockPaquetes[paqueteIndex];
     const ruta = mockRutas[rutaIndex];
 
-    const estadosCancelables = [
-      PaquetesEstados.Asignado,
-      PaquetesEstados.EnRuta,
-    ];
+    const estadosCancelables = [PaquetesEstados.Asignado, PaquetesEstados.EnRuta];
     if (!estadosCancelables.includes(paquete.estado)) {
-      return simulateRequest({
-        success: false,
-        message: "No se puede cancelar la asignación en el estado actual",
-      });
+      throw new Error("No se puede cancelar la asignación en el estado actual");
     }
 
-    // Remover asignaciones
-    paquete.id_rutas_asignadas = paquete.id_rutas_asignadas.filter(
-      (r) => r !== rutaId
-    );
-    ruta.paquetes_asignados = ruta.paquetes_asignados.filter(
-      (p) => p !== paqueteId
-    );
+    const nuevasRutas = paquete.id_rutas_asignadas.filter(r => r !== rutaId);
+    const paqueteActualizado = {
+      ...paquete,
+      id_rutas_asignadas: nuevasRutas,
+      estado: nuevasRutas.length === 0 ? PaquetesEstados.Pendiente : paquete.estado,
+      id_conductor_asignado: nuevasRutas.length === 0 ? null : paquete.id_conductor_asignado,
+      fecha_cancelacion: nowISO(),
+    };
 
-    // Si el paquete no tiene más rutas asignadas, volver a pendiente
-    if (paquete.id_rutas_asignadas.length === 0) {
-      paquete.estado = PaquetesEstados.Pendiente;
-      paquete.id_conductor_asignado = null;
-    }
+    const rutaActualizada = {
+      ...ruta,
+      paquetes_asignados: ruta.paquetes_asignados.filter(p => p !== paqueteId),
+    };
 
-    return simulateRequest({ success: true, message: "Asignación cancelada" });
-  },
-
-  async reassign(
-    paqueteId: string,
-    nuevaRutaId: string,
-    nuevoConductorId?: string,
-    observacion?: string
-  ): ApiResponse<ApiResult> {
-    const paqueteIndex = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
-    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", nuevaRutaId);
-
-    if (paqueteIndex === -1 || rutaIndex === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete o ruta no encontrados",
-      });
-    }
-
-    const paquete = mockPaquetes[paqueteIndex];
-    const ruta = mockRutas[rutaIndex];
-
-    if (paquete.estado !== PaquetesEstados.Fallido) {
-      return simulateRequest({
-        success: false,
-        message: "Solo se pueden reasignar paquetes fallidos",
-      });
-    }
-
-    if (ruta.estado !== RutaEstado.Pendiente) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no está disponible",
-      });
-    }
-
-    let conductor = nuevoConductorId
-      ? mockConductores.find((c) => c.id_conductor === nuevoConductorId)
-      : mockConductores.find((c) => c.estado === ConductorEstado.Disponible);
-
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "No hay conductores disponibles",
-      });
-    }
-
-    // Reasignación
-    paquete.id_rutas_asignadas.push(nuevaRutaId);
-    paquete.id_conductor_asignado = conductor.id_conductor;
-    paquete.estado = PaquetesEstados.Asignado;
-
-    if (observacion) {
-      paquete.observacion_conductor = observacion;
-    }
-
-    ruta.id_conductor_asignado = conductor.id_conductor;
-    if (!ruta.paquetes_asignados.includes(paqueteId)) {
-      ruta.paquetes_asignados.push(paqueteId);
-    }
+    mockPaquetes[paqueteIndex] = paqueteActualizado;
+    mockRutas[rutaIndex] = rutaActualizada;
 
     return simulateRequest({
-      success: true,
-      message: "Paquete reasignado exitosamente",
+      entidadPrincipal: paqueteActualizado,
+      entidadesRelacionadas: {
+        ruta: rutaActualizada,
+      },
+      mensaje: "Asignación cancelada exitosamente"
     });
-  },
-
-  // Estados del flujo
-  async markEnRuta(paqueteId: string): ApiResponse<ApiResult> {
-    return paquetesAPI.updateEstado(paqueteId, PaquetesEstados.EnRuta);
   },
 
   async markEntregado(
     paqueteId: string,
     observacion?: string,
     imagen?: string
-  ): ApiResponse<ApiResult> {
-    const result = await paquetesAPI.updateEstado(
-      paqueteId,
-      PaquetesEstados.Entregado,
-      {
-        fecha_entrega: nowISO(),
-        observacion_conductor: observacion,
-        imagen_adjunta: imagen,
-      }
-    );
-    return result;
+  ): ApiResponse<ApiResult<Paquete>> {
+    const index = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
+
+    if (index === -1) {
+      throw new Error("Paquete no encontrado");
+    }
+
+    const paqueteOriginal = mockPaquetes[index];
+    
+    const paqueteActualizado = {
+      ...paqueteOriginal,
+      estado: PaquetesEstados.Entregado,
+      fecha_entrega: nowISO(),
+      observacion_conductor: observacion,
+      imagen_adjunta: imagen,
+      fecha_actualizacion: nowISO(),
+    };
+
+    mockPaquetes[index] = paqueteActualizado;
+
+    return simulateRequest({
+      entidadPrincipal: paqueteActualizado,
+      mensaje: "Paquete marcado como entregado"
+    });
   },
 
   async markFallido(
     paqueteId: string,
-    observacion?: string
-  ): ApiResponse<ApiResult> {
-    return paquetesAPI.updateEstado(paqueteId, PaquetesEstados.Fallido, {
-      observacion_conductor: observacion,
-    });
-  },
-
-  // Helper para actualizar estado
-  async updateEstado(
-    paqueteId: string,
-    nuevoEstado: PaquetesEstados,
-    datosExtra: Partial<Paquete> = {}
-  ): ApiResponse<ApiResult> {
+    razon?: string
+  ): ApiResponse<ApiResult<Paquete>> {
     const index = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
 
     if (index === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Paquete no encontrado",
-      });
+      throw new Error("Paquete no encontrado");
     }
 
-    mockPaquetes[index] = {
-      ...mockPaquetes[index],
-      estado: nuevoEstado,
-      ...datosExtra,
+    const paqueteOriginal = mockPaquetes[index];
+    const estadosValidos = [PaquetesEstados.Asignado, PaquetesEstados.EnRuta];
+    if (!estadosValidos.includes(paqueteOriginal.estado)) {
+      throw new Error("No se puede marcar como fallido en este estado");
+    }
+
+    const paqueteActualizado = {
+      ...paqueteOriginal,
+      estado: PaquetesEstados.Fallido,
+      observacion_conductor: razon || paqueteOriginal.observacion_conductor,
+      fecha_fallida: nowISO(),
+      fecha_actualizacion: nowISO(),
     };
 
-    return simulateRequest({ success: true, message: "Estado actualizado" });
+    mockPaquetes[index] = paqueteActualizado;
+
+    return simulateRequest({
+      entidadPrincipal: paqueteActualizado,
+      mensaje: "Paquete marcado como fallido"
+    });
   },
 };
 
@@ -481,7 +377,7 @@ const rutasAPI = {
       | "paquetes_asignados"
       | "id_conductor_asignado"
     >
-  ): ApiResponse<Ruta> {
+  ): ApiResponse<ApiResult<Ruta>> {
     const nueva: Ruta = {
       ...data,
       id_ruta: generateId("RTA", mockRutas.at(-1), "id_ruta"),
@@ -492,169 +388,223 @@ const rutasAPI = {
     };
 
     mockRutas.push(nueva);
-    return simulateRequest(nueva);
+    return simulateRequest({
+      entidadPrincipal: nueva,
+      mensaje: "Ruta creada exitosamente",
+    });
   },
 
-  async update(id: string, data: Partial<Ruta>): ApiResponse<ApiResult> {
+  async update(id: string, data: Partial<Ruta>): ApiResponse<ApiResult<Ruta>> {
     const index = findEntityIndex(mockRutas, "id_ruta", id);
 
     if (index === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
+      throw new Error("Ruta no encontrada");
     }
 
-    mockRutas[index] = { ...mockRutas[index], ...data };
-    return simulateRequest({ success: true, message: "Ruta actualizada" });
+    const rutaOriginal = mockRutas[index];
+    const rutaActualizada = {
+      ...rutaOriginal,
+      ...data,
+      fecha_actualizacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    mockRutas[index] = rutaActualizada;
+    return simulateRequest({
+      entidadPrincipal: rutaActualizada,
+      mensaje: "Ruta actualizada exitosamente",
+    });
   },
 
-  async delete(id: string): ApiResponse<ApiResult> {
+  async delete(id: string): ApiResponse<ApiResult<string>> {
     const index = findEntityIndex(mockRutas, "id_ruta", id);
 
     if (index === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
+      throw new Error("Ruta no encontrada");
     }
 
     const ruta = mockRutas[index];
     if (ruta.estado !== RutaEstado.Pendiente) {
-      return simulateRequest({
-        success: false,
-        message: "Solo se pueden eliminar rutas pendientes",
-      });
+      throw new Error("Solo se pueden eliminar rutas pendientes");
     }
 
     mockRutas.splice(index, 1);
-    return simulateRequest({ success: true, message: "Ruta eliminada" });
+    return simulateRequest({
+      entidadPrincipal: id,
+      mensaje: "Ruta eliminada exitosamente",
+    });
   },
 
   async assignConductor(
     rutaId: string,
     conductorId: string
-  ): ApiResponse<ApiResult> {
+  ): ApiResponse<ApiResult<Ruta>> {
     const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
 
     if (rutaIndex === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
+      throw new Error("Ruta no encontrada");
     }
 
-    const ruta = mockRutas[rutaIndex];
-    if (ruta.estado !== RutaEstado.Pendiente) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no está disponible para asignación",
-      });
+    const rutaOriginal = mockRutas[rutaIndex];
+    if (rutaOriginal.estado !== RutaEstado.Pendiente) {
+      throw new Error("La ruta no está disponible para asignación");
     }
 
     const conductor = mockConductores.find(
       (c) => c.id_conductor === conductorId
     );
     if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "Conductor no encontrado",
-      });
+      throw new Error("Conductor no encontrado");
     }
 
     if (conductor.estado !== ConductorEstado.Disponible) {
-      return simulateRequest({
-        success: false,
-        message: "El conductor no está disponible",
-      });
+      throw new Error("El conductor no está disponible");
     }
 
-    // Asignación
-    ruta.id_conductor_asignado = conductor.id_conductor;
-    ruta.estado = RutaEstado.asignada;
-    conductor.estado = ConductorEstado.EnRuta;
+    // Asignación - el "servidor" decide los valores finales
+    const rutaActualizada = {
+      ...rutaOriginal,
+      id_conductor_asignado: conductor.id_conductor,
+      estado: RutaEstado.Asignada,
+      fecha_asignacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    const conductorActualizado = {
+      ...conductor,
+      estado: ConductorEstado.EnRuta,
+    };
+
+    // Actualizar mocks
+    mockRutas[rutaIndex] = rutaActualizada;
+    const conductorIndex = findEntityIndex(mockConductores, "id_conductor", conductorId);
+    mockConductores[conductorIndex] = conductorActualizado;
 
     return simulateRequest({
-      success: true,
-      message: "Conductor asignado a la ruta",
+      entidadPrincipal: rutaActualizada,
+      entidadesRelacionadas: {
+        conductor: conductorActualizado,
+      },
+      mensaje: "Conductor asignado a la ruta exitosamente",
     });
   },
 
-  async cancelAssignment(rutaId: string): ApiResponse<ApiResult> {
+  async cancelAssignment(rutaId: string): ApiResponse<ApiResult<Ruta>> {
     const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
 
     if (rutaIndex === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
+      throw new Error("Ruta no encontrada");
     }
 
-    const ruta = mockRutas[rutaIndex];
-    if (ruta.estado !== RutaEstado.asignada) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no está asignada",
-      });
+    const rutaOriginal = mockRutas[rutaIndex];
+    if (rutaOriginal.estado !== RutaEstado.Asignada) {
+      throw new Error("La ruta no está asignada");
     }
 
     // Liberar conductor
-    if (ruta.id_conductor_asignado) {
-      const conductor = mockConductores.find(
-        (c) => c.id_conductor === ruta.id_conductor_asignado
-      );
-      if (conductor) {
-        conductor.estado = ConductorEstado.Disponible;
-      }
-      ruta.id_conductor_asignado = null;
-    }
-
-    ruta.estado = RutaEstado.Pendiente;
-
-    return simulateRequest({ success: true, message: "Asignación cancelada" });
-  },
-
-  async complete(rutaId: string): ApiResponse<ApiResult> {
-    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
-
-    if (rutaIndex === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
-    }
-
-    const ruta = mockRutas[rutaIndex];
-    if (ruta.estado !== RutaEstado.asignada) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no se puede completar en su estado actual",
-      });
-    }
-
-    ruta.estado = RutaEstado.Completada;
-
-    // Liberar conductor
-    if (ruta.id_conductor_asignado) {
-      const conductor = mockConductores.find(
-        (c) => c.id_conductor === ruta.id_conductor_asignado
-      );
-      if (conductor) {
-        conductor.estado = ConductorEstado.Disponible;
+    let conductorActualizado: Conductor | undefined;
+    if (rutaOriginal.id_conductor_asignado) {
+      const conductorIndex = findEntityIndex(mockConductores, "id_conductor", rutaOriginal.id_conductor_asignado);
+      if (conductorIndex !== -1) {
+        const conductor = mockConductores[conductorIndex];
+        conductorActualizado = {
+          ...conductor,
+          estado: ConductorEstado.Disponible,
+        };
+        mockConductores[conductorIndex] = conductorActualizado;
       }
     }
 
-    return simulateRequest({ success: true, message: "Ruta completada" });
-  },
+    const rutaActualizada = {
+      ...rutaOriginal,
+      id_conductor_asignado: null,
+      estado: RutaEstado.Pendiente,
+      fecha_cancelacion: nowISO(), // Campo que el servidor podría agregar
+    };
 
-  async markFallida(rutaId: string): ApiResponse<ApiResult> {
-    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
-
-    if (rutaIndex === -1) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
-    }
-
-    const ruta = mockRutas[rutaIndex];
-    ruta.estado = RutaEstado.Fallida;
-
-    // Liberar conductor pero mantener la asignación para historial
-    if (ruta.id_conductor_asignado) {
-      const conductor = mockConductores.find(
-        (c) => c.id_conductor === ruta.id_conductor_asignado
-      );
-      if (conductor) {
-        conductor.estado = ConductorEstado.Disponible;
-      }
-    }
+    mockRutas[rutaIndex] = rutaActualizada;
 
     return simulateRequest({
-      success: true,
-      message: "Ruta marcada como fallida",
+      entidadPrincipal: rutaActualizada,
+      entidadesRelacionadas: {
+        conductor: conductorActualizado,
+      },
+      mensaje: "Asignación cancelada exitosamente",
+    });
+  },
+
+  async complete(rutaId: string): ApiResponse<ApiResult<Ruta>> {
+    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
+
+    if (rutaIndex === -1) {
+      throw new Error("Ruta no encontrada");
+    }
+
+    const rutaOriginal = mockRutas[rutaIndex];
+    if (rutaOriginal.estado !== RutaEstado.Asignada) {
+      throw new Error("La ruta no se puede completar en su estado actual");
+    }
+
+    // Liberar conductor
+    let conductorActualizado: Conductor | undefined;
+    if (rutaOriginal.id_conductor_asignado) {
+      const conductorIndex = findEntityIndex(mockConductores, "id_conductor", rutaOriginal.id_conductor_asignado);
+      if (conductorIndex !== -1) {
+        const conductor = mockConductores[conductorIndex];
+        conductorActualizado = {
+          ...conductor,
+          estado: ConductorEstado.Disponible,
+        };
+        mockConductores[conductorIndex] = conductorActualizado;
+      }
+    }
+
+    const rutaActualizada = {
+      ...rutaOriginal,
+      estado: RutaEstado.Completada,
+      fecha_completacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    mockRutas[rutaIndex] = rutaActualizada;
+
+    return simulateRequest({
+      entidadPrincipal: rutaActualizada,
+      mensaje: "Ruta completada exitosamente",
+    });
+  },
+
+  async markFallida(rutaId: string): ApiResponse<ApiResult<Ruta>> {
+    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
+
+    if (rutaIndex === -1) {
+      throw new Error("Ruta no encontrada");
+    }
+
+    const rutaOriginal = mockRutas[rutaIndex];
+
+    // Liberar conductor pero mantener la asignación para historial
+    let conductorActualizado: Conductor | undefined;
+    if (rutaOriginal.id_conductor_asignado) {
+      const conductorIndex = findEntityIndex(mockConductores, "id_conductor", rutaOriginal.id_conductor_asignado);
+      if (conductorIndex !== -1) {
+        const conductor = mockConductores[conductorIndex];
+        conductorActualizado = {
+          ...conductor,
+          estado: ConductorEstado.Disponible,
+        };
+        mockConductores[conductorIndex] = conductorActualizado;
+      }
+    }
+
+    const rutaActualizada = {
+      ...rutaOriginal,
+      estado: RutaEstado.Fallida,
+      fecha_fallida: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    mockRutas[rutaIndex] = rutaActualizada;
+
+    return simulateRequest({
+      entidadPrincipal: rutaActualizada,
+      mensaje: "Ruta marcada como fallida exitosamente",
     });
   },
 };
@@ -698,76 +648,94 @@ const conductoresAPI = {
   async updateEstado(
     id: string,
     nuevoEstado: ConductorEstado
-  ): ApiResponse<ApiResult> {
-    const conductor = mockConductores.find((c) => c.id_conductor === id);
+  ): ApiResponse<ApiResult<Conductor>> {
+    const index = findEntityIndex(mockConductores, "id_conductor", id);
 
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "Conductor no encontrado",
-      });
+    if (index === -1) {
+      throw new Error("Conductor no encontrado");
     }
 
-    conductor.estado = nuevoEstado;
+    const conductorOriginal = mockConductores[index];
+    const conductorActualizado = {
+      ...conductorOriginal,
+      estado: nuevoEstado,
+      fecha_actualizacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    mockConductores[index] = conductorActualizado;
+
     return simulateRequest({
-      success: true,
-      message: "Estado del conductor actualizado",
+      entidadPrincipal: conductorActualizado,
+      mensaje: "Estado del conductor actualizado exitosamente",
     });
   },
 
   async assignRuta(
     conductorId: string,
     rutaId: string
-  ): ApiResponse<ApiResult> {
-    const conductor = mockConductores.find(
-      (c) => c.id_conductor === conductorId
-    );
-    const ruta = mockRutas.find((r) => r.id_ruta === rutaId);
+  ): ApiResponse<ApiResult<Conductor>> {
+    const conductorIndex = findEntityIndex(mockConductores, "id_conductor", conductorId);
+    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", rutaId);
 
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "Conductor no encontrado",
-      });
+    if (conductorIndex === -1) {
+      throw new Error("Conductor no encontrado");
     }
 
-    if (!ruta) {
-      return simulateRequest({ success: false, message: "Ruta no encontrada" });
+    if (rutaIndex === -1) {
+      throw new Error("Ruta no encontrada");
     }
 
-    if (conductor.estado !== ConductorEstado.Disponible) {
-      return simulateRequest({
-        success: false,
-        message: "El conductor no está disponible",
-      });
+    const conductorOriginal = mockConductores[conductorIndex];
+    const rutaOriginal = mockRutas[rutaIndex];
+
+    if (conductorOriginal.estado !== ConductorEstado.Disponible) {
+      throw new Error("El conductor no está disponible");
     }
 
-    if (ruta.estado !== RutaEstado.Pendiente) {
-      return simulateRequest({
-        success: false,
-        message: "La ruta no está disponible",
-      });
+    if (rutaOriginal.estado !== RutaEstado.Pendiente) {
+      throw new Error("La ruta no está disponible");
     }
 
-    // Asignación
-    ruta.id_conductor_asignado = conductor.id_conductor;
-    ruta.estado = RutaEstado.asignada;
-    conductor.estado = ConductorEstado.EnRuta;
+    // Asignación - el "servidor" decide los valores finales
+    const rutaActualizada = {
+      ...rutaOriginal,
+      id_conductor_asignado: conductorOriginal.id_conductor,
+      estado: RutaEstado.Asignada,
+      fecha_asignacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    const conductorActualizado = {
+      ...conductorOriginal,
+      estado: ConductorEstado.EnRuta,
+    };
 
     // Actualizar paquetes de la ruta
-    ruta.paquetes_asignados.forEach((paqueteId) => {
-      const paquete = mockPaquetes.find((p) => p.id_paquete === paqueteId);
-      if (paquete) {
-        paquete.id_conductor_asignado = conductor.id_conductor;
-        if (paquete.estado === PaquetesEstados.Pendiente) {
-          paquete.estado = PaquetesEstados.Asignado;
-        }
+    const paquetesActualizados: Paquete[] = [];
+    rutaOriginal.paquetes_asignados.forEach((paqueteId) => {
+      const paqueteIndex = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
+      if (paqueteIndex !== -1) {
+        const paquete = mockPaquetes[paqueteIndex];
+        const paqueteActualizado = {
+          ...paquete,
+          id_conductor_asignado: conductorOriginal.id_conductor,
+          estado: paquete.estado === PaquetesEstados.Pendiente ? PaquetesEstados.Asignado : paquete.estado,
+        };
+        mockPaquetes[paqueteIndex] = paqueteActualizado;
+        paquetesActualizados.push(paqueteActualizado);
       }
     });
 
+    // Actualizar mocks
+    mockConductores[conductorIndex] = conductorActualizado;
+    mockRutas[rutaIndex] = rutaActualizada;
+
     return simulateRequest({
-      success: true,
-      message: "Ruta asignada al conductor",
+      entidadPrincipal: conductorActualizado,
+      entidadesRelacionadas: {
+        ruta: rutaActualizada,
+        paquetes: paquetesActualizados,
+      },
+      mensaje: "Ruta asignada al conductor exitosamente",
     });
   },
 };
@@ -792,46 +760,50 @@ const vehiculosAPI = {
     return vehiculosAPI.getByEstado(VehiculoEstado.Disponible);
   },
 
-  async create(data: Omit<Vehiculo, "id_vehiculo">): ApiResponse<Vehiculo> {
+  async create(data: Omit<Vehiculo, "id_vehiculo">): ApiResponse<ApiResult<Vehiculo>> {
     const nuevo: Vehiculo = {
       ...data,
       id_vehiculo: generateId("VEH", mockVehiculos.at(-1), "id_vehiculo"),
     };
 
     mockVehiculos.push(nuevo);
-    return simulateRequest(nuevo);
+    return simulateRequest({
+      entidadPrincipal: nuevo,
+      mensaje: "Vehículo creado exitosamente",
+    });
   },
 
-  async update(id: string, data: Partial<Vehiculo>): ApiResponse<ApiResult> {
+  async update(id: string, data: Partial<Vehiculo>): ApiResponse<ApiResult<Vehiculo>> {
     const index = findEntityIndex(mockVehiculos, "id_vehiculo", id);
 
     if (index === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Vehículo no encontrado",
-      });
+      throw new Error("Vehículo no encontrado");
     }
 
-    mockVehiculos[index] = { ...mockVehiculos[index], ...data };
-    return simulateRequest({ success: true, message: "Vehículo actualizado" });
+    const vehiculoOriginal = mockVehiculos[index];
+    const vehiculoActualizado = {
+      ...vehiculoOriginal,
+      ...data,
+      fecha_actualizacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    mockVehiculos[index] = vehiculoActualizado;
+    return simulateRequest({
+      entidadPrincipal: vehiculoActualizado,
+      mensaje: "Vehículo actualizado exitosamente",
+    });
   },
 
-  async delete(id: string): ApiResponse<ApiResult> {
+  async delete(id: string): ApiResponse<ApiResult<string>> {
     const index = findEntityIndex(mockVehiculos, "id_vehiculo", id);
 
     if (index === -1) {
-      return simulateRequest({
-        success: false,
-        message: "Vehículo no encontrado",
-      });
+      throw new Error("Vehículo no encontrado");
     }
 
     const vehiculo = mockVehiculos[index];
     if (vehiculo.estado !== VehiculoEstado.Disponible) {
-      return simulateRequest({
-        success: false,
-        message: "Solo se pueden eliminar vehículos disponibles",
-      });
+      throw new Error("Solo se pueden eliminar vehículos disponibles");
     }
 
     // Verificar que no esté asignado a ningún conductor
@@ -840,103 +812,118 @@ const vehiculosAPI = {
     );
 
     if (conductorAsignado) {
-      return simulateRequest({
-        success: false,
-        message: "No se puede eliminar un vehículo asignado a un conductor",
-      });
+      throw new Error("No se puede eliminar un vehículo asignado a un conductor");
     }
 
     mockVehiculos.splice(index, 1);
-    return simulateRequest({ success: true, message: "Vehículo eliminado" });
+    return simulateRequest({
+      entidadPrincipal: id,
+      mensaje: "Vehículo eliminado exitosamente",
+    });
   },
 
   async assignToConductor(
     vehiculoId: string,
     conductorId: string
-  ): ApiResponse<ApiResult> {
-    const vehiculo = mockVehiculos.find((v) => v.id_vehiculo === vehiculoId);
-    const conductor = mockConductores.find(
-      (c) => c.id_conductor === conductorId
-    );
+  ): ApiResponse<ApiResult<Vehiculo>> {
+    const vehiculoIndex = findEntityIndex(mockVehiculos, "id_vehiculo", vehiculoId);
+    const conductorIndex = findEntityIndex(mockConductores, "id_conductor", conductorId);
 
-    if (!vehiculo) {
-      return simulateRequest({
-        success: false,
-        message: "Vehículo no encontrado",
-      });
+    if (vehiculoIndex === -1) {
+      throw new Error("Vehículo no encontrado");
     }
 
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "Conductor no encontrado",
-      });
+    if (conductorIndex === -1) {
+      throw new Error("Conductor no encontrado");
     }
 
-    if (vehiculo.estado !== VehiculoEstado.Disponible) {
-      return simulateRequest({
-        success: false,
-        message: "El vehículo no está disponible",
-      });
+    const vehiculoOriginal = mockVehiculos[vehiculoIndex];
+    const conductorOriginal = mockConductores[conductorIndex];
+
+    if (vehiculoOriginal.estado !== VehiculoEstado.Disponible) {
+      throw new Error("El vehículo no está disponible");
     }
 
-    if (conductor.id_vehiculo_asignado) {
-      return simulateRequest({
-        success: false,
-        message: "El conductor ya tiene un vehículo asignado",
-      });
+    if (conductorOriginal.id_vehiculo_asignado) {
+      throw new Error("El conductor ya tiene un vehículo asignado");
     }
 
-    // Asignación
-    conductor.id_vehiculo_asignado = vehiculo.id_vehiculo;
-    vehiculo.estado = VehiculoEstado.NoDisponible;
+    // Asignación - el "servidor" decide los valores finales
+    const conductorActualizado = {
+      ...conductorOriginal,
+      id_vehiculo_asignado: vehiculoOriginal.id_vehiculo,
+      fecha_asignacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    const vehiculoActualizado = {
+      ...vehiculoOriginal,
+      estado: VehiculoEstado.NoDisponible,
+    };
+
+    // Actualizar mocks
+    mockConductores[conductorIndex] = conductorActualizado;
+    mockVehiculos[vehiculoIndex] = vehiculoActualizado;
 
     return simulateRequest({
-      success: true,
-      message: "Vehículo asignado al conductor",
+      entidadPrincipal: vehiculoActualizado,
+      entidadesRelacionadas: {
+        conductor: conductorActualizado,
+      },
+      mensaje: "Vehículo asignado al conductor exitosamente",
     });
   },
 
-  async unassignFromConductor(vehiculoId: string): ApiResponse<ApiResult> {
-    const vehiculo = mockVehiculos.find((v) => v.id_vehiculo === vehiculoId);
+  async unassignFromConductor(vehiculoId: string): ApiResponse<ApiResult<Vehiculo>> {
+    const vehiculoIndex = findEntityIndex(mockVehiculos, "id_vehiculo", vehiculoId);
 
-    if (!vehiculo) {
-      return simulateRequest({
-        success: false,
-        message: "Vehículo no encontrado",
-      });
+    if (vehiculoIndex === -1) {
+      throw new Error("Vehículo no encontrado");
     }
 
+    const vehiculoOriginal = mockVehiculos[vehiculoIndex];
+
     // Buscar el conductor que tiene asignado este vehículo
-    const conductor = mockConductores.find(
+    const conductorIndex = mockConductores.findIndex(
       (c) => c.id_vehiculo_asignado === vehiculoId
     );
 
-    if (!conductor) {
-      return simulateRequest({
-        success: false,
-        message: "El vehículo no está asignado a ningún conductor",
-      });
+    if (conductorIndex === -1) {
+      throw new Error("El vehículo no está asignado a ningún conductor");
     }
+
+    const conductorOriginal = mockConductores[conductorIndex];
 
     // Solo se puede desasignar si el conductor no está en ruta
-    if (conductor.estado === ConductorEstado.EnRuta) {
-      return simulateRequest({
-        success: false,
-        message: "No se puede desasignar un vehículo de un conductor en ruta",
-      });
+    if (conductorOriginal.estado === ConductorEstado.EnRuta) {
+      throw new Error("No se puede desasignar un vehículo de un conductor en ruta");
     }
 
-    // Desasignación
-    conductor.id_vehiculo_asignado = undefined;
-    vehiculo.estado = VehiculoEstado.Disponible;
+    // Desasignación - el "servidor" decide los valores finales
+    const conductorActualizado = {
+      ...conductorOriginal,
+      id_vehiculo_asignado: undefined,
+      fecha_desasignacion: nowISO(), // Campo que el servidor podría agregar
+    };
+
+    const vehiculoActualizado = {
+      ...vehiculoOriginal,
+      estado: VehiculoEstado.Disponible,
+    };
+
+    // Actualizar mocks
+    mockConductores[conductorIndex] = conductorActualizado;
+    mockVehiculos[vehiculoIndex] = vehiculoActualizado;
 
     return simulateRequest({
-      success: true,
-      message: "Vehículo desasignado del conductor",
+      entidadPrincipal: vehiculoActualizado,
+      entidadesRelacionadas: {
+        conductor: conductorActualizado,
+      },
+      mensaje: "Vehículo desasignado del conductor exitosamente",
     });
   },
 };
+
 
 // ===================== EXPORTACIÓN PRINCIPAL =====================
 export const api = {
@@ -948,6 +935,3 @@ export const api = {
 
 // Exportar también APIs individuales para casos específicos
 export { paquetesAPI, rutasAPI, conductoresAPI, vehiculosAPI };
-
-// Exportar tipos para uso externo
-export type { ApiResponse, ApiResult };
