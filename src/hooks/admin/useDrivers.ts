@@ -4,14 +4,20 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { api } from "../../global/apis";
-import { Conductor, ConductorEstado, Vehiculo } from "../../global/types";
+import { Conductor, ConductorEstado, Vehiculo, Ruta, Paquete } from "../../global/types";
 
 // ===================== TIPOS DEL HOOK =====================
 interface UseDriversConfig {
   estado?: ConductorEstado | "all";
   autoFetch?: boolean;
   refreshInterval?: number;
-  includeVehicleInfo?: boolean; // Para obtener info del vehículo asignado
+  includeVehicleInfo?: boolean; // Para futura extensión si la API incluye vehículo
+  onRelatedEntitiesUpdate?: (related: {
+    ruta?: Ruta;
+    conductor?: Conductor;
+    vehiculo?: Vehiculo;
+    paquetes?: Paquete[];
+  }) => void;  // Callback opcional para manejar entidades relacionadas (e.g., sincronizar con otros hooks)
 }
 
 interface DriversState {
@@ -34,7 +40,7 @@ interface UseDriversActions {
   // Obtener conductor con información extendida
   getConductorWithDetails: (
     conductorId: string
-  ) => Promise<(Conductor & { vehiculo?: Vehiculo }) | null>;
+  ) => Promise<Conductor | null>;
 
   // Utilidades
   getConductorById: (id: string) => Conductor | undefined;
@@ -64,6 +70,7 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
     autoFetch = true,
     refreshInterval,
     includeVehicleInfo = false,
+    onRelatedEntitiesUpdate,
   } = config;
 
   // ===================== ESTADO LOCAL =====================
@@ -86,10 +93,10 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
 
       let conductores: Conductor[];
 
-      if (estado === "all") {
-        conductores = await api.conductores.getAll();
+      if (estado !== "all") {
+        conductores = await api.conductores.getByEstado(estado as ConductorEstado);
       } else {
-        conductores = await api.conductores.getByEstado(estado);
+        conductores = await api.conductores.getAll();
       }
 
       setState((prev) => ({
@@ -144,23 +151,26 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
           conductorId,
           nuevoEstado
         );
+        const conductorActualizado = result.entidadPrincipal;
 
-        if (result.success) {
-          // Actualización optimista
-          setState((prev) => ({
-            ...prev,
-            data: prev.data.map((conductor) =>
-              conductor.id_conductor === conductorId
-                ? { ...conductor, estado: nuevoEstado }
-                : conductor
-            ),
-            error: null,
-          }));
-          setOperationStates((prev) => ({ ...prev, isUpdatingStatus: false }));
-          return true;
-        } else {
-          throw new Error(result.message);
+        // Actualización optimista
+        setState((prev) => ({
+          ...prev,
+          data: prev.data.map((conductor) =>
+            conductor.id_conductor === conductorId
+              ? { ...conductorActualizado }
+              : conductor
+          ),
+          error: null,
+        }));
+
+        // Manejar entidadesRelacionadas si existen
+        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
         }
+
+        setOperationStates((prev) => ({ ...prev, isUpdatingStatus: false }));
+        return true;
       } catch (error) {
         console.error("Error al actualizar estado del conductor:", error);
         setState((prev) => ({
@@ -174,7 +184,7 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
         return false;
       }
     },
-    []
+    [onRelatedEntitiesUpdate]
   );
 
   // ===================== OPERACIONES DE ASIGNACIÓN =====================
@@ -184,23 +194,30 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
         setOperationStates((prev) => ({ ...prev, isAssigning: true }));
 
         const result = await api.conductores.assignRuta(conductorId, rutaId);
+        const conductorActualizado = result.entidadPrincipal;
 
-        if (result.success) {
-          // Actualización optimista - el conductor pasa a "En ruta"
-          setState((prev) => ({
-            ...prev,
-            data: prev.data.map((conductor) =>
-              conductor.id_conductor === conductorId
-                ? { ...conductor, estado: ConductorEstado.EnRuta }
-                : conductor
-            ),
-            error: null,
-          }));
-          setOperationStates((prev) => ({ ...prev, isAssigning: false }));
-          return true;
-        } else {
-          throw new Error(result.message);
+        // Actualización optimista
+        setState((prev) => ({
+          ...prev,
+          data: prev.data.map((conductor) =>
+            conductor.id_conductor === conductorId
+              ? { ...conductorActualizado }
+              : conductor
+          ),
+          error: null,
+        }));
+
+        // Manejar entidadesRelacionadas (e.g., ruta actualizada, paquetes)
+        if (result.entidadesRelacionadas) {
+          if (onRelatedEntitiesUpdate) {
+            onRelatedEntitiesUpdate(result.entidadesRelacionadas);
+          }
+          // Opcional: Refetch si afecta muchas entidades
+          refetch();
         }
+
+        setOperationStates((prev) => ({ ...prev, isAssigning: false }));
+        return true;
       } catch (error) {
         console.error("Error al asignar ruta al conductor:", error);
         setState((prev) => ({
@@ -214,31 +231,30 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
         return false;
       }
     },
-    []
+    [onRelatedEntitiesUpdate, refetch]
   );
 
   // ===================== INFORMACIÓN EXTENDIDA =====================
-  const getConductorWithDetails = useCallback(
-    async (
-      conductorId: string
-    ): Promise<(Conductor & { vehiculo?: Vehiculo }) | null> => {
-      try {
-        const conductorConDetalles = await api.conductores.getById(conductorId);
-        return conductorConDetalles;
-      } catch (error) {
-        console.error("Error al obtener detalles del conductor:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Error al obtener detalles del conductor",
-        }));
-        return null;
-      }
-    },
-    []
-  );
+// ===================== INFORMACIÓN EXTENDIDA =====================
+const getConductorWithDetails = useCallback(
+  async (conductorId: string): Promise<Conductor | null> => {
+    try {
+      const conductor = await api.conductores.getById(conductorId);
+      return conductor;
+    } catch (error) {
+      console.error("Error al obtener detalles del conductor:", error);
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Error al obtener detalles del conductor",
+      }));
+      return null;
+    }
+  },
+  []
+);
 
   // ===================== UTILIDADES =====================
   const getConductorById = useCallback(
@@ -340,12 +356,7 @@ export const useDriverAssignment = () => {
       try {
         setLoading(true);
         setError(null);
-        const result = await api.conductores.assignRuta(conductorId, rutaId);
-
-        if (!result.success) {
-          throw new Error(result.message);
-        }
-
+        await api.conductores.assignRuta(conductorId, rutaId);
         setLoading(false);
         return true;
       } catch (err) {
@@ -364,15 +375,7 @@ export const useDriverAssignment = () => {
       try {
         setLoading(true);
         setError(null);
-        const result = await api.conductores.updateEstado(
-          conductorId,
-          nuevoEstado
-        );
-
-        if (!result.success) {
-          throw new Error(result.message);
-        }
-
+        await api.conductores.updateEstado(conductorId, nuevoEstado);
         setLoading(false);
         return true;
       } catch (err) {
@@ -399,7 +402,7 @@ export const useDriverAssignment = () => {
  * Hook para obtener estadísticas de conductores
  * Útil para dashboards y reportes
  */
-export const useDriverStats = () => {
+export const useDriversStats = () => {
   const {
     conductoresDisponibles,
     conductoresEnRuta,

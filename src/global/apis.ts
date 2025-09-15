@@ -337,6 +337,100 @@ const paquetesAPI = {
       mensaje: "Paquete marcado como fallido"
     });
   },
+
+    async markEnRuta(paqueteId: string): ApiResponse<ApiResult<Paquete>> {
+    const index = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
+
+    if (index === -1) {
+      throw new Error("Paquete no encontrado");
+    }
+
+    const paqueteOriginal = mockPaquetes[index];
+    const estadosValidos = [PaquetesEstados.Asignado];
+    if (!estadosValidos.includes(paqueteOriginal.estado)) {
+      throw new Error("No se puede marcar como en ruta en este estado");
+    }
+
+    const paqueteActualizado = {
+      ...paqueteOriginal,
+      estado: PaquetesEstados.EnRuta,
+      fecha_en_ruta: nowISO(),
+      fecha_actualizacion: nowISO(),
+    };
+
+    mockPaquetes[index] = paqueteActualizado;
+
+    return simulateRequest({
+      entidadPrincipal: paqueteActualizado,
+      mensaje: "Paquete marcado como en ruta"
+    });
+  },
+
+  async reassign(
+    paqueteId: string, 
+    nuevaRutaId: string,
+    nuevoConductorId?: string,
+    observacion?: string
+  ): ApiResponse<ApiResult<Paquete>> {
+    const paqueteIndex = findEntityIndex(mockPaquetes, "id_paquete", paqueteId);
+    const rutaIndex = findEntityIndex(mockRutas, "id_ruta", nuevaRutaId);
+
+    if (paqueteIndex === -1 || rutaIndex === -1) {
+      throw new Error("Paquete o ruta no encontrados");
+    }
+
+    const paquete = mockPaquetes[paqueteIndex];
+    const ruta = mockRutas[rutaIndex];
+
+    if (paquete.estado !== PaquetesEstados.Fallido) {
+      throw new Error("Solo se pueden reasignar paquetes fallidos");
+    }
+
+    if (ruta.estado !== RutaEstado.Pendiente && ruta.estado !== RutaEstado.Asignada) {
+      throw new Error("La ruta no está disponible para reasignaciones");
+    }
+
+    let conductor: Conductor | undefined;
+    if (nuevoConductorId) {
+      conductor = mockConductores.find((c) => c.id_conductor === nuevoConductorId);
+      if (!conductor) {
+        throw new Error("Conductor no encontrado");
+      }
+      if (conductor.estado === ConductorEstado.NoDisponible) {
+        throw new Error("El conductor seleccionado no está disponible");
+      }
+    } else if (ruta.id_conductor_asignado) {
+      conductor = mockConductores.find((c) => c.id_conductor === ruta.id_conductor_asignado);
+    }
+
+    // Limpia rutas anteriores para reasignación limpia
+    const paqueteActualizado = {
+      ...paquete,
+      id_rutas_asignadas: [nuevaRutaId], // Reemplaza con la nueva ruta
+      id_conductor_asignado: conductor ? conductor.id_conductor : null,
+      estado: PaquetesEstados.Asignado,
+      observacion_conductor: observacion || paquete.observacion_conductor,
+      fecha_reasignacion: nowISO(),
+    };
+
+    const rutaActualizada = {
+      ...ruta,
+      paquetes_asignados: [...ruta.paquetes_asignados, paqueteId],
+      id_conductor_asignado: conductor ? conductor.id_conductor : ruta.id_conductor_asignado,
+    };
+
+    mockPaquetes[paqueteIndex] = paqueteActualizado;
+    mockRutas[rutaIndex] = rutaActualizada;
+
+    return simulateRequest({
+      entidadPrincipal: paqueteActualizado,
+      entidadesRelacionadas: {
+        ruta: rutaActualizada,
+        conductor: conductor,
+      },
+      mensaje: "Paquete reasignado exitosamente"
+    });
+  },
 };
 
 // ===================== API DE RUTAS =====================

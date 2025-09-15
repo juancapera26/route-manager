@@ -91,7 +91,7 @@ export interface Conductor {
 // =====================
 export enum RutaEstado {
   Pendiente = "Pendiente",
-  asignada = "Asignada",
+  Asignada = "Asignada",
   Completada = "Completada",
   Fallida = "Fallida",
 }

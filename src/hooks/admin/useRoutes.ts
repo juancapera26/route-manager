@@ -4,13 +4,19 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
-import { Ruta, RutaEstado } from '../../global/types';
+import { Ruta, RutaEstado, Conductor, Paquete, Vehiculo } from '../../global/types';
 
 // ===================== TIPOS DEL HOOK =====================
 interface UseRutasConfig {
   estado?: RutaEstado | 'all';
   autoFetch?: boolean;
   refreshInterval?: number;
+  onRelatedEntitiesUpdate?: (related: {
+    conductor?: Conductor;
+    paquetes?: Paquete[];
+    vehiculo?: Vehiculo;
+    ruta?: Ruta;
+  }) => void;  // Callback opcional para manejar entidades relacionadas (e.g., sincronizar con otros hooks)
 }
 
 interface RutasState {
@@ -30,7 +36,7 @@ interface UseRutasActions {
   assignConductor: (rutaId: string, conductorId: string) => Promise<boolean>;
   cancelAssignment: (rutaId: string) => Promise<boolean>;
   completeRuta: (rutaId: string) => Promise<boolean>;
-  markAsFailida: (rutaId: string) => Promise<boolean>;
+  markFallida: (rutaId: string) => Promise<boolean>;
   
   // Utilidades
   getRutaById: (id: string) => Ruta | undefined;
@@ -57,7 +63,8 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
   const {
     estado = 'all',
     autoFetch = true,
-    refreshInterval
+    refreshInterval,
+    onRelatedEntitiesUpdate,
   } = config;
 
   // ===================== ESTADO LOCAL =====================
@@ -81,10 +88,10 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       
       let rutas: Ruta[];
       
-      if (estado === 'all') {
-        rutas = await api.rutas.getAll();
+      if (estado !== 'all') {
+        rutas = await api.rutas.getByEstado(estado as RutaEstado);
       } else {
-        rutas = await api.rutas.getByEstado(estado);
+        rutas = await api.rutas.getAll();
       }
       
       setState(prev => ({
@@ -130,14 +137,20 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
     try {
       setOperationStates(prev => ({ ...prev, isCreating: true }));
       
-      const nuevaRuta = await api.rutas.create(data);
+      const result = await api.rutas.create(data);
+      const nuevaRuta = result.entidadPrincipal;
       
-      // Actualizar estado local optimista
+      // Actualizar estado local optimista con entidadPrincipal
       setState(prev => ({
         ...prev,
         data: [nuevaRuta, ...prev.data],
         error: null,
       }));
+      
+      // Manejar entidadesRelacionadas si existen (aunque en create ruta suele ser vacío)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
+      }
       
       setOperationStates(prev => ({ ...prev, isCreating: false }));
       return true;
@@ -150,7 +163,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       setOperationStates(prev => ({ ...prev, isCreating: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const updateRuta = useCallback(async (
     id: string, 
@@ -160,21 +173,24 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       setOperationStates(prev => ({ ...prev, isUpdating: true }));
       
       const result = await api.rutas.update(id, data);
+      const rutaActualizada = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(ruta => 
-            ruta.id_ruta === id ? { ...ruta, ...data } : ruta
-          ),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isUpdating: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista con entidadPrincipal
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(ruta => 
+          ruta.id_ruta === id ? rutaActualizada : ruta
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., si update afecta conductor)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isUpdating: false }));
+      return true;
     } catch (error) {
       console.error('Error al actualizar ruta:', error);
       setState(prev => ({
@@ -184,7 +200,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       setOperationStates(prev => ({ ...prev, isUpdating: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const deleteRuta = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -192,18 +208,20 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       
       const result = await api.rutas.delete(id);
       
-      if (result.success) {
-        // Eliminación optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.filter(ruta => ruta.id_ruta !== id),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isDeleting: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Eliminación optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.filter(ruta => ruta.id_ruta !== id),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si delete afecta otros (raro, pero por completitud)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isDeleting: false }));
+      return true;
     } catch (error) {
       console.error('Error al eliminar ruta:', error);
       setState(prev => ({
@@ -213,7 +231,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       setOperationStates(prev => ({ ...prev, isDeleting: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   // ===================== OPERACIONES DE FLUJO =====================
   const assignConductor = useCallback(async (
@@ -222,26 +240,27 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
   ): Promise<boolean> => {
     try {
       const result = await api.rutas.assignConductor(rutaId, conductorId);
+      const rutaActualizada = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista del estado de la ruta
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(ruta => 
-            ruta.id_ruta === rutaId 
-              ? { 
-                  ...ruta, 
-                  id_conductor_asignado: conductorId,
-                  estado: RutaEstado.asignada 
-                }
-              : ruta
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista de la ruta principal
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(ruta => 
+          ruta.id_ruta === rutaId ? rutaActualizada : ruta
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., conductor actualizado, paquetes si aplica)
+      if (result.entidadesRelacionadas) {
+        if (onRelatedEntitiesUpdate) {
+          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
+        }
+        // Opcional: Refetch si afecta muchas entidades
+        refetch();
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al asignar conductor:', error);
       setState(prev => ({
@@ -250,31 +269,28 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate, refetch]);
 
   const cancelAssignment = useCallback(async (rutaId: string): Promise<boolean> => {
     try {
       const result = await api.rutas.cancelAssignment(rutaId);
+      const rutaActualizada = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(ruta => 
-            ruta.id_ruta === rutaId 
-              ? { 
-                  ...ruta, 
-                  id_conductor_asignado: null,
-                  estado: RutaEstado.Pendiente 
-                }
-              : ruta
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(ruta => 
+          ruta.id_ruta === rutaId ? rutaActualizada : ruta
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., conductor liberado)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al cancelar asignación:', error);
       setState(prev => ({
@@ -283,27 +299,28 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const completeRuta = useCallback(async (rutaId: string): Promise<boolean> => {
     try {
       const result = await api.rutas.complete(rutaId);
+      const rutaActualizada = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(ruta => 
-            ruta.id_ruta === rutaId 
-              ? { ...ruta, estado: RutaEstado.Completada }
-              : ruta
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(ruta => 
+          ruta.id_ruta === rutaId ? rutaActualizada : ruta
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., conductor liberado)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al completar ruta:', error);
       setState(prev => ({
@@ -312,27 +329,28 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
-  const markAsFailida = useCallback(async (rutaId: string): Promise<boolean> => {
+  const markFallida = useCallback(async (rutaId: string): Promise<boolean> => {
     try {
       const result = await api.rutas.markFallida(rutaId);
+      const rutaActualizada = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(ruta => 
-            ruta.id_ruta === rutaId 
-              ? { ...ruta, estado: RutaEstado.Fallida }
-              : ruta
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(ruta => 
+          ruta.id_ruta === rutaId ? rutaActualizada : ruta
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., conductor liberado)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al marcar ruta como fallida:', error);
       setState(prev => ({
@@ -341,7 +359,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   // ===================== UTILIDADES =====================
   const getRutaById = useCallback((id: string): Ruta | undefined => {
@@ -355,7 +373,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
   // ===================== DATOS COMPUTADOS =====================
   const computedData = useMemo(() => {
     const rutasPendientes = state.data.filter(ruta => ruta.estado === RutaEstado.Pendiente);
-    const rutasAsignadas = state.data.filter(ruta => ruta.estado === RutaEstado.asignada);
+    const rutasAsignadas = state.data.filter(ruta => ruta.estado === RutaEstado.Asignada);
     const rutasCompletadas = state.data.filter(ruta => ruta.estado === RutaEstado.Completada);
     const rutasFallidas = state.data.filter(ruta => ruta.estado === RutaEstado.Fallida);
 
@@ -388,7 +406,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
     assignConductor,
     cancelAssignment,
     completeRuta,
-    markAsFailida,
+    markFallida,
     
     // Utilidades
     getRutaById,
@@ -419,12 +437,7 @@ export const useRutaAssignment = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.rutas.assignConductor(rutaId, conductorId);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.rutas.assignConductor(rutaId, conductorId);
       setLoading(false);
       return true;
     } catch (err) {
@@ -439,12 +452,7 @@ export const useRutaAssignment = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.rutas.cancelAssignment(rutaId);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.rutas.cancelAssignment(rutaId);
       setLoading(false);
       return true;
     } catch (err) {

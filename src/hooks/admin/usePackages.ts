@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
-import { Paquete, PaquetesEstados } from '../../global/types';
+import { Paquete, PaquetesEstados, Ruta, Conductor, Vehiculo } from '../../global/types';
 
 // ===================== TIPOS DEL HOOK =====================
 interface UsePaquetesConfig {
@@ -16,6 +16,12 @@ interface UsePaquetesConfig {
     fromDate?: string;
     toDate?: string;
   };
+  onRelatedEntitiesUpdate?: (related: {
+    ruta?: Ruta;
+    conductor?: Conductor;
+    vehiculo?: Vehiculo;
+    paquetes?: Paquete[];
+  }) => void;  // Callback opcional para manejar entidades relacionadas (e.g., sincronizar con otros hooks)
 }
 
 interface PaquetesState {
@@ -76,7 +82,8 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
     autoFetch = true,
     refreshInterval,
     searchQuery,
-    dateRange
+    dateRange,
+    onRelatedEntitiesUpdate,
   } = config;
 
   // ===================== ESTADO LOCAL =====================
@@ -107,21 +114,29 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       
       let paquetes: Paquete[];
       
-      if (currentEstado === 'all') {
-        paquetes = await api.paquetes.getAll(
-          currentSearch,
-          null,
-          currentDateRange?.fromDate,
-          currentDateRange?.toDate
-        );
+      if (currentEstado !== 'all') {
+        paquetes = await api.paquetes.getByEstado(currentEstado as PaquetesEstados);
       } else {
-        // Para filtros específicos, primero obtenemos todos y luego filtramos
-        paquetes = await api.paquetes.getAll(
-          currentSearch,
-          currentEstado,
-          currentDateRange?.fromDate,
-          currentDateRange?.toDate
+        paquetes = await api.paquetes.getAll();
+      }
+      
+      // Filtrado client-side para search y dateRange (API no lo soporta)
+      if (currentSearch) {
+        const lowerSearch = currentSearch.toLowerCase();
+        paquetes = paquetes.filter(p => 
+          p.id_paquete.toLowerCase().includes(lowerSearch) ||
+          p.destinatario.nombre.toLowerCase().includes(lowerSearch) ||
+          p.destinatario.apellido.toLowerCase().includes(lowerSearch)
         );
+      }
+      
+      if (currentDateRange?.fromDate || currentDateRange?.toDate) {
+        const from = currentDateRange.fromDate ? new Date(currentDateRange.fromDate) : null;
+        const to = currentDateRange.toDate ? new Date(currentDateRange.toDate) : null;
+        paquetes = paquetes.filter(p => {
+          const regDate = new Date(p.fecha_registro);
+          return (!from || regDate >= from) && (!to || regDate <= to);
+        });
       }
       
       setState(prev => ({
@@ -174,7 +189,8 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
     try {
       setOperationStates(prev => ({ ...prev, isCreating: true }));
       
-      const nuevoPaquete = await api.paquetes.create(data);
+      const result = await api.paquetes.create(data);
+      const nuevoPaquete = result.entidadPrincipal;
       
       // Actualizar estado local optimista
       setState(prev => ({
@@ -182,6 +198,11 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
         data: [nuevoPaquete, ...prev.data],
         error: null,
       }));
+      
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
+      }
       
       setOperationStates(prev => ({ ...prev, isCreating: false }));
       return true;
@@ -194,7 +215,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isCreating: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const updatePaquete = useCallback(async (
     id: string, 
@@ -204,21 +225,24 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isUpdating: true }));
       
       const result = await api.paquetes.update(id, data);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === id ? { ...paquete, ...data } : paquete
-          ),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isUpdating: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === id ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isUpdating: false }));
+      return true;
     } catch (error) {
       console.error('Error al actualizar paquete:', error);
       setState(prev => ({
@@ -228,7 +252,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isUpdating: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const deletePaquete = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -236,18 +260,20 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       
       const result = await api.paquetes.delete(id);
       
-      if (result.success) {
-        // Eliminación optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.filter(paquete => paquete.id_paquete !== id),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isDeleting: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Eliminación optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.filter(paquete => paquete.id_paquete !== id),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isDeleting: false }));
+      return true;
     } catch (error) {
       console.error('Error al eliminar paquete:', error);
       setState(prev => ({
@@ -257,7 +283,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isDeleting: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   // ===================== OPERACIONES DE FLUJO PRINCIPAL =====================
   const assignPaquete = useCallback(async (
@@ -269,28 +295,28 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: true }));
       
       const result = await api.paquetes.assign(paqueteId, rutaId, conductorId);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista del estado del paquete
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === paqueteId 
-              ? { 
-                  ...paquete, 
-                  estado: PaquetesEstados.Asignado,
-                  id_rutas_asignadas: [...paquete.id_rutas_asignadas, rutaId],
-                  id_conductor_asignado: conductorId || paquete.id_conductor_asignado
-                }
-              : paquete
-          ),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isAssigning: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista del estado del paquete
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., ruta actualizada, conductor)
+      if (result.entidadesRelacionadas) {
+        if (onRelatedEntitiesUpdate) {
+          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
+        }
+        // Opcional: Refetch si afecta muchas entidades
+        refetch();
       }
+      
+      setOperationStates(prev => ({ ...prev, isAssigning: false }));
+      return true;
     } catch (error) {
       console.error('Error al asignar paquete:', error);
       setState(prev => ({
@@ -300,7 +326,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate, refetch]);
 
   const cancelAssignment = useCallback(async (
     paqueteId: string, 
@@ -310,30 +336,24 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: true }));
       
       const result = await api.paquetes.cancelAssignment(paqueteId, rutaId);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => {
-            if (paquete.id_paquete === paqueteId) {
-              const nuevasRutas = paquete.id_rutas_asignadas.filter(r => r !== rutaId);
-              return {
-                ...paquete,
-                id_rutas_asignadas: nuevasRutas,
-                estado: nuevasRutas.length === 0 ? PaquetesEstados.Pendiente : paquete.estado,
-                id_conductor_asignado: nuevasRutas.length === 0 ? null : paquete.id_conductor_asignado,
-              };
-            }
-            return paquete;
-          }),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isAssigning: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., ruta actualizada)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isAssigning: false }));
+      return true;
     } catch (error) {
       console.error('Error al cancelar asignación:', error);
       setState(prev => ({
@@ -343,7 +363,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const reassignPaquete = useCallback(async (
     paqueteId: string, 
@@ -355,29 +375,24 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: true }));
       
       const result = await api.paquetes.reassign(paqueteId, nuevaRutaId, nuevoConductorId, observacion);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === paqueteId 
-              ? { 
-                  ...paquete, 
-                  estado: PaquetesEstados.Asignado,
-                  id_rutas_asignadas: [...paquete.id_rutas_asignadas, nuevaRutaId],
-                  id_conductor_asignado: nuevoConductorId || paquete.id_conductor_asignado,
-                  observacion_conductor: observacion || paquete.observacion_conductor
-                }
-              : paquete
-          ),
-          error: null,
-        }));
-        setOperationStates(prev => ({ ...prev, isAssigning: false }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas (e.g., ruta nueva, conductor)
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      setOperationStates(prev => ({ ...prev, isAssigning: false }));
+      return true;
     } catch (error) {
       console.error('Error al reasignar paquete:', error);
       setState(prev => ({
@@ -387,28 +402,29 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isAssigning: false }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   // ===================== CAMBIOS DE ESTADO DEL FLUJO =====================
   const markEnRuta = useCallback(async (paqueteId: string): Promise<boolean> => {
     try {
       const result = await api.paquetes.markEnRuta(paqueteId);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === paqueteId 
-              ? { ...paquete, estado: PaquetesEstados.EnRuta }
-              : paquete
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al marcar paquete en ruta:', error);
       setState(prev => ({
@@ -417,7 +433,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const markEntregado = useCallback(async (
     paqueteId: string, 
@@ -426,28 +442,23 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
   ): Promise<boolean> => {
     try {
       const result = await api.paquetes.markEntregado(paqueteId, observacion, imagen);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === paqueteId 
-              ? { 
-                  ...paquete, 
-                  estado: PaquetesEstados.Entregado,
-                  fecha_entrega: new Date().toISOString(),
-                  observacion_conductor: observacion || paquete.observacion_conductor,
-                  imagen_adjunta: imagen || paquete.imagen_adjunta
-                }
-              : paquete
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al marcar paquete como entregado:', error);
       setState(prev => ({
@@ -456,7 +467,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   const markFallido = useCallback(async (
     paqueteId: string, 
@@ -464,26 +475,23 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
   ): Promise<boolean> => {
     try {
       const result = await api.paquetes.markFallido(paqueteId, observacion);
+      const paqueteActualizado = result.entidadPrincipal;
       
-      if (result.success) {
-        // Actualización optimista
-        setState(prev => ({
-          ...prev,
-          data: prev.data.map(paquete => 
-            paquete.id_paquete === paqueteId 
-              ? { 
-                  ...paquete, 
-                  estado: PaquetesEstados.Fallido,
-                  observacion_conductor: observacion || paquete.observacion_conductor
-                }
-              : paquete
-          ),
-          error: null,
-        }));
-        return true;
-      } else {
-        throw new Error(result.message);
+      // Actualización optimista
+      setState(prev => ({
+        ...prev,
+        data: prev.data.map(paquete => 
+          paquete.id_paquete === paqueteId ? paqueteActualizado : paquete
+        ),
+        error: null,
+      }));
+
+      // Manejar entidadesRelacionadas si existen
+      if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
+        onRelatedEntitiesUpdate(result.entidadesRelacionadas);
       }
+      
+      return true;
     } catch (error) {
       console.error('Error al marcar paquete como fallido:', error);
       setState(prev => ({
@@ -492,7 +500,7 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       }));
       return false;
     }
-  }, []);
+  }, [onRelatedEntitiesUpdate]);
 
   // ===================== UTILIDADES =====================
   const getPaqueteById = useCallback((id: string): Paquete | undefined => {
@@ -580,7 +588,7 @@ export const usePaquetesFallidos = () => {
 };
 
 /**
- * Hook específico para operaciones de asignación y reasignación
+ * Hook específico para operaciones de asignación
  * Separado para componentes que solo necesitan estas operaciones
  */
 export const usePaqueteAssignment = () => {
@@ -595,12 +603,7 @@ export const usePaqueteAssignment = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.assign(paqueteId, rutaId, conductorId);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.assign(paqueteId, rutaId, conductorId);
       setLoading(false);
       return true;
     } catch (err) {
@@ -620,12 +623,7 @@ export const usePaqueteAssignment = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.reassign(paqueteId, nuevaRutaId, nuevoConductorId, observacion);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.reassign(paqueteId, nuevaRutaId, nuevoConductorId, observacion);
       setLoading(false);
       return true;
     } catch (err) {
@@ -640,12 +638,7 @@ export const usePaqueteAssignment = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.cancelAssignment(paqueteId, rutaId);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.cancelAssignment(paqueteId, rutaId);
       setLoading(false);
       return true;
     } catch (err) {
@@ -678,12 +671,7 @@ export const usePaqueteStatusUpdate = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.markEnRuta(paqueteId);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.markEnRuta(paqueteId);
       setLoading(false);
       return true;
     } catch (err) {
@@ -702,12 +690,7 @@ export const usePaqueteStatusUpdate = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.markEntregado(paqueteId, observacion, imagen);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.markEntregado(paqueteId, observacion, imagen);
       setLoading(false);
       return true;
     } catch (err) {
@@ -722,12 +705,7 @@ export const usePaqueteStatusUpdate = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await api.paquetes.markFallido(paqueteId, observacion);
-      
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      
+      await api.paquetes.markFallido(paqueteId, observacion);
       setLoading(false);
       return true;
     } catch (err) {
