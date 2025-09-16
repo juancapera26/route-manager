@@ -17,6 +17,13 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    allowedHosts: [
+      ".ngrok-free.app", // ✅ permite cualquier subdominio de ngrok
+    ],
+    host: true, // ✅ necesario para exponer la app fuera de localhost
+    port: 5174, // ✅ puerto fijo (así siempre usas el mismo en ngrok)
+  },
   build: {
     sourcemap: true, // 🔍 Habilita sourcemaps para depurar en Vercel
     // ❌ `manualChunks` desactivado para evitar errores de ejecución

@@ -150,7 +150,6 @@ const AppSidebar: React.FC = () => {
         isExpanded={isExpanded}
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
-        onIniciarRutaEnDrive={() => {}}
       />
 
       <ModalHistorial
@@ -160,10 +159,10 @@ const AppSidebar: React.FC = () => {
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
       />
-       <ModalReporte
+      <ModalReporte
         isOpen={isReporteOpen}
         onClose={() => setReporteOpen(false)}
-      /> 
+      />
     </>
   );
 };

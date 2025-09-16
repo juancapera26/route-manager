@@ -13,7 +13,6 @@ interface ModalRutasProps {
   isExpanded: boolean;
   isHovered: boolean;
   isMobileOpen: boolean;
-  onIniciarRutaEnDrive: (destino: string) => void;
 }
 
 // Enum para steps
@@ -30,7 +29,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
   isExpanded,
   isHovered,
   isMobileOpen,
-  onIniciarRutaEnDrive,
 }) => {
   const [codigo, setCodigo] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
@@ -115,10 +113,9 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
           setMostrarLetras(true);
           setCurrentIndex(0);
           setActiveStep(Steps.Colapsada);
-
-          if (paquetes.length > 0) {
-            onIniciarRutaEnDrive(paquetes[0].direccion); // 👈 mandamos dirección al padre
-          }
+          console.log(paquetes);
+          localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
+          window.dispatchEvent(new Event("paquetesRutaUpdated"));
         }}
       />
     ),
@@ -156,10 +153,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         <IconButton
           onClick={() => {
             if (activeStep === Steps.Formulario) {
-              // 👉 Si estoy en formulario, cierro modal
               onClose();
             } else {
-              // 👉 Si estoy en otra vista, pregunto antes de volver al formulario
               const confirmar = window.confirm(
                 "¿Está seguro que desea cancelar la ruta y volver a ingresar el manifiesto?"
               );
@@ -171,6 +166,10 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
                 setMostrarLetras(false);
                 setMensajeError("");
                 setActiveStep(Steps.Formulario);
+
+                // 🚀 Limpiar ruta en Driver
+                localStorage.removeItem("paquetesRuta");
+                window.dispatchEvent(new Event("paquetesRutaUpdated"));
               }
             }
           }}

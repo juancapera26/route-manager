@@ -11,6 +11,10 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -24,9 +28,10 @@ const PALABRAS_PROHIBIDAS: string[] = [
 
 interface Reporte {
   descripcion: string;
-  archivo?: File | null;
+  imagen?: string | null; // ahora usamos lo que devuelve el backend
   fecha: string;
   estado: "pendiente" | "enviado" | "rechazado";
+  tipo: "Logística" | "Operativa";
 }
 
 interface ModalReporteProps {
@@ -35,16 +40,15 @@ interface ModalReporteProps {
 }
 
 const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
-  // 👇 Hooks SIEMPRE primero
   const [descripcion, setDescripcion] = useState("");
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [tipo, setTipo] = useState<"Logística" | "Operativa">("Logística");
   const [step, setStep] = useState<
     "form" | "confirm" | "success" | "historial"
   >("form");
   const [error, setError] = useState("");
   const [reportes, setReportes] = useState<Reporte[]>([]);
 
-  // 👇 Validación después de los hooks
   if (!isOpen) return null;
 
   // Validar y pasar a confirmación
@@ -62,20 +66,44 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
     setStep("confirm");
   };
 
-  // Confirmar y guardar reporte
-  const handleConfirmarEnvio = () => {
-    const nuevoReporte: Reporte = {
-      descripcion,
-      archivo,
-      fecha: new Date().toLocaleDateString(),
-      estado: "enviado",
-    };
+  // Confirmar y enviar reporte al backend
+  const handleConfirmarEnvio = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("descripcion", descripcion);
+      formData.append("tipo", tipo);
+      if (archivo) {
+        formData.append("archivo", archivo); // 👈 backend espera "archivo"
+      }
 
-    setReportes((prev) => [...prev, nuevoReporte]);
+      const response = await fetch("http://localhost:3000/reportes/subir", {
+        method: "POST",
+        body: formData,
+      });
 
-    setDescripcion("");
-    setArchivo(null);
-    setStep("success");
+      if (!response.ok) throw new Error("Error al enviar reporte");
+
+      const data = await response.json();
+
+      const nuevoReporte: Reporte = {
+        descripcion: data.descripcion || descripcion,
+        imagen: data.imagen || null, // 👈 ahora usamos la URL que responde NestJS
+        fecha: data.fecha || new Date().toLocaleDateString(),
+        estado: data.estado || "enviado",
+        tipo: data.tipo || tipo,
+      };
+
+      setReportes((prev) => [...prev, nuevoReporte]);
+
+      // Resetear formulario
+      setDescripcion("");
+      setArchivo(null);
+      setTipo("Logística");
+      setStep("success");
+    } catch (err) {
+      console.error(err);
+      setError("Hubo un error al enviar el reporte");
+    }
   };
 
   return (
@@ -127,6 +155,20 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
             <Typography variant="body2" color="text.secondary">
               Por favor, llena este formulario para generar un reporte.
             </Typography>
+
+            <FormControl fullWidth>
+              <InputLabel id="tipo-label">Tipo de novedad</InputLabel>
+              <Select
+                labelId="tipo-label"
+                value={tipo}
+                onChange={(e) =>
+                  setTipo(e.target.value as "Logística" | "Operativa")
+                }
+              >
+                <MenuItem value="Logística">Logística</MenuItem>
+                <MenuItem value="Operativa">Operativa</MenuItem>
+              </Select>
+            </FormControl>
 
             <TextField
               label="Describe el incidente"
@@ -237,6 +279,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Fecha</TableCell>
+                    <TableCell>Tipo</TableCell>
                     <TableCell>Descripción</TableCell>
                     <TableCell>Evidencia</TableCell>
                   </TableRow>
@@ -245,9 +288,18 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
                   {reportes.map((r, index) => (
                     <TableRow key={index}>
                       <TableCell>{r.fecha}</TableCell>
+                      <TableCell>{r.tipo}</TableCell>
                       <TableCell>{r.descripcion}</TableCell>
                       <TableCell>
-                        {r.archivo ? r.archivo.name : "NO CONTIENE"}
+                        {r.imagen ? (
+                          <img
+                            src={`http://localhost:3000/${r.imagen}`}
+                            alt="Evidencia"
+                            width={80}
+                          />
+                        ) : (
+                          "NO CONTIENE"
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

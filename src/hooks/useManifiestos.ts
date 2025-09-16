@@ -11,6 +11,8 @@ export interface Paquete {
   peso: number;
   estado_paquete: string;
   tipo_paquete: string;
+  lat: number;
+  lng: number;
 }
 
 interface ApiResponse {
