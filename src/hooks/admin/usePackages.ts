@@ -207,14 +207,14 @@ export const usePaquetes = (config: UsePaquetesConfig = {}): UsePaquetesReturn =
       setOperationStates(prev => ({ ...prev, isCreating: false }));
       return true;
     } catch (error) {
-      console.error('Error al crear paquete:', error);
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error al crear paquete',
-      }));
-      setOperationStates(prev => ({ ...prev, isCreating: false }));
-      return false;
-    }
+  const msg = error instanceof Error ? error.message : 'Error al crear paquete';
+  console.error('Error al crear paquete:', msg);
+
+  setState(prev => ({ ...prev, error: msg }));
+  setOperationStates(prev => ({ ...prev, isCreating: false }));
+  return false;
+}
+
   }, [onRelatedEntitiesUpdate]);
 
   const updatePaquete = useCallback(async (

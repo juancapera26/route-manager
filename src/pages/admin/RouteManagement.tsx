@@ -128,7 +128,7 @@ const RouteManagement: React.FC = () => {
     (r) => r.estado === RutaEstado.Pendiente
   );
   const rutasAsignadas = rutasFiltradas.filter(
-    (r) => r.estado === RutaEstado.asignada
+    (r) => r.estado === RutaEstado.Asignada
   );
   const rutasCompletadas = rutasFiltradas.filter(
     (r) => r.estado === RutaEstado.Completada
@@ -369,7 +369,7 @@ const RouteManagement: React.FC = () => {
             </div>
             <TablaRutas
               rutas={rutasAsignadas}
-              estado={RutaEstado.asignada}
+              estado={RutaEstado.Asignada}
               conductores={conductores}
               onAbrirModal={abrirModal}
               onEliminarRuta={handleEliminarRuta}
@@ -480,7 +480,7 @@ const RouteManagement: React.FC = () => {
         </section>
       )}
 
-      {filtroEstado.estadoSeleccionado === RutaEstado.asignada && (
+      {filtroEstado.estadoSeleccionado === RutaEstado.Asignada && (
         <section>
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
@@ -516,7 +516,7 @@ const RouteManagement: React.FC = () => {
           </div>
           <TablaRutas
             rutas={rutasAsignadas}
-            estado={RutaEstado.asignada}
+            estado={RutaEstado.Asignada}
             conductores={conductores}
             onAbrirModal={abrirModal}
             onEliminarRuta={handleEliminarRuta}

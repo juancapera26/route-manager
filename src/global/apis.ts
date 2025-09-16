@@ -96,26 +96,31 @@ const paquetesAPI = {
     return simulateRequest(paquetes);
   },
 
-  async create(
-    data: Omit<Paquete, "id_paquete" | "fecha_registro" | "estado" | "fecha_entrega" | "id_rutas_asignadas" | "id_conductor_asignado">
-  ): ApiResponse<ApiResult<Paquete>> {
-    const nuevo: Paquete = {
-      ...data,
-      id_paquete: generateId("PAQ", mockPaquetes.at(-1), "id_paquete"),
-      fecha_registro: nowISO(),
-      estado: PaquetesEstados.Pendiente,
-      fecha_entrega: null,
-      id_rutas_asignadas: [],
-      id_conductor_asignado: null,
-    };
+async create(
+  data: Omit<Paquete, "id_paquete" | "fecha_registro" | "estado" | "fecha_entrega" | "id_rutas_asignadas" | "id_conductor_asignado">
+): ApiResponse<ApiResult<Paquete>> {
+  // Validar que incluya destinatario, dimensiones, tipo_paquete, etc.
+  if (!data.destinatario || !data.dimensiones || !data.tipo_paquete) {
+    throw new Error("Faltan campos requeridos: destinatario, dimensiones, tipo_paquete");
+  }
 
-    mockPaquetes.push(nuevo);
-    
-    return simulateRequest({
-      entidadPrincipal: nuevo,
-      mensaje: "Paquete creado exitosamente"
-    });
-  },
+  const nuevo: Paquete = {
+    ...data, // Ahora incluye: destinatario, dimensiones, tipo_paquete, cantidad, valor_declarado
+    id_paquete: generateId("PAQ", mockPaquetes.at(-1), "id_paquete"),
+    fecha_registro: nowISO(),
+    estado: PaquetesEstados.Pendiente,
+    fecha_entrega: null,
+    id_rutas_asignadas: [],
+    id_conductor_asignado: null,
+  };
+
+  mockPaquetes.push(nuevo);
+  
+  return simulateRequest({
+    entidadPrincipal: nuevo,
+    mensaje: "Paquete creado exitosamente"
+  });
+},
 
   async update(id: string, data: Partial<Paquete>): ApiResponse<ApiResult<Paquete>> {
     const index = findEntityIndex(mockPaquetes, "id_paquete", id);
