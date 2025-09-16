@@ -1,14 +1,11 @@
-// src/pages/admin/PackagesManagement.tsx
-import React from "react";
-import PageMeta from "../../components/common/PageMeta";
-import EstadoFilter from "../../components/common/EstadoFilter";
+import React, { useState } from "react";
 import { DataTable } from "../../components/ui/table/DataTable";
 import { usePackagesManagementHook } from "../../components/admin/packages/hooks/packagesHook";
 import EstadoFilterDropdown from "../../components/common/EstadoFilter";
-
-// UI
-import { Add } from "@mui/icons-material";
-import Button from "../../components/ui/button/Button";
+import ModalAgregarPaquete from "../../components/admin/packages/ModalAgregarPaquete";
+import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
+import { PaquetesEstados } from "../../global/types";
+import { Plus } from "lucide-react";
 
 const PackagesManagement: React.FC = () => {
   const {
@@ -18,32 +15,151 @@ const PackagesManagement: React.FC = () => {
     filtroEstado,
     columnsForCurrentState,
     actionsForCurrentState,
+    paquetesPendientes,
+    paquetesAsignados,
+    paquetesEnRuta,
+    paquetesEntregados,
+    paquetesFallidos,
+    handleCreatePaquete,
   } = usePackagesManagementHook();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false); // Corregido de setIsModalOpen a setSaving
+
+  // Mapa de estados a datos
+  const paquetesPorEstado: Record<PaquetesEstados, any[]> = {
+    [PaquetesEstados.Pendiente]: paquetesPendientes,
+    [PaquetesEstados.Asignado]: paquetesAsignados,
+    [PaquetesEstados.EnRuta]: paquetesEnRuta,
+    [PaquetesEstados.Entregado]: paquetesEntregados,
+    [PaquetesEstados.Fallido]: paquetesFallidos,
+  };
+
+  // Mapa de estados a colores de badge con tipo explícito
+  const badgeColors: Record<PaquetesEstados, BadgeColor> = {
+    [PaquetesEstados.Pendiente]: "warning",
+    [PaquetesEstados.Asignado]: "info",
+    [PaquetesEstados.EnRuta]: "primary",
+    [PaquetesEstados.Entregado]: "success",
+    [PaquetesEstados.Fallido]: "error",
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Meta*/}
-      <PageMeta title="Gestión de Paquetes" description="" />
+    <div className="p-6 space-y-8">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        Gestión de Paquetes
+      </h1>
 
-      {/* Encabezado + Filtros */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Gestión de Paquetes</h1>
-        <EstadoFilterDropdown
-          opciones={filtroEstado.opciones}
-          valorSeleccionado={filtroEstado.estadoSeleccionado}
-          onCambio={filtroEstado.setEstadoSeleccionado}
-          contadores={contadores}
-        />
-      </div>
+      {filtroEstado.estadoSeleccionado === null ? (
+        <>
+          {Object.values(PaquetesEstados).map((estado) => (
+            <section key={estado}>
+              <div className="mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
+                  {estado === PaquetesEstados.Pendiente && (
+                    <div className="order-1 sm:order-2">
+                      <button
+                        onClick={() => setIsModalOpen(true)}
+                        disabled={saving}
+                        className="inline-flex items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+                      >
+                        <Plus className="w-5 h-5" />
+                        {saving ? "Creando..." : ""}
+                      </button>
+                    </div>
+                  )}
 
-      {/* Tabla de Paquetes */}
-      <DataTable
-        data={datosFiltrados}
-        columns={columnsForCurrentState}
-        actions={actionsForCurrentState}
-        loading={loading}
-        emptyMessage="No hay paquetes registrados"
-        keyField="id_paquete"
+                  <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                        {estado}
+                      </h2>
+                      <Badge variant="light" color={badgeColors[estado]}>
+                        {paquetesPorEstado[estado]?.length || 0}
+                      </Badge>
+                    </div>
+
+                    {estado === PaquetesEstados.Pendiente && (
+                      <div>
+                        <EstadoFilterDropdown
+                          opciones={filtroEstado.opciones}
+                          valorSeleccionado={filtroEstado.estadoSeleccionado}
+                          onCambio={filtroEstado.setEstadoSeleccionado}
+                          contadores={contadores}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <DataTable
+                data={paquetesPorEstado[estado] || []}
+                columns={columnsForCurrentState}
+                actions={actionsForCurrentState}
+                loading={loading}
+                emptyMessage={`No hay paquetes ${estado.toLowerCase()} registrados`}
+                keyField="id_paquete"
+              />
+            </section>
+          ))}
+        </>
+      ) : (
+        <section>
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
+              <div className="order-1 sm:order-2">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={saving}
+                  className="inline-flex items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+                >
+                  <Plus className="w-4 h-4" />
+                  {saving ? "Creando..." : ""}
+                </button>
+              </div>
+
+              <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                    {filtroEstado.estadoSeleccionado}
+                  </h2>
+                  <Badge
+                    variant="light"
+                    color={badgeColors[filtroEstado.estadoSeleccionado!]}
+                  >
+                    {datosFiltrados.length}
+                  </Badge>
+                </div>
+
+                <div>
+                  <EstadoFilterDropdown
+                    opciones={filtroEstado.opciones}
+                    valorSeleccionado={filtroEstado.estadoSeleccionado}
+                    onCambio={filtroEstado.setEstadoSeleccionado}
+                    contadores={contadores}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DataTable
+            data={datosFiltrados}
+            columns={columnsForCurrentState}
+            actions={actionsForCurrentState}
+            loading={loading}
+            emptyMessage={`No hay paquetes ${filtroEstado.estadoSeleccionado?.toLowerCase()} registrados`}
+            keyField="id_paquete"
+          />
+        </section>
+      )}
+
+      <ModalAgregarPaquete
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleCreatePaquete}
+        isLoading={saving}
       />
     </div>
   );

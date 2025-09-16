@@ -2,6 +2,7 @@
 import React from "react";
 import { Paquete, PaquetesEstados } from "../types";
 import { ColumnDef, ActionButton } from "../../components/ui/table/DataTable";
+import Badge,  {BadgeColor} from "../../components/ui/badge/Badge";
 
 // Importar iconos de Lucide React
 import {
@@ -109,18 +110,29 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
     sortable: true,
   },
 
-  estado: {
+estado: {
     key: "estado",
     header: "Estado",
-    accessor: (item) => (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEstadoBadgeClasses(
-          item.estado
-        )}`}
-      >
-        {item.estado}
-      </span>
-    ),
+    accessor: (item) => {
+      // Mapear el estado a un color del componente Badge
+      const colorMap: Record<PaquetesEstados, BadgeColor> = {
+        [PaquetesEstados.Pendiente]: "warning",
+        [PaquetesEstados.Asignado]: "info",
+        [PaquetesEstados.EnRuta]: "primary",
+        [PaquetesEstados.Entregado]: "success",
+        [PaquetesEstados.Fallido]: "error",
+      };
+
+      return (
+        <Badge
+          variant="light" // Puedes cambiar a "solid" si prefieres
+          color={colorMap[item.estado] || "light"}
+          size="sm"
+        >
+          {item.estado}
+        </Badge>
+      );
+    },
     sortable: true,
   },
 };
@@ -183,28 +195,7 @@ const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
   [PaquetesEstados.Fallido]: ["view", "edit", "delete", "reassign"],
 };
 
-// ===================== HELPER PARA CLASES DE ESTADO =====================
-function getEstadoBadgeClasses(estado: PaquetesEstados): string {
-  const classes = {
-    [PaquetesEstados.Pendiente]:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-    [PaquetesEstados.Asignado]:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    [PaquetesEstados.EnRuta]:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-    [PaquetesEstados.Entregado]:
-      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    [PaquetesEstados.Fallido]:
-      "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-  };
 
-  return (
-    classes[estado] ||
-    "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
-  );
-}
-
-// ===================== DEFINICIÓN DE ACCIONES BASE - CORREGIDO =====================
 // ===================== DEFINICIÓN DE ACCIONES BASE - CORREGIDO =====================
 export const createPaqueteAction = (
   key: PaquetesActionKey,
@@ -213,121 +204,107 @@ export const createPaqueteAction = (
   const actions: Record<PaquetesActionKey, ActionButton<Paquete>> = {
     view: {
       key: "view",
-      label: "",
+      label: "", // Sin texto en el botón
+      tooltip: "Ver detalles del paquete", // Texto para el tooltip
       icon: <Eye className="w-4 h-4" />,
       variant: "outline",
       onClick: callbacks.onView,
-      // ✅ Visible para todos los estados
     },
-
     edit: {
       key: "edit",
       label: "",
+      tooltip: "Editar paquete",
       icon: <Edit className="w-4 h-4" />,
       variant: "outline",
       onClick: callbacks.onEdit,
-      // ✅ Solo visible/habilitado para Pendiente y Fallido
       visible: (item) =>
-        [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(
-          item.estado
-        ),
+        [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
       disabled: (item) =>
-        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(
-          item.estado
-        ),
+        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
     },
-
     delete: {
       key: "delete",
       label: "",
+      tooltip: "Eliminar paquete",
       icon: <Trash2 className="w-4 h-4" />,
       variant: "destructive",
       onClick: callbacks.onDelete,
-      // ✅ Solo visible/habilitado para Pendiente y Fallido
-      visible: (item) =>
-        [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(
-          item.estado
-        ),
+      visible: (item) => {
+        console.log(`🗑️ DELETE - Paquete ${item.id_paquete}, Estado: ${item.estado}`);
+        const shouldShow = [
+          PaquetesEstados.Pendiente,
+          PaquetesEstados.Fallido,
+        ].includes(item.estado);
+        console.log(`🗑️ DELETE - Should show: ${shouldShow}`);
+        return shouldShow;
+      },
       disabled: (item) =>
-        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(
-          item.estado
-        ),
+        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
     },
-
     assign: {
       key: "assign",
       label: "",
+      tooltip: "Asignar paquete",
       icon: <ArrowRight className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onAssign,
-      // ✅ Solo visible para Pendiente
       visible: (item) => item.estado === PaquetesEstados.Pendiente,
     },
-
     reassign: {
       key: "reassign",
       label: "",
+      tooltip: "Reasignar paquete",
       icon: <RotateCcw className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onReassign,
-      // ✅ Solo visible para Fallido
       visible: (item) => item.estado === PaquetesEstados.Fallido,
     },
-
     cancel_assignment: {
       key: "cancel_assignment",
       label: "",
+      tooltip: "Cancelar asignación",
       icon: <X className="w-4 h-4" />,
       variant: "destructive",
       onClick: callbacks.onCancelAssignment,
-      // ✅ CORREGIDO: Solo visible para Asignado (removido EnRuta)
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
-
     mark_en_ruta: {
       key: "mark_en_ruta",
       label: "",
+      tooltip: "Marcar como en ruta",
       icon: <Truck className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onMarkEnRuta,
-      // ✅ Solo visible para Asignado
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
-
     mark_entregado: {
       key: "mark_entregado",
       label: "",
+      tooltip: "Marcar como entregado",
       icon: <Check className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onMarkEntregado,
-      // ✅ Solo visible para EnRuta
       visible: (item) => item.estado === PaquetesEstados.EnRuta,
     },
-
     mark_fallido: {
       key: "mark_fallido",
       label: "",
-      icon: <Trash2 className="w-4 h-4" />, // ✅ CAMBIADO: Usamos Trash2 en lugar de X
+      tooltip: "Marcar como fallido",
+      icon: <Trash2 className="w-4 h-4" />,
       variant: "destructive",
       onClick: callbacks.onMarkFallido,
-      // ✅ Solo visible para Asignado y EnRuta
       visible: (item) =>
-        [PaquetesEstados.Asignado, PaquetesEstados.EnRuta].includes(
-          item.estado
-        ),
+        [PaquetesEstados.Asignado, PaquetesEstados.EnRuta].includes(item.estado),
     },
-
     track: {
       key: "track",
       label: "",
+      tooltip: "Rastrear paquete",
       icon: <MapPin className="w-4 h-4" />,
       variant: "outline",
       onClick: callbacks.onTrack,
-      // ✅ Solo visible para EnRuta y Entregado
       visible: (item) =>
-        [PaquetesEstados.EnRuta, PaquetesEstados.Entregado].includes(
-          item.estado
-        ),
+        [PaquetesEstados.EnRuta, PaquetesEstados.Entregado].includes(item.estado),
     },
   };
 

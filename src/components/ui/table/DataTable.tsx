@@ -1,5 +1,6 @@
 // src/components/ui/table/DataTable.tsx
 import React from "react";
+import Badge from "../badge/Badge";
 
 // ===================== TIPOS BASE =====================
 export interface BaseEntity {
@@ -17,6 +18,7 @@ export interface ColumnDef<T extends BaseEntity> {
 export interface ActionButton<T extends BaseEntity> {
   key: string;
   label: string;
+  tooltip?: string;
   icon?: React.ReactNode;
   variant?: "default" | "outline" | "destructive" | "secondary";
   size?: "sm" | "md" | "lg";
@@ -260,7 +262,7 @@ export const DataTable = <T extends BaseEntity>({
                                 }}
                                 disabled={disabled}
                                 className={getButtonClasses(action, disabled)}
-                                title={action.label}
+                                title={action.tooltip || action.label}
                               >
                                 {action.icon && (
                                   <span className={action.label ? "mr-2" : ""}>

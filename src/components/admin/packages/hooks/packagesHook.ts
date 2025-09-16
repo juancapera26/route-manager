@@ -1,10 +1,8 @@
 // src/pages/admin/PackagesHooks.ts
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router";
-
 import { Paquete, PaquetesEstados } from "../../../../global/types";
 import { usePaquetes } from "../../../../hooks/admin/usePackages";
-
 import {
   PAQUETES_COLUMNS,
   createPaqueteAction,
@@ -12,37 +10,21 @@ import {
   PaquetesActionKey,
   PaquetesActionCallbacks,
 } from "../../../../global/types/tableTypes";
-
-import type {
-  ColumnDef,
-  ActionButton,
-} from "../../../../components/ui/table/DataTable";
-
+import type { ColumnDef, ActionButton } from "../../../../components/ui/table/DataTable";
 import { useEstadoFilter } from "../../../../hooks/useEstadoFilter";
-import {
-  opcionesFiltorPaquetes,
-  obtenerEstadoPaquete,
-} from "../../../../global/filterConfigs";
+import { opcionesFiltorPaquetes, obtenerEstadoPaquete } from "../../../../global/filterConfigs";
 
-/**
- * Hook: lógica del módulo PackagesManagement (sin UI)
- */
 export function usePackagesManagementHook() {
   const navigate = useNavigate();
 
-  // -------------------------
-  // Filtro de estado (estadoSeleccionado = null | PaquetesEstados)
-  // -------------------------
+  // Filtro de estado
   const filtroEstado = useEstadoFilter({
     opciones: opcionesFiltorPaquetes,
     valorInicial: null,
     obtenerEstado: obtenerEstadoPaquete,
   });
 
-  // -------------------------
-  // Hook central de datos y operaciones (tu fuente única)
-  // ✅ CAMBIADO: Siempre obtenemos TODOS los datos, no filtramos aquí
-  // -------------------------
+  // Hook central de datos
   const {
     data,
     loading,
@@ -64,21 +46,17 @@ export function usePackagesManagementHook() {
     markFallido,
     updateFilters,
   } = usePaquetes({
-    estado: "all", // ✅ FIJO: Siempre obtenemos todos los datos
+    estado: "all",
     autoFetch: true,
   });
 
-  // ✅ ELIMINADO: No sincronizamos filtro con el hook de datos
-  // El filtrado se hace localmente en este hook
-
-  // -------------------------
-  // Estado local útil para lógica (modals/alerts)
-  // -------------------------
+  // Estado local para modals/alerts
   const [alertState, setAlertState] = useState<{
     show: boolean;
     msg?: string;
     type?: "info" | "success" | "error" | "warning";
   }>({ show: false });
+
   const showAlert = useCallback(
     (msg: string, type: "info" | "success" | "error" | "warning" = "info") => {
       setAlertState({ show: true, msg, type });
@@ -103,14 +81,13 @@ export function usePackagesManagementHook() {
     },
     []
   );
+
   const closeAssignModal = useCallback(
     () => setModalState({ isOpen: false, paqueteId: null, action: null }),
     []
   );
 
-  // -------------------------
-  // Handlers de operaciones (lógica)
-  // -------------------------
+  // Handlers de operaciones
   const handleCreatePaquete = useCallback(
     async (payload: Parameters<typeof createPaquete>[0]) => {
       const ok = await createPaquete(payload as any);
@@ -244,9 +221,7 @@ export function usePackagesManagementHook() {
     [navigate]
   );
 
-  // -------------------------
-  // ACTION CALLBACKS (completo: incluye onDownloadLabel)
-  // -------------------------
+  // Action callbacks
   const actionCallbacks: PaquetesActionCallbacks = useMemo(
     () => ({
       onView: (p: Paquete) => {
@@ -295,7 +270,7 @@ export function usePackagesManagementHook() {
     ]
   );
 
-  // ==================== COLUMNAS SIMPLIFICADAS PARA TODAS LAS VISTAS ====================
+  // Columnas y acciones
   const COLUMNS_FOR_ALL_STATES: PaquetesColumnKey[] = [
     "id_paquete",
     "conductor_nombre",
@@ -306,7 +281,6 @@ export function usePackagesManagementHook() {
     "estado",
   ];
 
-  // ==================== ACCIONES POR ESTADO - CORREGIDO ====================
   const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
     [PaquetesEstados.Pendiente]: ["view", "edit", "delete", "assign"],
     [PaquetesEstados.Asignado]: [
@@ -320,67 +294,55 @@ export function usePackagesManagementHook() {
       "mark_entregado",
       "mark_fallido",
       "track",
-    ], // ❌ REMOVIDO cancel_assignment de aquí
+    ],
     [PaquetesEstados.Entregado]: ["view", "track"],
     [PaquetesEstados.Fallido]: ["view", "edit", "delete", "reassign"],
   };
 
-  // ==================== TODAS LAS ACCIONES POSIBLES (para vista "todos") ====================
   const ALL_POSSIBLE_ACTIONS: PaquetesActionKey[] = [
     "view",
-    "edit", 
+    "edit",
     "delete",
     "assign",
     "cancel_assignment",
     "reassign",
     "mark_en_ruta",
-    "mark_entregado", 
+    "mark_entregado",
     "mark_fallido",
-    "track"
+    "track",
   ];
 
-  // ==================== COLUMNAS Y ACCIONES COMPUTADAS - CORREGIDO ====================
   const columnsForCurrentState: ColumnDef<Paquete>[] = useMemo(
     () => COLUMNS_FOR_ALL_STATES.map((k) => PAQUETES_COLUMNS[k]),
-    [] // Sin dependencias variables
+    []
   );
 
-  // ✅ SOLUCION PRINCIPAL: Lógica de acciones corregida
   const actionsForCurrentState: ActionButton<Paquete>[] = useMemo(() => {
     let keys: PaquetesActionKey[];
-    
     if (filtroEstado.estadoSeleccionado === null) {
-      // ✅ Cuando mostramos "todos", incluimos todas las acciones posibles
-      // La visibilidad por fila se maneja en createPaqueteAction via la propiedad 'visible'
       keys = ALL_POSSIBLE_ACTIONS;
     } else {
-      // ✅ Cuando filtramos por estado, solo acciones específicas
-      const estado = filtroEstado.estadoSeleccionado;
-      keys = ACTIONS_BY_ESTADO[estado] ?? ACTIONS_BY_ESTADO[PaquetesEstados.Pendiente];
+      keys =
+        ACTIONS_BY_ESTADO[filtroEstado.estadoSeleccionado] ??
+        ACTIONS_BY_ESTADO[PaquetesEstados.Pendiente];
     }
-    
-    // ✅ Crear las acciones - la visibilidad per-fila está definida en tableTypes.ts
-    return keys.map(k => createPaqueteAction(k, actionCallbacks));
+    return keys.map((k) => createPaqueteAction(k, actionCallbacks));
   }, [filtroEstado.estadoSeleccionado, actionCallbacks]);
 
-  // -------------------------
-  // ✅ NUEVO: Filtrado local de datos (no en el hook de datos)
-  // Esto nos permite mantener todos los contadores correctos
-  // -------------------------
+  // Filtrado local
   const datosFiltrados = useMemo(() => {
-    // Si no hay filtro seleccionado, mostrar todos
     if (!filtroEstado.estadoSeleccionado) {
       return data;
     }
-    
-    // Si hay filtro, filtrar localmente por estado
-    return data.filter(paquete => paquete.estado === filtroEstado.estadoSeleccionado);
+    return data.filter(
+      (paquete) => paquete.estado === filtroEstado.estadoSeleccionado
+    );
   }, [data, filtroEstado.estadoSeleccionado]);
 
-  // ✅ CONTADORES: Ahora siempre basados en todos los datos (data completo)
+  // Contadores
   const contadores = useMemo(
     () => ({
-      todos: data.length, // Total siempre correcto
+      todos: data.length,
       [PaquetesEstados.Pendiente]: paquetesPendientes.length,
       [PaquetesEstados.Asignado]: paquetesAsignados.length,
       [PaquetesEstados.EnRuta]: paquetesEnRuta.length,
@@ -388,7 +350,7 @@ export function usePackagesManagementHook() {
       [PaquetesEstados.Fallido]: paquetesFallidos.length,
     }),
     [
-      data, // Siempre basado en data completo
+      data,
       paquetesPendientes,
       paquetesAsignados,
       paquetesEnRuta,
@@ -397,11 +359,8 @@ export function usePackagesManagementHook() {
     ]
   );
 
-  // -------------------------
-  // Export: lo que necesita el componente que renderice
-  // -------------------------
+  // Retorno del hook
   return {
-    // datos / estados
     data,
     datosFiltrados,
     loading,
@@ -410,13 +369,9 @@ export function usePackagesManagementHook() {
     contadores,
     columnsForCurrentState,
     actionsForCurrentState,
-
-    // filtros y UI-less state
     filtroEstado,
     alertState,
     modalState,
-
-    // handlers lógicos
     openAssignModal,
     closeAssignModal,
     handleConfirmAssign,
@@ -427,5 +382,11 @@ export function usePackagesManagementHook() {
     handleMarkEntregado,
     handleMarkFallido,
     handleTrack,
+    // Agregar las listas filtradas
+    paquetesPendientes,
+    paquetesAsignados,
+    paquetesEnRuta,
+    paquetesEntregados,
+    paquetesFallidos,
   };
 }
