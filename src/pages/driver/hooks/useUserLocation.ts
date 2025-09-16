@@ -1,29 +1,31 @@
 import { useState } from "react";
 
 export const useUserLocation = () => {
-  const [center, setCenter] = useState<{ lat: number; lng: number } | null>(
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
     null
-  );
+  ); // Almacenamos la ubicación
+  const [locationAvailable, setLocationAvailable] = useState<boolean>(false);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       console.error("Geolocalización no soportada");
-      setCenter({ lat: 4.711, lng: -74.0721 });
+      setLocationAvailable(false); // Indicamos que no se pudo obtener la ubicación
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCenter(coords);
+        setLocation(coords); // Guardamos las coordenadas en el estado
+        setLocationAvailable(true); // Marcamos que la ubicación está disponible
       },
       (err) => {
         console.error("Error obteniendo ubicación:", err.message);
-        setCenter({ lat: 4.711, lng: -74.0721 });
+        setLocationAvailable(false); // Indicamos que no se pudo obtener la ubicación
       },
       { enableHighAccuracy: true }
     );
   };
 
-  return { center, getUserLocation };
+  return { location, locationAvailable, getUserLocation }; // Devolvemos location
 };

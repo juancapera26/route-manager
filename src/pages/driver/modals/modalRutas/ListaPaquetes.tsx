@@ -93,7 +93,7 @@ const ListaPaquetes: React.FC<ListaPaquetesProps> = ({
     <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
       <Button
         variant="contained"
-        onClick={onIniciarRuta} // 🚀 pasa a InicioRuta
+        onClick={onIniciarRuta}
         sx={{ bgcolor: "#2563eb" }}
       >
         Empezar
