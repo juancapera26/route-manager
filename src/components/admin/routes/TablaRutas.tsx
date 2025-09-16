@@ -52,7 +52,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
     switch (estado) {
       case RutaEstado.Pendiente:
         return "warning";
-      case RutaEstado.asignada:
+      case RutaEstado.Asignada:
         return "info";
       case RutaEstado.Completada:
         return "success";
@@ -260,7 +260,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                       </>
                     )}
 
-                    {ruta.estado === RutaEstado.asignada && (
+                    {ruta.estado === RutaEstado.Asignada && (
                       <>
                         <Button
                           size="sm"
