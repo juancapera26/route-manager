@@ -30,7 +30,7 @@ const ResetPasswordFormHook = () => {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!oobCode) return;
-    if(newPassword !== newPasswordConfirm){
+    if (newPassword !== newPasswordConfirm) {
       setMessage("The passwords do not match.");
       setLoading(false);
       return;
@@ -62,7 +62,8 @@ const ResetPasswordFormHook = () => {
     setShowPassword,
     handleReset,
     setNewPassword,
-    setNewPasswordConfirm}
-}
+    setNewPasswordConfirm,
+  };
+};
 
-export default ResetPasswordFormHook
+export default ResetPasswordFormHook;

@@ -9,6 +9,7 @@ import {
   useTheme,
   Paper,
 } from "@mui/material";
+import { useNavigate } from "react-router"; // 👈 importar hook de react-router
 
 interface PerfilConductorProps {
   nombre: string;
@@ -33,7 +34,8 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   enLinea,
   fotoUrl,
 }) => {
-  const theme = useTheme(); // 👈 detectamos si está en modo oscuro o claro
+  const theme = useTheme();
+  const navigate = useNavigate(); // 👈 lo inicializamos
 
   return (
     <Paper
@@ -43,7 +45,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         gap: 4,
         p: 4,
         borderRadius: 3,
-        bgcolor: theme.palette.mode === "dark" ? "#1e2a38" : "#f9fbff", // 👈 cambia según modo
+        bgcolor: theme.palette.mode === "dark" ? "#1e2a38" : "#f9fbff",
         color: theme.palette.text.primary,
       }}
     >
@@ -62,7 +64,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           sx={{
             width: 120,
             height: 120,
-            border: `3px solid ${theme.palette.primary.main}`, // 👈 borde azul
+            border: `3px solid ${theme.palette.primary.main}`,
           }}
         />
         <Typography
@@ -90,9 +92,11 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           </Typography>
         </Box>
 
+        {/* Botón Volver */}
         <Button
           variant="outlined"
           size="small"
+          onClick={() => navigate(-1)} // 👈 regresa a la página anterior
           sx={{
             mt: 2,
             borderColor: theme.palette.primary.main,
@@ -142,7 +146,9 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         </Box>
 
         {/* Datos personales organizados */}
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 2 }}>
+        <Box
+          sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 2 }}
+        >
           <Typography>
             <b>Nombre Apellido:</b> {nombre} {apellido}
           </Typography>
