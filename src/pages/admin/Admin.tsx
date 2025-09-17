@@ -1,6 +1,7 @@
 // src/pages/admin/Admin.tsx
 import React, { useMemo } from "react";
 import ComponentCard from "../../components/common/ComponentCard";
+import "../../App.css";
 
 import {
   paquetesPorSemana,
@@ -235,8 +236,9 @@ const Admin: React.FC = () => {
   return (
     <div className="relative">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-          Bienvenido Administrador
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white typewriter-container">
+          <span className="typewriter-word first">Bienvenido</span>
+          <span className="typewriter-word second">Administrador</span>
         </h1>
         <p className="text-sm text-gray-500 mt-2">
           Resumen operativo de la última semana -{" "}

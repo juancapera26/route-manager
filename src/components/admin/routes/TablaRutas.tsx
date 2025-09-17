@@ -1,5 +1,5 @@
 import React from "react";
-import { Ruta, RutaEstado, Conductor } from "../../../global/dataMock"; // Ajusta la ruta relativa según tu estructura
+import { Ruta, RutaEstado, Conductor } from "../../../global/types"; // Ajusta la ruta relativa según tu estructura
 import {
   Table,
   TableHeader,
@@ -8,7 +8,8 @@ import {
   TableCell,
 } from "../../../components/ui/table"; // Ajusta la ruta
 import Button from "../../../components/ui/button/Button"; // Ajusta la ruta
-import LocationOffIcon from '@mui/icons-material/LocationOff';
+import LocationOffIcon from "@mui/icons-material/LocationOff";
+import { ArrowRight } from "lucide-react";
 
 interface TablaRutasProps {
   rutas: Ruta[];
@@ -52,7 +53,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
     switch (estado) {
       case RutaEstado.Pendiente:
         return "warning";
-      case RutaEstado.asignada:
+      case RutaEstado.Asignada:
         return "info";
       case RutaEstado.Completada:
         return "success";
@@ -177,6 +178,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-center gap-2">
+                    {/* Iconos de referencia */}
                     {/* Botón Ver detalles - siempre presente */}
                     <button
                       onClick={() => onAbrirModal(ruta.id_ruta, "details")}
@@ -209,7 +211,11 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                         {/* Editar */}
                         <button
                           onClick={() =>
-                            onEditarRuta ? onEditarRuta(ruta.id_ruta) : alert("Recordatorio: Debo cambiar esta alerta por un modal mas adelante")
+                            onEditarRuta
+                              ? onEditarRuta(ruta.id_ruta)
+                              : alert(
+                                  "Recordatorio: Debo cambiar esta alerta por un modal mas adelante"
+                                )
                           }
                           className="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
                           title="Editar ruta"
@@ -252,15 +258,15 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
 
                         {/* Asignar un conductor */}
                         <Button
-                          size="sm"
                           onClick={() => onAbrirModal(ruta.id_ruta, "assign")}
+                          className="p-2" // Usa un padding pequeño, como p-2, para un botón cuadrado de ícono
                         >
-                          Asignar Conductor
+                          <ArrowRight className="w-4 h-4 " />
                         </Button>
                       </>
                     )}
 
-                    {ruta.estado === RutaEstado.asignada && (
+                    {ruta.estado === RutaEstado.Asignada && (
                       <>
                         <Button
                           size="sm"

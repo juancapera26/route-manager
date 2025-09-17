@@ -26,7 +26,6 @@ import RoutesManagement from "./pages/admin/RouteManagement";
 import PackagesManagement from "./pages/admin/PackagesManagement";
 import DriversManagement from "./pages/admin/DriversManagement";
 import VehiclesManagement from "./pages/admin/VehiclesManagement";
-import RegisterPackages from "./pages/admin/RegisterPackages";
 import DeliveryHistory from "./pages/admin/DeliveryHistory";
 import Updates from "./pages/admin/Updates";
 
@@ -65,7 +64,6 @@ function App() {
               path="vehicles-management"
               element={<VehiclesManagement />}
             />
-            <Route path="register-packages" element={<RegisterPackages />} />
             <Route path="delivery-history" element={<DeliveryHistory />} />
             <Route path="updates" element={<Updates />} />
           </Route>

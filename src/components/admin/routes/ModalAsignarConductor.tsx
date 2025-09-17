@@ -9,7 +9,7 @@ import {
 } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import Badge from "../../ui/badge/Badge";
-import { Conductor, ConductorEstado, Vehiculo } from "../../../global/dataMock";
+import { Conductor, ConductorEstado, Vehiculo } from "../../../global/types";
 
 interface ModalAsignarConductorProps {
   isOpen: boolean;

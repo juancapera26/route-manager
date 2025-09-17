@@ -1,17 +1,33 @@
 import React, { useState } from "react";
-import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Label from "../form/Label";
-import Input from "../form/input/InputField";
-import Alert from "../ui/alert/Alert"; // Asumiendo que Alert está en ui/
-import { createPaquete } from "../../global/apis";
-import { Paquete, TipoPaquete } from "../../global/dataMock";
-import { Add } from "@mui/icons-material"; // Icono de Material UI
+import { Modal } from "../../ui/modal";
+import Button from "../../ui/button/Button";
+import Label from "../../form/Label";
+import Input from "../../form/input/InputField";
+import Alert from "../../ui/alert/Alert";
+import { Paquete, TipoPaquete } from "../../../global/types";
+import { Plus } from "lucide-react";
 
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (payload: {
+    destinatario: {
+      nombre: string;
+      apellido: string;
+      direccion: string;
+      correo: string;
+      telefono: string;
+    };
+    tipo_paquete: TipoPaquete;
+    cantidad: number;
+    valor_declarado: number;
+    dimensiones: {
+      largo: number;
+      ancho: number;
+      alto: number;
+      peso: number;
+    };
+  }) => Promise<boolean>;
   isLoading?: boolean;
 }
 
@@ -55,14 +71,12 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     type: "success" | "error";
   } | null>(null);
 
-  // Validaciones específicas
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const validatePhone = (phone: string): boolean => {
-    // Acepta números de teléfono colombianos (10 dígitos) o internacionales básicos
     const phoneRegex = /^\+?[\d\s\-()]{7,15}$/;
     return phoneRegex.test(phone.replace(/\s/g, ""));
   };
@@ -70,7 +84,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Validar nombre
     if (!formData.nombre.trim()) {
       newErrors.nombre = "El nombre es requerido";
     } else if (formData.nombre.trim().length < 2) {
@@ -79,7 +92,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       newErrors.nombre = "El nombre solo puede contener letras";
     }
 
-    // Validar apellido
     if (!formData.apellido.trim()) {
       newErrors.apellido = "El apellido es requerido";
     } else if (formData.apellido.trim().length < 2) {
@@ -88,64 +100,57 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       newErrors.apellido = "El apellido solo puede contener letras";
     }
 
-    // Validar dirección
     if (!formData.direccion.trim()) {
       newErrors.direccion = "La dirección es requerida";
     } else if (formData.direccion.trim().length < 5) {
       newErrors.direccion = "La dirección debe tener al menos 5 caracteres";
     }
 
-    // Validar correo
     if (!formData.correo.trim()) {
       newErrors.correo = "El correo es requerido";
     } else if (!validateEmail(formData.correo)) {
       newErrors.correo = "Formato de correo inválido";
     }
 
-    // Validar teléfono
     if (!formData.telefono.trim()) {
       newErrors.telefono = "El teléfono es requerido";
     } else if (!validatePhone(formData.telefono)) {
       newErrors.telefono = "Formato de teléfono inválido";
     }
 
-    // Validar cantidad
     if (formData.cantidad < 1) {
       newErrors.cantidad = "La cantidad debe ser mayor a 0";
     } else if (formData.cantidad > 100) {
       newErrors.cantidad = "La cantidad no puede ser mayor a 100";
     }
 
-    // Validar valor declarado
     if (formData.valor_declarado <= 0) {
-      newErrors.valor_declarado = "La cantidad debe ser mayor a 0";
+      newErrors.valor_declarado = "El valor debe ser mayor a 0";
     } else if (formData.valor_declarado > 10000000) {
       newErrors.valor_declarado = "El valor declarado es muy alto";
     }
 
-    // Validar dimensiones
     const dimensionesErrors: FormErrors["dimensiones"] = {};
-
     if (formData.dimensiones.largo <= 0) {
-      dimensionesErrors.largo = "La cantidad debe ser mayor a 0";
+      dimensionesErrors.largo = "El largo debe ser mayor a 0";
     } else if (formData.dimensiones.largo > 200) {
       dimensionesErrors.largo = "Máximo 200cm";
     }
 
     if (formData.dimensiones.ancho <= 0) {
-      dimensionesErrors.ancho = "La cantidad debe ser mayor a 0";
+      dimensionesErrors.ancho = "El ancho debe ser mayor a 0";
     } else if (formData.dimensiones.ancho > 200) {
       dimensionesErrors.ancho = "Máximo 200cm";
     }
 
     if (formData.dimensiones.alto <= 0) {
-      dimensionesErrors.alto = "La cantidad debe ser mayor a 0";
+      dimensionesErrors.alto = "El alto debe ser mayor a 0";
     } else if (formData.dimensiones.alto > 200) {
       dimensionesErrors.alto = "Máximo 200cm";
     }
 
     if (formData.dimensiones.peso <= 0) {
-      dimensionesErrors.peso = "La cantidad debe ser mayor a 0";
+      dimensionesErrors.peso = "El peso debe ser mayor a 0";
     } else if (formData.dimensiones.peso > 50) {
       dimensionesErrors.peso = "Máximo 50kg";
     }
@@ -163,7 +168,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   ) => {
     const { name, value } = e.target;
 
-    // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -177,7 +181,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
         },
       }));
 
-      // Limpiar errores de dimensiones
       if (errors.dimensiones?.[name as keyof FormErrors["dimensiones"]]) {
         setErrors((prev) => ({
           ...prev,
@@ -205,38 +208,44 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       });
       return;
     }
+
+    const payload = {
+      destinatario: {
+        nombre: formData.nombre.trim(),
+        apellido: formData.apellido.trim(),
+        direccion: formData.direccion.trim(),
+        correo: formData.correo.trim().toLowerCase(),
+        telefono: formData.telefono.trim(),
+      },
+      tipo_paquete: formData.tipo_paquete,
+      cantidad: formData.cantidad,
+      valor_declarado: formData.valor_declarado,
+      dimensiones: formData.dimensiones,
+    };
+
     try {
-      await createPaquete({
-        ...formData,
-        destinatario: {
-          nombre: formData.nombre.trim(),
-          apellido: formData.apellido.trim(),
-          direccion: formData.direccion.trim(),
-          correo: formData.correo.trim().toLowerCase(),
-          telefono: formData.telefono.trim(),
-        },
-      });
-      onSuccess(); // Solo notifica que la operación fue un éxito
-      setMensaje({ text: "Paquete creado exitosamente", type: "success" });
-
-      // Resetear formulario
-      setFormData({
-        nombre: "",
-        apellido: "",
-        direccion: "",
-        correo: "",
-        telefono: "",
-        tipo_paquete: TipoPaquete.Pequeño,
-        cantidad: 1,
-        valor_declarado: 0,
-        dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
-      });
-      setErrors({});
-
-      setTimeout(() => {
-        setMensaje(null);
-        onClose();
-      }, 1500);
+      const success = await onSuccess(payload);
+      if (success) {
+        setMensaje({ text: "Paquete creado exitosamente", type: "success" });
+        setFormData({
+          nombre: "",
+          apellido: "",
+          direccion: "",
+          correo: "",
+          telefono: "",
+          tipo_paquete: TipoPaquete.Pequeño,
+          cantidad: 1,
+          valor_declarado: 0,
+          dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+        });
+        setErrors({});
+        setTimeout(() => {
+          setMensaje(null);
+          onClose();
+        }, 1500);
+      } else {
+        setMensaje({ text: "Error al crear paquete", type: "error" });
+      }
     } catch (error) {
       console.error("Error al crear paquete:", error);
       setMensaje({ text: "Error al crear paquete", type: "error" });
@@ -256,7 +265,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-blue-500/10 rounded-lg">
-            <Add className="text-blue-500" />
+            <Plus className="w-6 h-6 text-blue-500" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
             Agregar nuevo paquete
@@ -273,12 +282,10 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Datos del destinatario */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Datos del destinatario
             </h4>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Nombre *</Label>
@@ -293,7 +300,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
                 )}
               </div>
-
               <div>
                 <Label>Apellido *</Label>
                 <Input
@@ -308,7 +314,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 )}
               </div>
             </div>
-
             <div className="mt-4">
               <Label>Dirección *</Label>
               <Input
@@ -323,7 +328,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
               )}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <Label>Correo electrónico *</Label>
@@ -340,7 +344,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.correo}</p>
                 )}
               </div>
-
               <div>
                 <Label>Teléfono *</Label>
                 <Input
@@ -359,12 +362,10 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* Información del paquete */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información del paquete
             </h4>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Tipo de paquete</Label>
@@ -382,7 +383,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   ))}
                 </select>
               </div>
-
               <div>
                 <Label>Cantidad *</Label>
                 <Input
@@ -399,7 +399,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   <p className="text-red-500 text-xs mt-1">{errors.cantidad}</p>
                 )}
               </div>
-
               <div>
                 <Label>Valor declarado (COP)</Label>
                 <Input
@@ -421,12 +420,10 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* Dimensiones del paquete */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Dimensiones del paquete
             </h4>
-
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <Label>Largo (cm)</Label>
@@ -446,7 +443,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   </p>
                 )}
               </div>
-
               <div>
                 <Label>Ancho (cm)</Label>
                 <Input
@@ -465,7 +461,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   </p>
                 )}
               </div>
-
               <div>
                 <Label>Alto (cm)</Label>
                 <Input
@@ -484,7 +479,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   </p>
                 )}
               </div>
-
               <div>
                 <Label>Peso (kg)</Label>
                 <Input
@@ -506,28 +500,28 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
+            <Button
+              variant="outline"
               onClick={handleClose}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isLoading}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-w-[120px]"
+              className="min-w-[120px]"
             >
               {isLoading ? "Creando..." : "Crear paquete"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
     </Modal>
   );
 };
+
 
 export default ModalAgregarPaquete;

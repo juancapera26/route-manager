@@ -1,11 +1,6 @@
 // ---- Api simulada, Gestión de Rutas ----
-import {
-  mockRutas,
-  mockConductores,
-  Ruta,
-  RutaEstado,
-  ConductorEstado
-} from "./dataMock";
+import { Ruta, RutaEstado, ConductorEstado } from "./types";
+import { mockRutas, mockConductores } from "./dataMock";
 
 const SIMULATED_DELAY = 120;
 const simulateRequest = <T>(data: T): Promise<T> =>
@@ -39,7 +34,14 @@ const generateRutaId = (): string => {
 };
 
 export const createRuta = async (
-  data: Omit<Ruta, "id_ruta" | "fecha_registro" | "estado" | "paquetes_asignados" | "id_conductor_asignado">
+  data: Omit<
+    Ruta,
+    | "id_ruta"
+    | "fecha_registro"
+    | "estado"
+    | "paquetes_asignados"
+    | "id_conductor_asignado"
+  >
 ): Promise<Ruta> => {
   const nueva: Ruta = {
     ...data,
@@ -90,25 +92,36 @@ export const asignarConductorARuta = async (
   if (!conductor)
     return simulateRequest({ success: false, message: "Conductor no existe." });
   if (conductor.estado !== ConductorEstado.Disponible)
-    return simulateRequest({ success: false, message: "Conductor no disponible." });
+    return simulateRequest({
+      success: false,
+      message: "Conductor no disponible.",
+    });
 
   // Persistencia simulada
   ruta.id_conductor_asignado = conductor.id_conductor;
-  ruta.estado = RutaEstado.asignada;
+  ruta.estado = RutaEstado.Asignada;
 
   conductor.estado = ConductorEstado.EnRuta;
 
-  return simulateRequest({ success: true, message: "Conductor asignado a la ruta." });
+  return simulateRequest({
+    success: true,
+    message: "Conductor asignado a la ruta.",
+  });
 };
 
-export const cancelarAsignacionRuta = async (idRuta: string): Promise<Result> => {
+export const cancelarAsignacionRuta = async (
+  idRuta: string
+): Promise<Result> => {
   const rIdx = findRutaIndex(idRuta);
   if (rIdx === -1)
     return simulateRequest({ success: false, message: "Ruta no existe." });
 
   const ruta = mockRutas[rIdx];
-  if (ruta.estado !== RutaEstado.asignada)
-    return simulateRequest({ success: false, message: "Ruta no está asignada." });
+  if (ruta.estado !== RutaEstado.Asignada)
+    return simulateRequest({
+      success: false,
+      message: "Ruta no está Asignada.",
+    });
 
   // liberar conductor
   if (ruta.id_conductor_asignado) {
@@ -129,8 +142,11 @@ export const completarRuta = async (idRuta: string): Promise<Result> => {
     return simulateRequest({ success: false, message: "Ruta no existe." });
 
   const ruta = mockRutas[rIdx];
-  if (ruta.estado !== RutaEstado.asignada)
-    return simulateRequest({ success: false, message: "Ruta no se puede completar." });
+  if (ruta.estado !== RutaEstado.Asignada)
+    return simulateRequest({
+      success: false,
+      message: "Ruta no se puede completar.",
+    });
 
   ruta.estado = RutaEstado.Completada;
 
@@ -141,7 +157,6 @@ export const completarRuta = async (idRuta: string): Promise<Result> => {
 
   return simulateRequest({ success: true, message: "Ruta completada." });
 };
-
 
 export const marcarRutaFallida = async (idRuta: string): Promise<Result> => {
   const rIdx = findRutaIndex(idRuta);
@@ -157,6 +172,8 @@ export const marcarRutaFallida = async (idRuta: string): Promise<Result> => {
     // Ojo: NO borramos ruta.id_conductor_asignado
   }
 
-  return simulateRequest({ success: true, message: "Ruta marcada como fallida." });
+  return simulateRequest({
+    success: true,
+    message: "Ruta marcada como fallida.",
+  });
 };
-
