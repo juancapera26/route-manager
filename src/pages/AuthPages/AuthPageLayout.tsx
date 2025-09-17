@@ -22,12 +22,14 @@ export default function AuthLayout({
                 className="flex flex-col items-center justify-center p-4 mb-3 "
               >
                 <img width={357} src="/images/logo/logo.png" alt="Logo" />
-                <p className="text-white text-center mt-5">Take your deliveries to the next level</p>
+                <p className="text-white text-center mt-5">
+                  Lleva tus entregas al siguiente nivel
+                </p>
               </Link>
               <p className="text-center text-gray-400 dark:text-white/60">
-                Our customized solutions are designed to optimize routes,
-                facilitate drivers' work, and improve your company's logistics
-                control.
+                Nuestras soluciones personalizadas están diseñadas para
+                optimizar rutas, facilitar el trabajo de los conductores y
+                mejorar el control logístico de su empresa.
               </p>
             </div>
           </div>

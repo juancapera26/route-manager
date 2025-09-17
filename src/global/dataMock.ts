@@ -332,7 +332,7 @@ export const mockPaquetes: Paquete[] = [
     fecha_registro: "2025-09-03T10:00:00Z",
     fecha_entrega: null,
     estado: PaquetesEstados.Pendiente,
-    tipo_paquete: TipoPaquete.Grande,
+    tipo_paquete: TipoPaquete.Refrigerado,
     cantidad: 1,
     valor_declarado: 150000,
     dimensiones: { largo: 30, ancho: 20, alto: 10, peso: 2 },

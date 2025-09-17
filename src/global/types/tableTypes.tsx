@@ -16,6 +16,7 @@ import {
   Check,
   Download,
   MapPin,
+  AlertTriangle, // NUEVO: Para mark_fallido
 } from "lucide-react";
 
 // ===================== TIPOS DE COLUMNAS =====================
@@ -215,7 +216,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Editar paquete",
       icon: <Edit className="w-4 h-4" />,
-      variant: "outline",
+      variant: "secondary", // Azul como en los iconos de referencia
       onClick: callbacks.onEdit,
       visible: (item) =>
         [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
@@ -227,7 +228,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Eliminar paquete",
       icon: <Trash2 className="w-4 h-4" />,
-      variant: "destructive",
+      variant: "destructive", // Rojo
       onClick: callbacks.onDelete,
       visible: (item) => {
         console.log(`🗑️ DELETE - Paquete ${item.id_paquete}, Estado: ${item.estado}`);
@@ -246,7 +247,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Asignar paquete",
       icon: <ArrowRight className="w-4 h-4" />,
-      variant: "default",
+      variant: "default", // Primary (azul)
       onClick: callbacks.onAssign,
       visible: (item) => item.estado === PaquetesEstados.Pendiente,
     },
@@ -255,7 +256,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Reasignar paquete",
       icon: <RotateCcw className="w-4 h-4" />,
-      variant: "default",
+      variant: "default", // Primary (azul)
       onClick: callbacks.onReassign,
       visible: (item) => item.estado === PaquetesEstados.Fallido,
     },
@@ -264,7 +265,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Cancelar asignación",
       icon: <X className="w-4 h-4" />,
-      variant: "destructive",
+      variant: "destructive", // Rojo
       onClick: callbacks.onCancelAssignment,
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
@@ -273,7 +274,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Marcar como en ruta",
       icon: <Truck className="w-4 h-4" />,
-      variant: "default",
+      variant: "default", // Primary (azul)
       onClick: callbacks.onMarkEnRuta,
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
@@ -282,7 +283,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Marcar como entregado",
       icon: <Check className="w-4 h-4" />,
-      variant: "default",
+      variant: "default", // Primary (azul)
       onClick: callbacks.onMarkEntregado,
       visible: (item) => item.estado === PaquetesEstados.EnRuta,
     },
@@ -290,8 +291,8 @@ export const createPaqueteAction = (
       key: "mark_fallido",
       label: "",
       tooltip: "Marcar como fallido",
-      icon: <Trash2 className="w-4 h-4" />,
-      variant: "destructive",
+      icon: <AlertTriangle className="w-4 h-4" />, // CAMBIADO: Icono diferente a delete
+      variant: "outline", // Outline (gris) como solicitaste
       onClick: callbacks.onMarkFallido,
       visible: (item) =>
         [PaquetesEstados.Asignado, PaquetesEstados.EnRuta].includes(item.estado),
@@ -301,7 +302,7 @@ export const createPaqueteAction = (
       label: "",
       tooltip: "Rastrear paquete",
       icon: <MapPin className="w-4 h-4" />,
-      variant: "outline",
+      variant: "default", // Primary (azul)
       onClick: callbacks.onTrack,
       visible: (item) =>
         [PaquetesEstados.EnRuta, PaquetesEstados.Entregado].includes(item.estado),

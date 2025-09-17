@@ -36,7 +36,7 @@ export interface DataTableProps<T extends BaseEntity> {
   emptyMessage?: string;
   className?: string;
   onRowClick?: (item: T) => void;
-  keyField?: keyof T; // Cambiado de keyof T a string para mayor flexibilidad
+  keyField?: keyof T;
 }
 
 // ===================== COMPONENTES DE SOPORTE =====================
@@ -150,33 +150,23 @@ export const DataTable = <T extends BaseEntity>({
     action: ActionButton<T>,
     isDisabled: boolean
   ): string => {
-    const baseClasses =
-      "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800";
+    // Clases base similares a los iconos de referencia
+    const baseClasses = "p-2 rounded-lg transition-colors";
 
-    const sizeClasses = {
-      sm: "px-3 py-2 text-xs",
-      md: "px-4 py-2 text-sm",
-      lg: "px-6 py-3 text-base",
-    };
+    if (isDisabled) {
+      return `${baseClasses} text-gray-300 cursor-not-allowed dark:text-gray-600`;
+    }
 
+    // Mapear variantes a colores específicos como en los iconos de referencia
     const variantClasses = {
-      default: isDisabled
-        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
-        : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700",
-      outline: isDisabled
-        ? "border border-gray-200 text-gray-400 cursor-not-allowed dark:border-gray-600 dark:text-gray-500"
-        : "border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700",
-      destructive: isDisabled
-        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
-        : "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700",
-      secondary: isDisabled
-        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500"
-        : "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600",
+      default: "text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10", // Para primary actions
+      outline: "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700", // Para outline actions
+      destructive: "text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10", // Para delete
+      secondary: "text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10", // Para edit
     };
 
     return [
       baseClasses,
-      sizeClasses[action.size || "sm"],
       variantClasses[action.variant || "default"],
       action.className || "",
     ].join(" ");
@@ -247,7 +237,7 @@ export const DataTable = <T extends BaseEntity>({
                     {/* CELDA DE ACCIONES */}
                     {actions.length > 0 && (
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <div className="flex items-center justify-center gap-1">
                           {visibleActions.map((action) => {
                             const disabled = isActionDisabled(action, item);
 
@@ -264,12 +254,10 @@ export const DataTable = <T extends BaseEntity>({
                                 className={getButtonClasses(action, disabled)}
                                 title={action.tooltip || action.label}
                               >
-                                {action.icon && (
-                                  <span className={action.label ? "mr-2" : ""}>
-                                    {action.icon}
-                                  </span>
-                                )}
-                                {action.label}
+                                {/* Icono con tamaño fijo w-4 h-4 como en los iconos de referencia */}
+                                <span className="w-4 h-4 flex items-center justify-center">
+                                  {action.icon}
+                                </span>
                               </button>
                             );
                           })}

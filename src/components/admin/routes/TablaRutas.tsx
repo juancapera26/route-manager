@@ -178,6 +178,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-center gap-2">
+                    {/* Iconos de referencia */}
                     {/* Botón Ver detalles - siempre presente */}
                     <button
                       onClick={() => onAbrirModal(ruta.id_ruta, "details")}
