@@ -231,12 +231,12 @@ export const createPaqueteAction = (
       variant: "destructive", // Rojo
       onClick: callbacks.onDelete,
       visible: (item) => {
-        console.log(`🗑️ DELETE - Paquete ${item.id_paquete}, Estado: ${item.estado}`);
+        console.log(`DELETE - Paquete ${item.id_paquete}, Estado: ${item.estado}`);
         const shouldShow = [
           PaquetesEstados.Pendiente,
           PaquetesEstados.Fallido,
         ].includes(item.estado);
-        console.log(`🗑️ DELETE - Should show: ${shouldShow}`);
+        console.log(`DELETE - Should show: ${shouldShow}`);
         return shouldShow;
       },
       disabled: (item) =>
