@@ -78,7 +78,7 @@ export const asignarRutaAConductor = async (
 
   // Persistencia simulada
   ruta.id_conductor_asignado = conductor.id_conductor;
-  ruta.estado = RutaEstado.asignada;
+  ruta.estado = RutaEstado.Asignada;
   conductor.estado = ConductorEstado.EnRuta;
 
   // Actualizar los paquetes de la ruta

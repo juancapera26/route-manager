@@ -99,7 +99,7 @@ export const asignarConductorARuta = async (
 
   // Persistencia simulada
   ruta.id_conductor_asignado = conductor.id_conductor;
-  ruta.estado = RutaEstado.asignada;
+  ruta.estado = RutaEstado.Asignada;
 
   conductor.estado = ConductorEstado.EnRuta;
 
@@ -117,10 +117,10 @@ export const cancelarAsignacionRuta = async (
     return simulateRequest({ success: false, message: "Ruta no existe." });
 
   const ruta = mockRutas[rIdx];
-  if (ruta.estado !== RutaEstado.asignada)
+  if (ruta.estado !== RutaEstado.Asignada)
     return simulateRequest({
       success: false,
-      message: "Ruta no está asignada.",
+      message: "Ruta no está Asignada.",
     });
 
   // liberar conductor
@@ -142,7 +142,7 @@ export const completarRuta = async (idRuta: string): Promise<Result> => {
     return simulateRequest({ success: false, message: "Ruta no existe." });
 
   const ruta = mockRutas[rIdx];
-  if (ruta.estado !== RutaEstado.asignada)
+  if (ruta.estado !== RutaEstado.Asignada)
     return simulateRequest({
       success: false,
       message: "Ruta no se puede completar.",
