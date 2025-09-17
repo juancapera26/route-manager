@@ -140,8 +140,7 @@ const useAuth = () => {
 
       // 2. Enviar al backend
       const API_BASE_URL =
-        import.meta.env.VITE_API_URL ||
-        "https://router-manager-bakend.vercel.app";
+        import.meta.env.VITE_API_URL || "http://localhost:3000";
 
       const response = await fetch(`${API_BASE_URL}/auth/verify`, {
         method: "GET",
