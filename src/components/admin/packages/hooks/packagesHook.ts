@@ -10,10 +10,10 @@ import {
   PaquetesColumnKey,
   PaquetesActionKey,
   PaquetesActionCallbacks,
-} from "../../../../global/types/tableTypes";
+} from "../TablaPaquetes";
 import type { ColumnDef, ActionButton } from "../../../../components/ui/table/DataTable";
 import { useEstadoFilter } from "../../../../hooks/useEstadoFilter";
-import { opcionesFiltorPaquetes, obtenerEstadoPaquete } from "../../../../global/filterConfigs";
+import { opcionesFiltorPaquetes, obtenerEstadoPaquete } from "../../../../global/config/filterConfigs";
 
 export function usePackagesManagementHook() {
   const navigate = useNavigate();

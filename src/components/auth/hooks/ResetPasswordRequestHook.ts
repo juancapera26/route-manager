@@ -24,7 +24,7 @@ const ResetPasswordRequestHook = () => {
         throw new Error(err.message || "Error enviando correo");
       }
 
-      setMessage("Se envió un enlace de recuperación a tu correo 📩");
+      setMessage("Se envió un enlace de recuperación a tu correo");
     } catch (err: any) {
       setError(err.message);
     } finally {
