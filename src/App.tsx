@@ -21,7 +21,6 @@ import NotFound from "./pages/otherPages/NotFound";
 // Páginas principales para el admin:
 import Admin from "./pages/admin/Admin";
 import AdminProfile from "./pages/profile/AdminProfile";
-import OperationalMonitoring from "./pages/admin/OperationalMonitoring";
 import RoutesManagement from "./pages/admin/RouteManagement";
 import PackagesManagement from "./pages/admin/PackagesManagement";
 import DriversManagement from "./pages/admin/DriversManagement";
@@ -50,10 +49,6 @@ function App() {
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Admin />} />
             <Route path="profile" element={<AdminProfile />} />
-            <Route
-              path="operational-monitoring"
-              element={<OperationalMonitoring />}
-            />
             <Route path="routes-management" element={<RoutesManagement />} />
             <Route
               path="packages-management"

@@ -10,6 +10,9 @@ import {
 import Button from "../../../components/ui/button/Button"; // Ajusta la ruta
 import LocationOffIcon from "@mui/icons-material/LocationOff";
 import { ArrowRight } from "lucide-react";
+import { Check } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { X } from "lucide-react";
 
 interface TablaRutasProps {
   rutas: Ruta[];
@@ -257,41 +260,40 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                         </button>
 
                         {/* Asignar un conductor */}
-                        <Button
+                        <button
                           onClick={() => onAbrirModal(ruta.id_ruta, "assign")}
-                          className="p-2" // Usa un padding pequeño, como p-2, para un botón cuadrado de ícono
+                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10" // Usa un padding pequeño, como p-2, para un botón cuadrado de ícono
+                          title="Asignar ruta"
                         >
                           <ArrowRight className="w-4 h-4 " />
-                        </Button>
+                        </button>
                       </>
                     )}
 
                     {ruta.estado === RutaEstado.Asignada && (
                       <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-orange-600 border-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-400 dark:hover:bg-orange-500/10"
+                        <button
+                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10"
                           onClick={() => onCompletarRuta(ruta.id_ruta)}
+                          title="Marcar como completada"
                         >
-                          Completar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <Check className="w-4 h-4" />
+                          
+                        </button>
+                        <button
                           className="text-orange-600 border-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-400 dark:hover:bg-orange-500/10"
                           onClick={() => onMarcarFallida(ruta.id_ruta)}
+                          title="Marcar como falllida"
                         >
-                          Fallar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-orange-600 border-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-400 dark:hover:bg-orange-500/10"
+                          <AlertTriangle className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
                           onClick={() => onCancelarAsignacion(ruta.id_ruta)}
+                          title="Cancelar asignación"
                         >
-                          Cancelar
-                        </Button>
+                          <X className="w-4 h-4" />
+                        </button>
                       </>
                     )}
                   </div>

@@ -3,10 +3,8 @@ import { Bell } from "lucide-react";
 import { useSidebar } from "../context/SidebarContext";
 import { HorizontaLDots } from "../icons";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import AddBoxIcon from "@mui/icons-material/AddBox";
 import {
   Home,
-  Assessment,
   Inventory2,
   LocalShipping,
   Groups2 as Groups2Icon,
@@ -25,30 +23,25 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/admin",
   },
-  {
-    icon: <Assessment className="menu-item-icon-size fill-current" />,
-    name: "Monitoreo operativo",
-    path: "/admin/operational-monitoring",
+    {
+    icon: <Inventory2 className="menu-item-icon-size fill-current" />,
+    name: "Gestión de paquetes",
+    path: "/admin/packages-management",
   },
   {
     icon: <LocationOnIcon className="menu-item-icon-size" />,
     name: "Gestión de rutas",
     path: "/admin/routes-management",
   },
-  {
-    icon: <Inventory2 className="menu-item-icon-size fill-current" />,
-    name: "Gestión de paquetes",
-    path: "/admin/packages-management",
+    {
+    icon: <LocalShipping className="menu-item-icon-size" />,
+    name: "Gestión de vehículos",
+    path: "/admin/vehicles-management",
   },
   {
     icon: <Groups2Icon className="menu-item-icon-size fill-current" />,
     name: "Gestión de conductores",
     path: "/admin/drivers-management",
-  },
-  {
-    icon: <LocalShipping className="menu-item-icon-size" />,
-    name: "Gestión de vehículos",
-    path: "/admin/vehicles-management",
   },
   {
     icon: <History className="menu-item-icon-size fill-current" />,
@@ -79,7 +72,7 @@ const AppSidebar: React.FC = () => {
               `menu-item group flex items-center gap-2 p-2 rounded-lg ${
                 isActive
                   ? "bg-gray-100 dark:bg-gray-800 dark:text-gray-300 font-bold"
-                  : "text-gray-700 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                  : "text-gray-700 hover:text-gray-950 dark:text-gray-400 dark:hover:text-gray-300"
               } ${
                 !isExpanded && !isHovered
                   ? "lg:justify-center"
@@ -119,7 +112,7 @@ const AppSidebar: React.FC = () => {
         <img
           src={isExpanded || isHovered || isMobileOpen ? IconStudyImpetus : IconResponsive}
           alt="Logo"
-          className={`mt-2 mb-4 transition-all ${
+          className={`mt-5 mb-4 transition-all ${
             isExpanded || isHovered || isMobileOpen ? "h-16" : "h-10"
           }`}
         />
