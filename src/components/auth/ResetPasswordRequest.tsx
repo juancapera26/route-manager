@@ -54,7 +54,7 @@ const ResetPasswordRequest = () => {
                   to="/signin"
                   className="text-blue-500 hover:text-blue-600 dark:text-blue-500"
                 >
-                  Sign In
+                  Iniciar sesión
                 </Link>
               </p>
             </div>
