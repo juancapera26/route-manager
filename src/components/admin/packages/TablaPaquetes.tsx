@@ -1,8 +1,8 @@
 // src/global/types/tableTypes.ts
 import React from "react";
-import { Paquete, PaquetesEstados } from "../types";
-import { ColumnDef, ActionButton } from "../../components/ui/table/DataTable";
-import Badge,  {BadgeColor} from "../../components/ui/badge/Badge";
+import { Paquete, PaquetesEstados } from "../../../global/types";
+import { ColumnDef, ActionButton } from "../../ui/table/DataTable";
+import Badge,  {BadgeColor} from "../../ui/badge/Badge";
 
 // Importar iconos de Lucide React
 import {

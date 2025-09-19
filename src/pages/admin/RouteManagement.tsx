@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+// Types global que hace parte del contrato
+import { HorarioRuta } from "../../global/types";
+// type que rompe con el contrato
 import { RutaFormData } from "../../global/types/rutas";
 import { ModalAgregarRuta } from "../../components/admin/routes/ModalAgregarRuta";
-import { ModalAsignarConductor } from "../../components/admin/routes/ModalAsignarConductor";
+import { ModalAsignarConductor } from "../../components/admin/routes/ModalAsignarRuta";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
 import TablaRutas from "../../components/admin/routes/TablaRutas"; // Nueva importación
 
@@ -38,7 +41,7 @@ import { useEstadoFilter } from "../../hooks/useEstadoFilter";
 import {
   opcionesFiltroRutas,
   obtenerEstadoRuta,
-} from "../../global/filterConfigs";
+} from "../../global/config/filterConfigs";
 import EstadoFilterDropdown from "../../components/common/EstadoFilter";
 
 // Interfaces locales

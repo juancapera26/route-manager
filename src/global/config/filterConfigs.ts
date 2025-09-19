@@ -6,8 +6,8 @@ import {
   Paquete, 
   Conductor, 
   Ruta 
-} from './types';
-import { OpcionesFiltro } from '../hooks/useEstadoFilter';
+} from '../types';
+import { OpcionesFiltro } from '../../hooks/useEstadoFilter';
 
 // ===================== Configuración para Paquetes =====================
 export const opcionesFiltorPaquetes: OpcionesFiltro<PaquetesEstados> = [
