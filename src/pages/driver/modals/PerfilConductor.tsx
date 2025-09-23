@@ -1,4 +1,5 @@
-import React from "react";
+// PerfilConductor.tsx
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -9,7 +10,8 @@ import {
   useTheme,
   Paper,
 } from "@mui/material";
-import { useNavigate } from "react-router"; // 👈 importar hook de react-router
+import { useNavigate } from "react-router";
+import ModalEditar from "./ModalEditar"; // 👉 importa tu vista de edición
 
 interface PerfilConductorProps {
   nombre: string;
@@ -35,7 +37,14 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   fotoUrl,
 }) => {
   const theme = useTheme();
-  const navigate = useNavigate(); // 👈 lo inicializamos
+  const navigate = useNavigate();
+
+  const [editando, setEditando] = useState(false); // 👉 controla qué vista mostrar
+
+  // Si está en modo edición, mostramos la vista ModalEditar
+  if (editando) {
+    return <ModalEditar onVolver={() => setEditando(false)} />;
+  }
 
   return (
     <Paper
@@ -47,6 +56,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         borderRadius: 3,
         bgcolor: theme.palette.mode === "dark" ? "#1e2a38" : "#f9fbff",
         color: theme.palette.text.primary,
+        minHeight: "500px",
       }}
     >
       {/* Columna izquierda */}
@@ -96,7 +106,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         <Button
           variant="outlined"
           size="small"
-          onClick={() => navigate(-1)} // 👈 regresa a la página anterior
+          onClick={() => navigate(-1)}
           sx={{
             mt: 2,
             borderColor: theme.palette.primary.main,
@@ -121,7 +131,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            mb: 3,
+            mb: 6,
           }}
         >
           <Typography
@@ -134,6 +144,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           <Button
             variant="contained"
             size="small"
+            onClick={() => setEditando(true)} // 👉 activa modo edición
             sx={{
               bgcolor: theme.palette.primary.main,
               "&:hover": {
@@ -147,7 +158,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
 
         {/* Datos personales organizados */}
         <Box
-          sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: 2 }}
+          sx={{ display: "grid", gridTemplateColumns: "2fr 3fr", rowGap: 8 }}
         >
           <Typography>
             <b>Nombre Apellido:</b> {nombre} {apellido}
@@ -164,7 +175,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         </Box>
 
         {/* Empresa */}
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 8 }}>
           <Typography
             variant="subtitle1"
             fontWeight="600"
