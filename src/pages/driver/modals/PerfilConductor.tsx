@@ -9,9 +9,11 @@ import {
   Divider,
   useTheme,
   Paper,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router";
-import ModalEditar from "./ModalEditar"; // 👉 importa tu vista de edición
+import { PhotoCamera } from "@mui/icons-material";
+import ModalEditar from "./ModalEditar";
 
 interface PerfilConductorProps {
   nombre: string;
@@ -19,9 +21,9 @@ interface PerfilConductorProps {
   celular: string;
   correo: string;
   documento: string;
-  empresa: string;
-  rol: string;
-  enLinea: boolean;
+  empresa: string | number;
+  rol: string | number;
+  enLinea: boolean; // 👈 lo agregamos aquí
   fotoUrl?: string;
 }
 
@@ -33,15 +35,22 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   documento,
   empresa,
   rol,
-  enLinea,
+  enLinea, // 👈 ahora existe en los props
   fotoUrl,
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const [editando, setEditando] = useState(false); // 👉 controla qué vista mostrar
+  const [editando, setEditando] = useState(false);
+  const [previewFoto, setPreviewFoto] = useState<string | undefined>(fotoUrl);
 
-  // Si está en modo edición, mostramos la vista ModalEditar
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPreviewFoto(URL.createObjectURL(file));
+    }
+  };
+
   if (editando) {
     return <ModalEditar onVolver={() => setEditando(false)} />;
   }
@@ -69,14 +78,42 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           gap: 2,
         }}
       >
-        <Avatar
-          src={fotoUrl}
-          sx={{
-            width: 120,
-            height: 120,
-            border: `3px solid ${theme.palette.primary.main}`,
-          }}
-        />
+        <Box sx={{ position: "relative" }}>
+          <Avatar
+            src={previewFoto}
+            sx={{
+              width: 120,
+              height: 120,
+              border: `3px solid ${theme.palette.primary.main}`,
+            }}
+          />
+          <input
+            accept="image/*"
+            id="upload-avatar"
+            type="file"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <label htmlFor="upload-avatar">
+            <IconButton
+              component="span"
+              sx={{
+                position: "absolute",
+                bottom: -10,
+                right: -10,
+                border: `1px solid ${theme.palette.primary.main}`,
+                color: theme.palette.primary.main,
+                "&:hover": {
+                  bgcolor: "white",
+                  color: theme.palette.primary.dark,
+                },
+              }}
+            >
+              <PhotoCamera fontSize="small" />
+            </IconButton>
+          </label>
+        </Box>
+
         <Typography
           variant="subtitle1"
           fontWeight="600"
@@ -84,12 +121,13 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         >
           {rol}
         </Typography>
+
+        {/* 👇 usamos el prop enLinea */}
         <Chip
           label={enLinea ? "En línea" : "Desconectado"}
           color={enLinea ? "success" : "default"}
         />
 
-        {/* Disponibilidad */}
         <Box textAlign="center" mt={2}>
           <Typography variant="body2" color="text.secondary">
             Disponibilidad
@@ -102,7 +140,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           </Typography>
         </Box>
 
-        {/* Botón Volver */}
         <Button
           variant="outlined"
           size="small"
@@ -126,7 +163,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
 
       {/* Columna derecha */}
       <Box sx={{ flex: 1 }}>
-        {/* Header con botón editar */}
         <Box
           sx={{
             display: "flex",
@@ -144,7 +180,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           <Button
             variant="contained"
             size="small"
-            onClick={() => setEditando(true)} // 👉 activa modo edición
+            onClick={() => setEditando(true)}
             sx={{
               bgcolor: theme.palette.primary.main,
               "&:hover": {
@@ -156,7 +192,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           </Button>
         </Box>
 
-        {/* Datos personales organizados */}
         <Box
           sx={{ display: "grid", gridTemplateColumns: "2fr 3fr", rowGap: 8 }}
         >
@@ -174,7 +209,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           </Typography>
         </Box>
 
-        {/* Empresa */}
         <Box sx={{ mt: 8 }}>
           <Typography
             variant="subtitle1"

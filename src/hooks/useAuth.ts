@@ -4,7 +4,6 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  getIdTokenResult,
   type User,
 } from "firebase/auth";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -31,10 +30,16 @@ const useAuth = () => {
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
+
+  // Datos del usuario desde backend
   const [role, setRole] = useState<string | null>(null);
   const [nombre, setNombre] = useState<string | null>(null);
   const [apellido, setApellido] = useState<string | null>(null);
   const [correo, setCorreo] = useState<string | null>(null);
+  const [telefono, setTelefono] = useState<string | null>(null);
+  const [documento, setDocumento] = useState<string | null>(null);
+  const [tipoDocumento, setTipoDocumento] = useState<string | null>(null);
+  const [empresa, setEmpresa] = useState<string | null>(null);
 
   // ✅ Detectar login/logout
   useEffect(() => {
@@ -43,34 +48,44 @@ const useAuth = () => {
 
       if (firebaseUser) {
         try {
-          const token = await getIdTokenResult(firebaseUser);
+          const token = await firebaseUser.getIdToken();
 
-          setRole((token.claims.role as string) || null);
+          // 🔍 pedir datos al backend cada vez que se monta la sesión
+          const API_BASE_URL =
+            import.meta.env.VITE_API_URL || "http://localhost:3000";
+          const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-          // Extraer nombre/apellido
-          const fullName = token.claims.name as string | undefined;
-          if (fullName) {
-            const partes = fullName.split(" ");
-            setNombre(partes[0] || null);
-            setApellido(partes.slice(1).join(" ") || null);
+          if (response.ok) {
+            const data = await response.json();
+            const userData = data.data;
+
+            setRole(userData.role?.toString() || null);
+            setNombre(userData.nombre || null);
+            setApellido(userData.apellido || null);
+            setCorreo(userData.correo || firebaseUser.email || null);
+            setTelefono(userData.telefono_movil || null);
+            setDocumento(userData.documento || null);
+            setTipoDocumento(userData.tipo_documento || null);
+            setEmpresa(userData.empresa || null);
           } else {
-            setNombre(null);
-            setApellido(null);
+            console.error("❌ Backend no validó al usuario");
           }
-
-          setCorreo(firebaseUser.email || null);
         } catch (err) {
-          console.error("❌ Error al obtener claims:", err);
-          setRole(null);
-          setNombre(null);
-          setApellido(null);
-          setCorreo(null);
+          console.error("❌ Error al obtener datos del backend:", err);
         }
       } else {
         setRole(null);
         setNombre(null);
         setApellido(null);
         setCorreo(null);
+        setDocumento(null);
+        setEmpresa(null);
       }
 
       setLoading(false);
@@ -129,16 +144,18 @@ const useAuth = () => {
     setLoading(true);
 
     try {
+      // 1. Login en Firebase
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
+      console.log("✅ userCredential (Firebase):", userCredential.user);
 
-      // 1. Token Firebase
+      // 2. Obtener token de Firebase
       const token = await userCredential.user.getIdToken();
 
-      // 2. Enviar al backend
+      // 3. Validar contra backend (fuente de verdad)
       const API_BASE_URL =
         import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -156,29 +173,29 @@ const useAuth = () => {
       }
 
       const data = await response.json();
+      console.log("✅ Data desde backend (Prisma):", data);
+
       if (!data.success) {
         throw new Error(
           data.message || "Usuario no válido en la base de datos"
         );
       }
 
-      // 3. Claims
-      const tokenResult = await getIdTokenResult(userCredential.user);
-      setRole((tokenResult.claims.role as string) || null);
+      // 4. Guardar datos confiables desde backend
+      const userData = data.data;
+      setRole(userData.role?.toString() || null);
+      setNombre(userData.nombre || null);
+      setApellido(userData.apellido || null);
+      setCorreo(userData.correo || null);
+      setTelefono(userData.telefono_movil || null);
+      setDocumento(userData.documento || null);
+      setTipoDocumento(userData.tipo_documento || null);
+      setEmpresa(userData.empresa || null);
 
-      const fullName = tokenResult.claims.name as string | undefined;
-      if (fullName) {
-        const partes = fullName.split(" ");
-        setNombre(partes[0] || null);
-        setApellido(partes.slice(1).join(" ") || null);
-      }
-
-      setCorreo(userCredential.user.email || null);
-
-      // 4. Redirección por rol
-      if (tokenResult.claims.role === "1") {
+      // 5. Redirección por rol
+      if (userData.role === 1 || userData.role === "1") {
         navigate("/admin");
-      } else if (tokenResult.claims.role === "2") {
+      } else if (userData.role === 2 || userData.role === "2") {
         navigate("/driver");
       } else {
         navigate("/");
@@ -186,7 +203,7 @@ const useAuth = () => {
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setLoading(false); // 👈 importante: liberar loading
+      setLoading(false);
     }
   };
 
@@ -287,10 +304,17 @@ const useAuth = () => {
     handlePasswordReset,
     getAccessToken,
     user,
+
+    // datos del backend
     role,
     nombre,
     apellido,
     correo,
+    telefono,
+    documento,
+    tipoDocumento,
+    empresa,
+
     isAuthenticated: !!user,
   };
 };
