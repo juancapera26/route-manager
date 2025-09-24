@@ -25,9 +25,10 @@ type NavItem = {
 };
 
 const AppSidebar: React.FC = () => {
-  const [isModalRutasOpen, setModalRutasOpen] = useState(false);
-  const [isHistorialPanelOpen, setHistorialPanelOpen] = useState(false);
-  const [isReporteOpen, setReporteOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<
+    "rutas" | "historial" | "reporte" | null
+  >(null);
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
   const IconStudyImpetus = "/public/images/logo/logo.png";
@@ -36,17 +37,19 @@ const AppSidebar: React.FC = () => {
     {
       icon: <PlaceIcon />,
       name: "Rutas",
-      action: () => setModalRutasOpen((prev) => !prev),
+      action: () => setOpenModal((prev) => (prev === "rutas" ? null : "rutas")),
     },
     {
       name: "Historial",
       icon: <ArticleIcon />,
-      action: () => setHistorialPanelOpen((prev) => !prev),
+      action: () =>
+        setOpenModal((prev) => (prev === "historial" ? null : "historial")),
     },
     {
       name: "Reporte",
       icon: <InfoIcon />,
-      action: () => setReporteOpen((prev) => !prev),
+      action: () =>
+        setOpenModal((prev) => (prev === "reporte" ? null : "reporte")),
     },
   ];
 
@@ -145,23 +148,24 @@ const AppSidebar: React.FC = () => {
       </aside>
 
       <ModalRutas
-        isOpen={isModalRutasOpen}
-        onClose={() => setModalRutasOpen(false)}
+        isOpen={openModal === "rutas"}
+        onClose={() => setOpenModal(null)}
         isExpanded={isExpanded}
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
       />
 
       <ModalHistorial
-        isOpen={isHistorialPanelOpen}
-        onClose={() => setHistorialPanelOpen(false)}
+        isOpen={openModal === "historial"}
+        onClose={() => setOpenModal(null)}
         isExpanded={isExpanded}
         isHovered={isHovered}
         isMobileOpen={isMobileOpen}
       />
+
       <ModalReporte
-        isOpen={isReporteOpen}
-        onClose={() => setReporteOpen(false)}
+        isOpen={openModal === "reporte"}
+        onClose={() => setOpenModal(null)}
       />
     </>
   );
