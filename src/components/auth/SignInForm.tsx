@@ -10,7 +10,6 @@ onChange={(e) => setEmail(e.target.value)}: Cuando el usuario escribe en el camp
 
 onSubmit={(e) => handleLogin(e, email, password, setError)}: Cuando el usuario hace clic en el botón de "Sign In", se llama a la función handleLogin que también viene del hook. Esta función es la que se encarga de la lógica de autenticación. */
 
-
 import { Link } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
@@ -55,6 +54,8 @@ export default function SignInForm() {
                   </Label>
                   <Input
                     type="email"
+                    name="email"
+                    data-testid="input-email"
                     placeholder="info@gmail.com"
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -65,7 +66,9 @@ export default function SignInForm() {
                   </Label>
                   <div className="relative">
                     <Input
-                      type={showPassword ? "text" : "password"}
+                      type="password"
+                      name="password"
+                      data-testid="input-password"
                       placeholder="Ingresa tu contraseña"
                       onChange={(e) => setPassword(e.target.value)}
                     />
