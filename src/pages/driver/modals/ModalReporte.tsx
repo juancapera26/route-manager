@@ -17,8 +17,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { getAuth } from "firebase/auth"; // ⬅️ Import Firebase Auth
 
-// 🚫 Lista de palabras prohibidas directamente en el código
 const PALABRAS_PROHIBIDAS: string[] = [
   "groseria1",
   "groseria2",
@@ -28,7 +28,7 @@ const PALABRAS_PROHIBIDAS: string[] = [
 
 interface Reporte {
   descripcion: string;
-  imagen?: string | null; // ahora usamos lo que devuelve el backend
+  imagen?: string | null;
   fecha: string;
   estado: "pendiente" | "enviado" | "rechazado";
   tipo: "Logística" | "Operativa";
@@ -51,33 +51,36 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Validar y pasar a confirmación
   const handleEnviar = () => {
     const contieneProhibidas = PALABRAS_PROHIBIDAS.some((p: string) =>
       descripcion.toLowerCase().includes(p.toLowerCase())
     );
-
     if (contieneProhibidas) {
       setError("El reporte contiene palabras no permitidas.");
       return;
     }
-
     setError("");
     setStep("confirm");
   };
 
-  // Confirmar y enviar reporte al backend
   const handleConfirmarEnvio = async () => {
     try {
       const formData = new FormData();
       formData.append("descripcion", descripcion);
       formData.append("tipo", tipo);
-      if (archivo) {
-        formData.append("archivo", archivo); // 👈 backend espera "archivo"
-      }
+      if (archivo) formData.append("archivo", archivo);
+
+      // 🔑 Obtener token de Firebase
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuario no autenticado");
+      const idToken = await user.getIdToken();
 
       const response = await fetch("http://localhost:3000/reportes/subir", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`, // enviar token
+        },
         body: formData,
       });
 
@@ -87,15 +90,13 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
 
       const nuevoReporte: Reporte = {
         descripcion: data.descripcion || descripcion,
-        imagen: data.imagen || null, // 👈 ahora usamos la URL que responde NestJS
+        imagen: data.imagen || null,
         fecha: data.fecha || new Date().toLocaleDateString(),
         estado: data.estado || "enviado",
         tipo: data.tipo || tipo,
       };
 
       setReportes((prev) => [...prev, nuevoReporte]);
-
-      // Resetear formulario
       setDescripcion("");
       setArchivo(null);
       setTipo("Logística");
@@ -108,7 +109,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Backdrop oscuro */}
+      {/* Backdrop */}
       <Box
         sx={{
           position: "fixed",
@@ -122,7 +123,6 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
 
-      {/* Ventana modal */}
       <Paper
         elevation={6}
         sx={{
@@ -149,13 +149,12 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
           </IconButton>
         </Box>
 
-        {/* Paso 1: Formulario */}
+        {/* Formulario, Confirmación, Éxito, Historial */}
         {step === "form" && (
           <>
             <Typography variant="body2" color="text.secondary">
               Por favor, llena este formulario para generar un reporte.
             </Typography>
-
             <FormControl fullWidth>
               <InputLabel id="tipo-label">Tipo de novedad</InputLabel>
               <Select
@@ -220,7 +219,6 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
           </>
         )}
 
-        {/* Paso 2: Confirmación */}
         {step === "confirm" && (
           <Box sx={{ textAlign: "center", mt: 4 }}>
             <Typography variant="h6" gutterBottom>
@@ -247,7 +245,6 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
           </Box>
         )}
 
-        {/* Paso 3: Éxito */}
         {step === "success" && (
           <Box sx={{ textAlign: "center", mt: 6 }}>
             <Typography variant="h6" color="success.main" fontWeight="600">
@@ -263,13 +260,11 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
           </Box>
         )}
 
-        {/* Paso 4: Historial */}
         {step === "historial" && (
           <Box>
             <Typography variant="h6" gutterBottom>
               Mis reportes
             </Typography>
-
             {reportes.length === 0 ? (
               <Typography color="text.secondary">
                 No tienes reportes...
