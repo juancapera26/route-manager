@@ -51,24 +51,16 @@ const ModalEditar: React.FC<ModalEditarProps> = ({ onVolver }) => {
           disabled
         />
         <TextField
-          label="Celular"
-          defaultValue="4485123347"
+          label="Correo electronico"
+          defaultValue="pepelaes@gmail.com"
           disabled
         />
 
         {/* Campos editables */}
         <TextField
-          label="Correo electrónico"
-          defaultValue="pepemorenox@gmail.com"
+          label="Telefono"
+          defaultValue="3159647855"
         />
-        <TextField
-          label="Dirección"
-          fullWidth
-          sx={{ gridColumn: "span 2" }}
-        />
-        <TextField label="Ciudad" />
-        <TextField label="País" />
-
         <TextField
           select
           label="Vehículo principal"
