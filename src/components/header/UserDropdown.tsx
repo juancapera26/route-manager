@@ -14,9 +14,12 @@ export default function UserDropdown() {
     documento,
     empresa,
     telefono,
+    foto,
     logout,
-  } = useAuth(); // ✅ todo en uno
+  } = useAuth();
+
   const [isOpen, setIsOpen] = useState(false);
+
   useEffect(() => {
     console.log("✅ Datos de usuario listos:", {
       nombre,
@@ -26,8 +29,9 @@ export default function UserDropdown() {
       documento,
       empresa,
       telefono,
+      foto,
     });
-  }, [nombre, apellido, correo, role, documento, empresa, telefono]);
+  }, [nombre, apellido, correo, role, documento, empresa, telefono, foto]);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -40,22 +44,38 @@ export default function UserDropdown() {
   const endpointPerfil =
     role === "1" ? "/admin/profile" : role === "2" ? "/driver/profile" : "/";
 
+  // ✅ función que acepta null o undefined
+  const getRoleName = (role: string | null | undefined) => {
+    switch (role) {
+      case "1":
+        return "Admin";
+      case "2":
+        return "Conductor";
+      default:
+        return "Usuario";
+    }
+  };
+
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
         className="flex items-center text-secondary dropdown-toggle dark:text-gray-400"
       >
-        <span className="inline-block mr-2 font-medium text-theme-sm max-w-[150px] truncate">
-          {nombre && apellido ? `${nombre} ${apellido} ` : "Usuario"}
+        <span className="inline-block mr-2 font-medium text-theme-sm max-w-[150px] truncate text-gray-200">
+          {nombre && apellido ? `${nombre} ${apellido}` : "Usuario"}
         </span>
-        <span className="mr-2 overflow-hidden rounded-full h-11 w-11 flex-shrink-0">
+
+        <span className="ml-2 text-xs text-gray-300">{getRoleName(role)}</span>
+
+        <span className="ml-2 mr-2 overflow-hidden rounded-full h-11 w-11 flex-shrink-0">
           <img
-            src={"/images/user/user_header.jpg"}
+            src={foto || "/default-avatar.png"}
             alt="User profile"
             className="w-full h-full object-cover"
           />
         </span>
+
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -83,7 +103,7 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block mr-1 font-medium text-theme-sm">
-            {nombre && apellido ? `${nombre} ${apellido}` : "Usuario"}
+            {nombre && apellido ? `${nombre} ${apellido}` : "Usuario"}{" "}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {correo ?? "correo@ejemplo.com"}
@@ -98,8 +118,7 @@ export default function UserDropdown() {
               to={endpointPerfil}
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              {/* icono y texto */}
-              perfil
+              Perfil
             </DropdownItem>
           </li>
           <li>

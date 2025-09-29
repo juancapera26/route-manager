@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -9,13 +9,14 @@ import useAuth, { type RegisterData } from "../../hooks/useAuth";
 
 export default function SignUpForm() {
   const { handleRegister, authLoading } = useAuth();
-  
+
   // Estados para la UI
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   // Estado para el formulario completo
   const [formData, setFormData] = useState<RegisterData>({
@@ -39,21 +40,19 @@ export default function SignUpForm() {
   ];
 
   // Manejar cambios en los inputs normales
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   // Manejar cambio específico del Select (tipo de vehículo)
   const handleSelectChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tipoVehiculo: value
+      tipoVehiculo: value,
     }));
   };
 
@@ -62,16 +61,21 @@ export default function SignUpForm() {
     if (!formData.nombre.trim()) return "El nombre es requerido";
     if (!formData.apellido.trim()) return "El apellido es requerido";
     if (!formData.documento.trim()) return "El documento es requerido";
-    if (!formData.numeroTelefono.trim()) return "El número de teléfono es requerido";
+    if (!formData.numeroTelefono.trim())
+      return "El número de teléfono es requerido";
     if (!formData.email.trim()) return "El email es requerido";
     if (!formData.confirmarEmail.trim()) return "Confirmar email es requerido";
-    if (formData.email !== formData.confirmarEmail) return "Los emails no coinciden";
+    if (formData.email !== formData.confirmarEmail)
+      return "Los emails no coinciden";
     if (!formData.password) return "La contraseña es requerida";
-    if (formData.password.length < 6) return "La contraseña debe tener al menos 6 caracteres";
-    if (formData.password !== formData.repetirPassword) return "Las contraseñas no coinciden";
+    if (formData.password.length < 6)
+      return "La contraseña debe tener al menos 6 caracteres";
+    if (formData.password !== formData.repetirPassword)
+      return "Las contraseñas no coinciden";
     if (!isChecked) return "Debe aceptar los términos y condiciones";
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
-    if (!hasSpecialChar) return "La contraseña debe contener al menos un carácter especial";
+    if (!hasSpecialChar)
+      return "La contraseña debe contener al menos un carácter especial";
 
     return null;
   };
@@ -79,7 +83,7 @@ export default function SignUpForm() {
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Limpiar mensajes anteriores
     setError("");
     setSuccess("");
@@ -92,7 +96,9 @@ export default function SignUpForm() {
     }
 
     // Enviar datos al backend
-    await handleRegister(formData, setError, setSuccess);
+    await handleRegister(formData, setError, undefined, (msg) => {
+      navigate("/signin", { state: { successMessage: msg } });
+    });
   };
 
   return (
@@ -106,7 +112,7 @@ export default function SignUpForm() {
           Volver al inicio
         </Link>
       </div>
-      
+
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
@@ -264,7 +270,9 @@ export default function SignUpForm() {
                       onChange={handleInputChange}
                     />
                     <span
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                     >
                       {showConfirmPassword ? (
@@ -278,9 +286,7 @@ export default function SignUpForm() {
 
                 {/* Tipo de Vehículo */}
                 <div>
-                  <Label>
-                    Tipo de Vehículo (Opcional)
-                  </Label>
+                  <Label>Tipo de Vehículo (Opcional)</Label>
                   <Select
                     placeholder="Selecciona un tipo de vehículo"
                     defaultValue={formData.tipoVehiculo}
@@ -310,16 +316,32 @@ export default function SignUpForm() {
 
                 {/* Botón de envío */}
                 <div>
-                  <button 
+                  <button
                     type="submit"
                     disabled={authLoading}
                     className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {authLoading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Registrando...
                       </>
