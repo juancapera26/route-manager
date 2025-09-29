@@ -1,17 +1,5 @@
-/**
-2. src/components/auth/SignInForm.tsx
-Este es el formulario de inicio de sesión. Su propósito es manejar la interfaz y la interacción del usuario.
-
-import useLoginHook from "./hooks/LoginHook";: Esta línea es clave. El componente no tiene su propia lógica de estado (por ejemplo, el valor del email o la contraseña). En su lugar, usa un custom hook llamado useLoginHook.
-
-const { ... } = useLoginHook();: Aquí, el componente llama al hook y extrae todas las variables de estado (email, password, error) y las funciones (setEmail, setPassword, handleLogin) que necesita para funcionar.
-
-onChange={(e) => setEmail(e.target.value)}: Cuando el usuario escribe en el campo de email, esta línea llama a la función setEmail que viene del hook, actualizando el estado del email.
-
-onSubmit={(e) => handleLogin(e, email, password, setError)}: Cuando el usuario hace clic en el botón de "Sign In", se llama a la función handleLogin que también viene del hook. Esta función es la que se encarga de la lógica de autenticación. */
-
-
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
+import { useEffect, useState } from "react";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Checkbox from "../form/input/Checkbox";
@@ -33,6 +21,23 @@ export default function SignInForm() {
     setError,
     handleLogin,
   } = useLoginHook();
+
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setSuccessMessage(location.state.successMessage);
+
+      window.history.replaceState({}, document.title);
+
+      const timer = setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+
+      return () => clearTimeout(timer); // limpiar timeout si el compo se desmonta
+    }
+  }, [location.state]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -81,7 +86,10 @@ export default function SignInForm() {
                     </span>
                   </div>
                 </div>
-                {error && <div style={{ color: "red" }}>{error}</div>}
+
+                {/* Error de login */}
+                {error && <div className="text-red-600">{error}</div>}
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Checkbox checked={isChecked} onChange={setIsChecked} />
@@ -93,9 +101,10 @@ export default function SignInForm() {
                     to="/reset-password"
                     className="text-sm text-blue-600 hover:text-blue-600 dark:text-blue-400"
                   >
-                    Olvido su contraseña?
+                    ¿Olvidó su contraseña?
                   </Link>
                 </div>
+
                 <div>
                   <Button
                     className="w-full bg-blue-500 hover:bg-blue-700"
@@ -107,9 +116,15 @@ export default function SignInForm() {
               </div>
             </form>
 
+            {successMessage && (
+              <div className="mt-4 text-center text-green-600 font-medium">
+                {successMessage}
+              </div>
+            )}
+
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                ¿No tienes una cuenta? {""}
+                ¿No tienes una cuenta?{" "}
                 <Link
                   to="/signup"
                   className="text-blue-600 hover:text-blue-600 dark:text-blue-400"

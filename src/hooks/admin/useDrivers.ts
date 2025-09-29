@@ -4,7 +4,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { api } from "../../global/apis";
-import { Conductor, ConductorEstado, Vehiculo, Ruta, Paquete } from "../../global/types";
+import {
+  Conductor,
+  ConductorEstado,
+  Vehiculo,
+  Ruta,
+  Paquete,
+} from "../../global/types";
 
 // ===================== TIPOS DEL HOOK =====================
 interface UseDriversConfig {
@@ -17,7 +23,7 @@ interface UseDriversConfig {
     conductor?: Conductor;
     vehiculo?: Vehiculo;
     paquetes?: Paquete[];
-  }) => void;  // Callback opcional para manejar entidades relacionadas (e.g., sincronizar con otros hooks)
+  }) => void; // Callback opcional para manejar entidades relacionadas (e.g., sincronizar con otros hooks)
 }
 
 interface DriversState {
@@ -38,9 +44,7 @@ interface UseDriversActions {
   assignRuta: (conductorId: string, rutaId: string) => Promise<boolean>;
 
   // Obtener conductor con información extendida
-  getConductorWithDetails: (
-    conductorId: string
-  ) => Promise<Conductor | null>;
+  getConductorWithDetails: (conductorId: string) => Promise<Conductor | null>;
 
   // Utilidades
   getConductorById: (id: string) => Conductor | undefined;
@@ -94,7 +98,9 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
       let conductores: Conductor[];
 
       if (estado !== "all") {
-        conductores = await api.conductores.getByEstado(estado as ConductorEstado);
+        conductores = await api.conductores.getByEstado(
+          estado as ConductorEstado
+        );
       } else {
         conductores = await api.conductores.getAll();
       }
@@ -235,26 +241,26 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
   );
 
   // ===================== INFORMACIÓN EXTENDIDA =====================
-// ===================== INFORMACIÓN EXTENDIDA =====================
-const getConductorWithDetails = useCallback(
-  async (conductorId: string): Promise<Conductor | null> => {
-    try {
-      const conductor = await api.conductores.getById(conductorId);
-      return conductor;
-    } catch (error) {
-      console.error("Error al obtener detalles del conductor:", error);
-      setState((prev) => ({
-        ...prev,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Error al obtener detalles del conductor",
-      }));
-      return null;
-    }
-  },
-  []
-);
+  // ===================== INFORMACIÓN EXTENDIDA =====================
+  const getConductorWithDetails = useCallback(
+    async (conductorId: string): Promise<Conductor | null> => {
+      try {
+        const conductor = await api.conductores.getById(conductorId);
+        return conductor;
+      } catch (error) {
+        console.error("Error al obtener detalles del conductor:", error);
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Error al obtener detalles del conductor",
+        }));
+        return null;
+      }
+    },
+    []
+  );
 
   // ===================== UTILIDADES =====================
   const getConductorById = useCallback(

@@ -40,8 +40,10 @@ const useAuth = () => {
   const [documento, setDocumento] = useState<string | null>(null);
   const [tipoDocumento, setTipoDocumento] = useState<string | null>(null);
   const [empresa, setEmpresa] = useState<string | null>(null);
+  const [idUsuario, setIdUsuario] = useState<number | null>(null);
+  const [foto, setFoto] = useState<string | null>(null);
 
-  // ✅ Detectar login/logout
+  // Detectar login/logout
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
@@ -49,10 +51,10 @@ const useAuth = () => {
       if (firebaseUser) {
         try {
           const token = await firebaseUser.getIdToken();
-
-          // 🔍 pedir datos al backend cada vez que se monta la sesión
+          console.log("ID Token:", token);
           const API_BASE_URL =
             import.meta.env.VITE_API_URL || "http://localhost:3000";
+
           const response = await fetch(`${API_BASE_URL}/auth/verify`, {
             method: "GET",
             headers: {
@@ -61,21 +63,22 @@ const useAuth = () => {
             },
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            const userData = data.data;
+          if (!response.ok) throw new Error("Backend no validó al usuario");
 
-            setRole(userData.role?.toString() || null);
-            setNombre(userData.nombre || null);
-            setApellido(userData.apellido || null);
-            setCorreo(userData.correo || firebaseUser.email || null);
-            setTelefono(userData.telefono_movil || null);
-            setDocumento(userData.documento || null);
-            setTipoDocumento(userData.tipo_documento || null);
-            setEmpresa(userData.empresa || null);
-          } else {
-            console.error("❌ Backend no validó al usuario");
-          }
+          const data = await response.json();
+          const userData = data.data;
+
+          // Guardar todas las propiedades importantes
+          setRole(userData.role?.toString() || null);
+          setNombre(userData.nombre || null);
+          setApellido(userData.apellido || null);
+          setCorreo(userData.correo || firebaseUser.email || null);
+          setTelefono(userData.telefono_movil || null);
+          setDocumento(userData.documento || null);
+          setTipoDocumento(userData.tipo_documento || null);
+          setEmpresa(userData.empresa || null);
+          setIdUsuario(userData.id_usuario || null);
+          setFoto(userData.foto_perfil || null);
         } catch (err) {
           console.error("❌ Error al obtener datos del backend:", err);
         }
@@ -84,8 +87,11 @@ const useAuth = () => {
         setNombre(null);
         setApellido(null);
         setCorreo(null);
+        setTelefono(null);
         setDocumento(null);
+        setTipoDocumento(null);
         setEmpresa(null);
+        setIdUsuario(null);
       }
 
       setLoading(false);
@@ -94,7 +100,7 @@ const useAuth = () => {
     return () => unsubscribe();
   }, []);
 
-  // ✅ Logout
+  // Logout
   const logout = useCallback(async () => {
     if (idleTimerRef.current) {
       clearTimeout(idleTimerRef.current);
@@ -104,7 +110,7 @@ const useAuth = () => {
     navigate("/signin");
   }, [navigate]);
 
-  // ✅ Timer de inactividad
+  // Timer de inactividad
   const resetIdleTimer = useCallback(() => {
     if (!user) return;
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -132,7 +138,7 @@ const useAuth = () => {
     };
   }, [resetIdleTimer]);
 
-  // ✅ LOGIN
+  // LOGIN
   const handleLogin = async (
     e: { preventDefault: () => void },
     email: string,
@@ -144,18 +150,13 @@ const useAuth = () => {
     setLoading(true);
 
     try {
-      // 1. Login en Firebase
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-      console.log("✅ userCredential (Firebase):", userCredential.user);
 
-      // 2. Obtener token de Firebase
       const token = await userCredential.user.getIdToken();
-
-      // 3. Validar contra backend (fuente de verdad)
       const API_BASE_URL =
         import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -173,16 +174,8 @@ const useAuth = () => {
       }
 
       const data = await response.json();
-      console.log("✅ Data desde backend (Prisma):", data);
-
-      if (!data.success) {
-        throw new Error(
-          data.message || "Usuario no válido en la base de datos"
-        );
-      }
-
-      // 4. Guardar datos confiables desde backend
       const userData = data.data;
+
       setRole(userData.role?.toString() || null);
       setNombre(userData.nombre || null);
       setApellido(userData.apellido || null);
@@ -191,15 +184,14 @@ const useAuth = () => {
       setDocumento(userData.documento || null);
       setTipoDocumento(userData.tipo_documento || null);
       setEmpresa(userData.empresa || null);
+      setIdUsuario(userData.id_usuario || null); // <--- aquí se guarda el id
+      setFoto(userData.foto_perfil || null);
 
-      // 5. Redirección por rol
-      if (userData.role === 1 || userData.role === "1") {
-        navigate("/admin");
-      } else if (userData.role === 2 || userData.role === "2") {
+      // Redirección por rol
+      if (userData.role === 1 || userData.role === "1") navigate("/admin");
+      else if (userData.role === 2 || userData.role === "2")
         navigate("/driver");
-      } else {
-        navigate("/");
-      }
+      else navigate("/");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -207,25 +199,23 @@ const useAuth = () => {
     }
   };
 
-  // ✅ REGISTRO
+  // REGISTRO
   const handleRegister = async (
     registerData: RegisterData,
     setError: React.Dispatch<React.SetStateAction<string>>,
-    setSuccess?: React.Dispatch<React.SetStateAction<string>>
+    setSuccess?: React.Dispatch<React.SetStateAction<string>>,
+    onSuccess?: (msg: string) => void // 👈 coma y callback opcional
   ) => {
     setError("");
     setLoading(true);
 
     try {
-      if (registerData.email !== registerData.confirmarEmail) {
+      if (registerData.email !== registerData.confirmarEmail)
         throw new Error("Los emails no coinciden");
-      }
-      if (registerData.password !== registerData.repetirPassword) {
+      if (registerData.password !== registerData.repetirPassword)
         throw new Error("Las contraseñas no coinciden");
-      }
-      if (registerData.password.length < 6) {
+      if (registerData.password.length < 6)
         throw new Error("La contraseña debe tener al menos 6 caracteres");
-      }
 
       const payload = {
         email: registerData.email,
@@ -254,17 +244,20 @@ const useAuth = () => {
         throw new Error(errMsg || "Error en el registro");
       }
 
+      //
+      const successMsg =
+        "Usuario registrado exitosamente. Ya puedes iniciar sesión.";
+
       if (setSuccess) {
-        setSuccess(
-          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
-        );
+        setSuccess(successMsg);
+      } else if (onSuccess) {
+        onSuccess(successMsg);
       } else {
-        toast.success(
-          "Usuario registrado exitosamente. Ya puedes iniciar sesión."
-        );
+        toast.success(successMsg);
       }
 
-      navigate("/signin");
+      // 👉 OJO: aquí ya no haces navigate directo
+      // porque si usas onSuccess puedes redirigir desde afuera
     } catch (err) {
       console.error("❌ Error en el registro:", err);
       setError((err as Error).message);
@@ -273,7 +266,7 @@ const useAuth = () => {
     }
   };
 
-  // ✅ RESET PASSWORD
+  // RESET PASSWORD
   const handlePasswordReset = async (
     email: string,
     setError: React.Dispatch<React.SetStateAction<string>>,
@@ -314,8 +307,9 @@ const useAuth = () => {
     documento,
     tipoDocumento,
     empresa,
-
+    idUsuario,
     isAuthenticated: !!user,
+    foto,
   };
 };
 

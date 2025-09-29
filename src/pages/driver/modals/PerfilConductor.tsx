@@ -1,5 +1,4 @@
-// PerfilConductor.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,10 +9,15 @@ import {
   useTheme,
   Paper,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router";
 import { PhotoCamera } from "@mui/icons-material";
-import ModalEditar from "./ModalEditar";
+import { useNavigate } from "react-router";
+import useAuth from "../../../hooks/useAuth";
+import {
+  updateFotoPerfil,
+  ConductorUpdated,
+} from "../../../global/services/driverService";
 
 interface PerfilConductorProps {
   nombre: string;
@@ -23,9 +27,12 @@ interface PerfilConductorProps {
   documento: string;
   empresa: string | number;
   rol: string | number;
-  enLinea: boolean; // 👈 lo agregamos aquí
-  fotoUrl?: string;
+  enLinea: boolean;
+  foto: string | null;
+  onEditar: () => void;
 }
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const PerfilConductor: React.FC<PerfilConductorProps> = ({
   nombre,
@@ -35,25 +42,55 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   documento,
   empresa,
   rol,
-  enLinea, // 👈 ahora existe en los props
-  fotoUrl,
+  enLinea,
+  foto,
+  onEditar,
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { getAccessToken, idUsuario } = useAuth();
 
-  const [editando, setEditando] = useState(false);
-  const [previewFoto, setPreviewFoto] = useState<string | undefined>(fotoUrl);
+  const [previewFoto, setPreviewFoto] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setPreviewFoto(URL.createObjectURL(file));
+  // 🔄 Normalizamos la URL que viene desde backend
+  useEffect(() => {
+    if (foto) {
+      setPreviewFoto(foto.startsWith("http") ? foto : `${API_URL}/${foto}`);
+    }
+  }, [foto]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    if (!idUsuario) return;
+    const token = await getAccessToken();
+    if (!token) return;
+
+    setLoading(true);
+    try {
+      const updated: ConductorUpdated = await updateFotoPerfil(
+        idUsuario,
+        file,
+        token
+      );
+
+      if (updated.foto_perfil) {
+        setPreviewFoto(
+          updated.foto_perfil.startsWith("http")
+            ? updated.foto_perfil
+            : `${API_URL}/${updated.foto_perfil}`
+        );
+      }
+
+      console.log("✅ Foto de perfil actualizada");
+    } catch (err) {
+      console.error("❌ Error al actualizar foto:", err);
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (editando) {
-    return <ModalEditar onVolver={() => setEditando(false)} />;
-  }
 
   return (
     <Paper
@@ -93,10 +130,12 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
             type="file"
             style={{ display: "none" }}
             onChange={handleFileChange}
+            disabled={loading}
           />
           <label htmlFor="upload-avatar">
             <IconButton
               component="span"
+              disabled={loading}
               sx={{
                 position: "absolute",
                 bottom: -10,
@@ -109,7 +148,11 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
                 },
               }}
             >
-              <PhotoCamera fontSize="small" />
+              {loading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <PhotoCamera fontSize="small" />
+              )}
             </IconButton>
           </label>
         </Box>
@@ -121,21 +164,25 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         >
           {rol}
         </Typography>
-
-        {/* 👇 usamos el prop enLinea */}
         <Chip
           label={enLinea ? "En línea" : "Desconectado"}
           color={enLinea ? "success" : "default"}
         />
 
-        <Box textAlign="center" mt={2}>
-          <Typography variant="body2" color="text.secondary">
+        {/* 🔹 Sección de Disponibilidad */}
+        <Box
+          sx={{
+            textAlign: "center",
+            mt: 2,
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight="600">
             Disponibilidad
           </Typography>
-          <Typography variant="body2" color="success.main" fontWeight="600">
+          <Typography variant="body1" color="success.main" fontWeight="bold">
             Disponible
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Horario: 6am - 3pm
           </Typography>
         </Box>
@@ -158,18 +205,11 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         </Button>
       </Box>
 
-      {/* Línea divisoria */}
       <Divider orientation="vertical" flexItem />
 
       {/* Columna derecha */}
       <Box sx={{ flex: 1 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            mb: 6,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 6 }}>
           <Typography
             variant="h6"
             fontWeight="600"
@@ -180,12 +220,10 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           <Button
             variant="contained"
             size="small"
-            onClick={() => setEditando(true)}
+            onClick={onEditar}
             sx={{
               bgcolor: theme.palette.primary.main,
-              "&:hover": {
-                bgcolor: theme.palette.primary.dark,
-              },
+              "&:hover": { bgcolor: theme.palette.primary.dark },
             }}
           >
             Editar Perfil
