@@ -1,11 +1,14 @@
+// ✅ Versión mejorada del componente Driver con actualización de posición real
 import { useEffect, useRef, useState } from "react";
 import { useJsApiLoader } from "@react-google-maps/api";
 import { useUserLocation } from "./hooks/useUserLocation";
 import { LocateButton } from "./components/LocateButton";
 import { StreetViewButton } from "./components/StreetViewButton";
 import { ZoomControls } from "./components/ZoomControls";
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { Paquete } from "../../hooks/useManifiestos";
+import FormDelivery from "./modals/FormDelivery";
+import { DeliveryFormData } from "../../global/types/deliveries";
 
 interface DriverProps {
   paquetes?: Paquete[];
@@ -18,17 +21,30 @@ export const Driver: React.FC<DriverProps> = () => {
   const mapRef = useRef<google.maps.Map | null>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
   const [carIcon, setCarIcon] = useState<google.maps.Icon | null>(null);
   const [paqueteIcon, setPaqueteIcon] = useState<google.maps.Icon | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]); // 👈 guardar marcadores de paquetes
+
+  const [openForm, setOpenForm] = useState(false);
+  const [selectedPaquete, setSelectedPaquete] = useState<Paquete | null>(null);
+
+  const [sortedPaquetes, setSortedPaquetes] = useState<Paquete[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationPath, setSimulationPath] = useState<google.maps.LatLng[]>(
+    []
+  );
+  const [currentLocation, setCurrentLocation] =
+    useState<google.maps.LatLngLiteral | null>(null); // 🔹 nueva ubicación actual
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY!,
     libraries,
   });
 
-  // Crear íconos
+  // Crear íconos personalizados
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -71,24 +87,20 @@ export const Driver: React.FC<DriverProps> = () => {
         map: mapRef.current,
         icon: carIcon,
       });
+
+      setCurrentLocation(location); // 🔹 Guardar ubicación inicial
     } else {
       mapRef.current.panTo(location);
       userMarkerRef.current?.setPosition(location);
+      setCurrentLocation(location);
     }
   }, [isLoaded, location, carIcon]);
 
-  // Construir ruta con Routes API v2
+  // Obtener y dibujar la ruta
   const fetchRoute = async (
     origin: google.maps.LatLngLiteral,
-    paquetes: Paquete[]
+    destination: Paquete
   ) => {
-    if (!paquetes.length) return;
-
-    const destination = paquetes[paquetes.length - 1];
-    const waypoints = paquetes.slice(0, -1).map((p) => ({
-      location: { latLng: { latitude: p.lat, longitude: p.lng } },
-    }));
-
     try {
       const res = await fetch(
         "https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -108,13 +120,12 @@ export const Driver: React.FC<DriverProps> = () => {
             destination: {
               location: {
                 latLng: {
-                  latitude: destination.lat,
-                  longitude: destination.lng,
+                  latitude: destination.lat!,
+                  longitude: destination.lng!,
                 },
               },
             },
             travelMode: "DRIVE",
-            intermediates: waypoints,
           }),
         }
       );
@@ -125,10 +136,7 @@ export const Driver: React.FC<DriverProps> = () => {
 
       const path = google.maps.geometry.encoding.decodePath(encoded);
 
-      // 🔹 limpiar polyline anterior antes de dibujar
-      if (polylineRef.current) {
-        polylineRef.current.setMap(null);
-      }
+      if (polylineRef.current) polylineRef.current.setMap(null);
 
       polylineRef.current = new google.maps.Polyline({
         path,
@@ -137,10 +145,9 @@ export const Driver: React.FC<DriverProps> = () => {
         strokeWeight: 6,
       });
 
-      // 🔹 añadir al mapa
       polylineRef.current.setMap(mapRef.current);
+      setSimulationPath(path);
 
-      // 🔹 ajustar el mapa a la nueva ruta
       const bounds = new google.maps.LatLngBounds();
       path.forEach((latLng) => bounds.extend(latLng));
       mapRef.current.fitBounds(bounds);
@@ -149,23 +156,40 @@ export const Driver: React.FC<DriverProps> = () => {
     }
   };
 
-  // Escuchar evento "paquetesRutaUpdated"
-  useEffect(() => {
-    const handler = () => {
-      const storedPaquetes = localStorage.getItem("paquetesRuta");
+  // 🚗 Simular movimiento del vehículo
+  const startSimulation = () => {
+    if (!simulationPath.length || !userMarkerRef.current) return;
+    setIsSimulating(true);
 
-      // 👉 Si no hay paquetes => limpiar ruta + marcadores
-      if (!storedPaquetes) {
-        if (polylineRef.current) {
-          polylineRef.current.setMap(null);
-          polylineRef.current = null;
-        }
-        markersRef.current.forEach((m) => m.setMap(null));
-        markersRef.current = [];
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= simulationPath.length) {
+        clearInterval(interval);
+        setIsSimulating(false);
+
+        // 🔹 Al llegar, actualizar ubicación actual
+        const lastPos = simulationPath[simulationPath.length - 1];
+        const nuevaUbicacion = { lat: lastPos.lat(), lng: lastPos.lng() };
+        setCurrentLocation(nuevaUbicacion);
+
+        console.log("✅ Llegó al destino. Nueva ubicación:", nuevaUbicacion);
+        handleNextDestination(nuevaUbicacion); // calcular siguiente desde aquí
         return;
       }
 
-      if (!location || !paqueteIcon) return;
+      const pos = simulationPath[i];
+      userMarkerRef.current!.setPosition(pos);
+      mapRef.current?.panTo(pos);
+
+      i++;
+    }, 300);
+  };
+
+  // 📦 Cargar paquetes desde localStorage
+  useEffect(() => {
+    const handler = () => {
+      const storedPaquetes = localStorage.getItem("paquetesRuta");
+      if (!storedPaquetes || !location || !paqueteIcon) return;
 
       let paquetes: Paquete[] = [];
       try {
@@ -174,57 +198,89 @@ export const Driver: React.FC<DriverProps> = () => {
         return;
       }
 
-      // 🔹 filtrar solo los que tengan lat/lng válidos
-      const paquetesValidos = paquetes
-        .filter((p) => p.lat !== undefined && p.lng !== undefined)
+      const validos = paquetes.filter((p) => p.lat && p.lng);
+      if (!validos.length) return;
+
+      const ordenados = validos
         .map((p) => ({
           ...p,
-          lat: Number(p.lat),
-          lng: Number(p.lng),
-        }));
+          distance: google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(location.lat, location.lng),
+            new google.maps.LatLng(p.lat!, p.lng!)
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance);
 
-      // 🔹 Debug: ver qué datos válidos quedan
-      console.log(
-        "📍 Paquetes válidos para ruta:",
-        paquetesValidos.map((p) => [p.lat, p.lng])
-      );
+      setSortedPaquetes(ordenados);
+      setCurrentIndex(0);
 
-      // limpiar ruta previa
-      if (polylineRef.current) {
-        polylineRef.current.setMap(null);
-        polylineRef.current = null;
-      }
-
-      // limpiar marcadores previos
       markersRef.current.forEach((m) => m.setMap(null));
-      markersRef.current = [];
+      markersRef.current = ordenados.map((p) => {
+        const marker = new google.maps.Marker({
+          position: { lat: p.lat!, lng: p.lng! },
+          map: mapRef.current!,
+          icon: paqueteIcon,
+          title: p.direccion || "Paquete",
+        });
+        marker.addListener("click", () => {
+          setSelectedPaquete(p);
+          setOpenForm(true);
+        });
+        return marker;
+      });
 
-      if (!paquetesValidos.length) return;
-
-      // dibujar nueva ruta
-      fetchRoute(location, paquetesValidos);
-
-      // pintar nuevos marcadores
-      markersRef.current = paquetesValidos.map(
-        (p) =>
-          new google.maps.Marker({
-            position: { lat: p.lat, lng: p.lng },
-            map: mapRef.current!,
-            icon: paqueteIcon,
-            title: p.direccion || "Paquete",
-          })
-      );
+      fetchRoute(location, ordenados[0]);
     };
 
     window.addEventListener("paquetesRutaUpdated", handler);
     return () => window.removeEventListener("paquetesRutaUpdated", handler);
   }, [location, paqueteIcon]);
 
+  // 🔹 Avanzar al siguiente destino desde ubicación actual
+  const handleNextDestination = (nuevoOrigen?: google.maps.LatLngLiteral) => {
+    const origenActual = nuevoOrigen || currentLocation || location!;
+    if (!sortedPaquetes.length) return;
+
+    const paquetesRestantes = sortedPaquetes.slice(currentIndex + 1);
+    if (!paquetesRestantes.length) {
+      alert("🎉 Todas las entregas completadas.");
+      if (polylineRef.current) polylineRef.current.setMap(null);
+      return;
+    }
+
+    const siguiente = paquetesRestantes.reduce((masCercano, actual) => {
+      const distMasCercano =
+        google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(origenActual.lat, origenActual.lng),
+          new google.maps.LatLng(masCercano.lat!, masCercano.lng!)
+        );
+      const distActual = google.maps.geometry.spherical.computeDistanceBetween(
+        new google.maps.LatLng(origenActual.lat, origenActual.lng),
+        new google.maps.LatLng(actual.lat!, actual.lng!)
+      );
+      return distActual < distMasCercano ? actual : masCercano;
+    });
+
+    setCurrentIndex(sortedPaquetes.findIndex((p) => p === siguiente));
+    fetchRoute(origenActual, siguiente);
+  };
+
   useEffect(() => {
     getUserLocation();
   }, []);
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
+
+  const toDeliveryFormData = (p: Paquete): DeliveryFormData => ({
+    orderId: p.codigo_rastreo || "",
+    reference: p.tipo_paquete || "",
+    content: `${p.largo}x${p.ancho}x${p.alto} cm (${p.peso} kg)`,
+    value: p.valor_declarado ?? null,
+    clientName: "",
+    address: p.direccion || "",
+    phone: "",
+    deliveryNotes: "",
+  });
 
   return (
     <Box sx={{ position: "relative", width: "100%", height: "89vh" }}>
@@ -264,7 +320,32 @@ export const Driver: React.FC<DriverProps> = () => {
             mapRef.current?.setZoom((mapRef.current?.getZoom() || 15) - 1)
           }
         />
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleNextDestination()}
+        >
+          Siguiente destino
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={startSimulation}
+          disabled={isSimulating}
+        >
+          Simular ruta
+        </Button>
       </Box>
+
+      <FormDelivery
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        initial={
+          selectedPaquete ? toDeliveryFormData(selectedPaquete) : undefined
+        }
+      />
     </Box>
   );
 };

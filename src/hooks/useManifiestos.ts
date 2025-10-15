@@ -1,18 +1,25 @@
-// src/hooks/useManifiestos.ts
 import { useState } from "react";
 
-// Tipo definido dentro del manifiesto
+// 👇 Tipos que deben coincidir con los del backend
 export interface Paquete {
-  codigo_rastreo: string;
-  direccion: string;
+  id_paquete: number;
+  codigo_rastreo: string | null;
+  direccion: string | null;
   largo: number;
   ancho: number;
   alto: number;
   peso: number;
-  estado_paquete: string;
-  tipo_paquete: string;
-  lat: number;
-  lng: number;
+  estado_paquete: string; // Prisma enum: paquete_estado_paquete
+  tipo_paquete: string; // Prisma enum: paquete_tipo_paquete
+  lat?: number | null;
+  lng?: number | null;
+  valor_declarado: number;
+  cantidad: number;
+  fecha_registro: string; // Date → string al venir del backend
+  fecha_entrega: string | null;
+  id_cliente: number;
+  id_ruta?: number | null;
+  id_barrio?: number | null;
 }
 
 interface ApiResponse {
