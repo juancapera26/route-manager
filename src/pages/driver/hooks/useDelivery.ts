@@ -9,12 +9,17 @@ type UseDeliveryParams = {
   onClose?: () => void;
 };
 
+// 🔹 Tipo de resultado de la función de envío
+type SubmitResult = {
+  ok: boolean;
+  error?: string;
+};
+
 export function useDelivery({
   initial,
   onSubmitSuccess,
   onClose,
 }: UseDeliveryParams = {}) {
-  // ✅ Estado principal del formulario: inicia vacío
   const [formData, setFormData] = useState<DeliveryFormData>({
     orderId: "",
     reference: "",
@@ -31,25 +36,20 @@ export function useDelivery({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 🔹 Cargar datos del paquete seleccionado
+  // 🔹 Cargar datos iniciales
   useEffect(() => {
     if (initial) {
-      setFormData((prev) => ({
-        ...prev,
-        ...initial,
-      }));
+      setFormData((prev) => ({ ...prev, ...initial }));
     }
   }, [initial]);
 
-  // 🔹 Manejar cambios de texto
+  // 🔹 Manejar cambios de inputs
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   // 🔹 Manejar archivo (foto)
@@ -61,7 +61,7 @@ export function useDelivery({
     }
   };
 
-  // 🔹 Función para limpiar solo la foto (usada al cerrar modal)
+  // 🔹 Limpiar solo la foto
   const clearPhoto = () => setDeliveryPhoto(null);
 
   // 🔹 Validación simple
@@ -80,22 +80,26 @@ export function useDelivery({
   };
 
   // 🔹 Enviar entrega
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = async (): Promise<SubmitResult> => {
     setShowConfirmModal(false);
     setLoading(true);
+
     const result = await createDelivery(formData, deliveryPhoto);
+
     setLoading(false);
 
     if (result.ok) {
       onSubmitSuccess?.();
       onClose?.();
-      // limpiar campos editables
+      // Limpiar campos editables
       setFormData((prev) => ({ ...prev, deliveryNotes: "" }));
       setDeliveryPhoto(null);
     } else {
       console.error("Error al crear entrega:", result.error);
       setErrors({ ...errors, submit: result.error ?? "Error desconocido" });
     }
+
+    return result;
   };
 
   return {
@@ -109,7 +113,7 @@ export function useDelivery({
     handleFileChange,
     handleConfirm,
     handleFinalSubmit,
-    clearPhoto, // 👈 exportamos para usar en el componente
+    clearPhoto,
   };
 }
 
