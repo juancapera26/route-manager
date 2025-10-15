@@ -1,17 +1,18 @@
-// src/components/admin/vehicles/ModalAgregarVehiculo.tsx
-import React, { useState } from "react";
+// src/components/admin/vehicles/ModalEditarVehiculo.tsx
+import React, { useState, useEffect } from "react";
 import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import Alert from "../../ui/alert/Alert";
-import { TipoVehiculo, EstadoVehiculo, CreateVehiculoDto } from "../../../global/types/vehiclesType";
-import { Plus } from "lucide-react";
+import { Vehiculo, TipoVehiculo, UpdateVehiculoDto } from "../../../global/types/vehiclesType";
+import { Edit } from "lucide-react";
 
-interface ModalAgregarVehiculoProps {
+interface ModalEditarVehiculoProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (data: CreateVehiculoDto) => Promise<boolean>;
+  onSuccess: (id: string, data: UpdateVehiculoDto) => Promise<boolean>;
+  vehiculo: Vehiculo | null;
   isLoading?: boolean;
 }
 
@@ -20,16 +21,16 @@ interface FormErrors {
   tipo?: string;
 }
 
-const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
+const ModalEditarVehiculo: React.FC<ModalEditarVehiculoProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  vehiculo,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<CreateVehiculoDto>({
+  const [formData, setFormData] = useState<UpdateVehiculoDto>({
     placa: "",
     tipo: TipoVehiculo.Moto,
-    estado_vehiculo: EstadoVehiculo.Disponible,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -39,8 +40,22 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
   } | null>(null);
 
   /**
+   * Pre-poblar el formulario cuando se abre el modal
+   */
+  useEffect(() => {
+    if (vehiculo && isOpen) {
+      console.log('🔄 Pre-poblando formulario con datos del vehículo:', vehiculo.id_vehiculo);
+      setFormData({
+        placa: vehiculo.placa,
+        tipo: vehiculo.tipo,
+      });
+      setErrors({});
+      setMensaje(null);
+    }
+  }, [vehiculo, isOpen]);
+
+  /**
    * Validar el formato de la placa
-   * Formato colombiano: ABC123 (3 letras + 3 números)
    */
   const validarPlaca = (placa: string): boolean => {
     const placaRegex = /^[A-Z]{3}[0-9]{3}$/;
@@ -48,20 +63,18 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
   };
 
   /**
-   * Validar todo el formulario
+   * Validar formulario
    */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Validar placa
-    if (!formData.placa.trim()) {
+    if (!formData.placa?.trim()) {
       newErrors.placa = "La placa es requerida";
     } else if (!validarPlaca(formData.placa)) {
       newErrors.placa = "Formato de placa inválido (Ej: ABC123)";
     }
 
-    // Validar tipo
-    if (!Object.values(TipoVehiculo).includes(formData.tipo)) {
+    if (formData.tipo && !Object.values(TipoVehiculo).includes(formData.tipo)) {
       newErrors.tipo = "Debe seleccionar un tipo de vehículo válido";
     }
 
@@ -77,7 +90,6 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
   ) => {
     const { name, value } = e.target;
 
-    // Limpiar error del campo que está siendo editado
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -85,7 +97,6 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
     if (name === "tipo") {
       setFormData((prev) => ({ ...prev, tipo: value as TipoVehiculo }));
     } else if (name === "placa") {
-      // Convertir a mayúsculas automáticamente
       setFormData((prev) => ({ ...prev, placa: value.toUpperCase() }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -93,10 +104,15 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
   };
 
   /**
-   * Manejar el envío del formulario
+   * Manejar envío del formulario
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!vehiculo) {
+      setMensaje({ text: "No hay vehículo seleccionado", type: "error" });
+      return;
+    }
 
     if (!validateForm()) {
       setMensaje({
@@ -106,35 +122,33 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
       return;
     }
 
+    console.log('📤 Enviando actualización del vehículo:', {
+      id: vehiculo.id_vehiculo,
+      formData,
+    });
+
     try {
-      const success = await onSuccess(formData);
+      const success = await onSuccess(vehiculo.id_vehiculo, formData);
       
       if (success) {
-        setMensaje({ text: "Vehículo creado exitosamente", type: "success" });
-        
-        // Reiniciar formulario
-        setFormData({
-          placa: "",
-          tipo: TipoVehiculo.Moto,
-          estado_vehiculo: EstadoVehiculo.Disponible,
-        });
+        setMensaje({ text: "Vehículo actualizado exitosamente", type: "success" });
         setErrors({});
-
+        
         setTimeout(() => {
           setMensaje(null);
           onClose();
         }, 1500);
       } else {
-        setMensaje({ text: "Error al crear vehículo", type: "error" });
+        setMensaje({ text: "Error al actualizar vehículo", type: "error" });
       }
     } catch (error) {
-      console.error("Error al crear vehículo:", error);
-      setMensaje({ text: "Error al crear vehículo", type: "error" });
+      console.error("Error al actualizar vehículo:", error);
+      setMensaje({ text: "Error al actualizar vehículo", type: "error" });
     }
   };
 
   /**
-   * Manejar el cierre del modal
+   * Manejar cierre del modal
    */
   const handleClose = () => {
     if (!isLoading) {
@@ -150,10 +164,10 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-blue-500/10 rounded-lg">
-            <Plus className="w-6 h-6 text-blue-500" />
+            <Edit className="w-6 h-6 text-blue-500" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Agregar nuevo vehículo
+            Editar vehículo
           </h3>
         </div>
 
@@ -220,10 +234,10 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
           </div>
 
           {/* Nota informativa */}
-          <div className="bg-blue-50 dark:bg-blue-500/10 rounded-lg p-4">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-              <strong>Nota:</strong> El vehículo se creará con estado "Disponible" por defecto.
-              Puedes cambiar su estado desde la tabla de vehículos.
+          <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-lg p-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
+              <strong>Nota:</strong> Para cambiar el estado de disponibilidad del vehículo, 
+              usa el botón de estado en la tabla de vehículos.
             </p>
           </div>
 
@@ -242,7 +256,7 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
               disabled={isLoading}
               className="min-w-[120px]"
             >
-              {isLoading ? "Creando..." : "Crear vehículo"}
+              {isLoading ? "Actualizando..." : "Actualizar vehículo"}
             </Button>
           </div>
         </form>
@@ -251,4 +265,4 @@ const ModalAgregarVehiculo: React.FC<ModalAgregarVehiculoProps> = ({
   );
 };
 
-export default ModalAgregarVehiculo;
+export default ModalEditarVehiculo;

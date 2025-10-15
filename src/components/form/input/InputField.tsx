@@ -1,7 +1,12 @@
 import type React from "react";
 import type { FC } from "react";
+// 🚨 Importar las propiedades HTML nativas
+import type { InputHTMLAttributes } from "react"; 
 
-interface InputProps {
+// 🚨 MODIFICACIÓN CLAVE: Extender InputHTMLAttributes
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  // Las propiedades aquí abajo (type, id, name, etc.) ya están cubiertas por la extensión, 
+  // pero las dejo para visibilidad o si tienen tipos más estrictos.
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
   id?: string;
   name?: string;
@@ -9,18 +14,23 @@ interface InputProps {
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
-  min?: string;
-  max?: string;
-  step?: number;
-  disabled?: boolean;
+  min?: string; // (Ya cubierto por la extensión)
+  max?: string; // (Ya cubierto por la extensión)
+  step?: number; // (Ya cubierto por la extensión)
+  disabled?: boolean; // (Ya cubierto por la extensión)
+  // Propiedades personalizadas o de estado:
   success?: boolean;
   error?: boolean;
   hint?: string;
-  required?: boolean;
+  required?: boolean; // (Ya cubierto por la extensión)
   data_field?: string;
-  onClick?: (e:React.MouseEvent<HTMLInputElement>) => void
+  onClick?: (e:React.MouseEvent<HTMLInputElement>) => void // (Ya cubierto por la extensión)
+  
+  // Nota: Si usas 'max' para la longitud, quita 'max' de aquí ya que es para números/fechas.
+  // Sin embargo, la extensión ya cubre 'maxLength', 'min', 'max' y todo lo demás.
 }
 
+// 🚨 Asegúrate de desestructurar y capturar todas las demás propiedades (...rest)
 const Input: FC<InputProps> = ({
   type = "text",
   id,
@@ -38,7 +48,9 @@ const Input: FC<InputProps> = ({
   hint,
   required,
   data_field,
-  onClick
+  onClick,
+  // 🚨 Propiedades restantes que no desestructuramos (como maxLength)
+  ...rest 
 }) => {
   let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-none focus:ring  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${className}`;
 
@@ -69,6 +81,8 @@ const Input: FC<InputProps> = ({
         required={required}
         className={inputClasses}
         onClick={onClick}
+        // 🚨 CAMBIO CLAVE: Pasar todas las demás propiedades aquí
+        {...rest} 
       />
 
       {hint && (
