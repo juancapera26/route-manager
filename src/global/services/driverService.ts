@@ -1,51 +1,39 @@
-// src/global/services/driverService.ts
 import axios from "axios";
 import { UpdateConductorDto } from "../types/conductores";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export interface ConductorUpdated {
-  id_usuario: number;
+  id: number;
   nombre: string;
   apellido: string;
   correo: string;
   telefono?: string;
   foto_perfil?: string;
-  // otros campos según tu modelo
 }
 
-// Actualización general del conductor (PATCH normal)
+// Actualizar datos generales
 export const updateConductor = async (
   id: number,
   data: UpdateConductorDto,
   token: string
 ): Promise<ConductorUpdated> => {
   const url = `${API_BASE_URL}/conductores/${id}`;
-  console.log("URL de actualización del conductor:", url); // Log de la URL
-  console.log("Datos a enviar:", data); // Log de los datos
-
-  const response = await axios.patch<ConductorUpdated>(url, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await axios.put<ConductorUpdated>(url, data, {
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  console.log("Respuesta del servidor:", response.data); // Log de la respuesta del servidor
   return response.data;
 };
 
-// Actualización de la foto de perfil (subida de archivo)
+// Actualizar foto del conductor
 export const updateFotoPerfil = async (
   id: number,
   file: File,
   token: string
 ): Promise<ConductorUpdated> => {
+  const url = `${API_BASE_URL}/conductores/${id}/foto`;
   const formData = new FormData();
   formData.append("foto", file);
-
-  const url = `${API_BASE_URL}/conductores/${id}/foto`;
-  console.log("URL de actualización de foto:", url); // Log de la URL
-  console.log("Archivo a subir:", file.name); // Log del archivo
 
   const response = await axios.patch<ConductorUpdated>(url, formData, {
     headers: {
@@ -53,7 +41,32 @@ export const updateFotoPerfil = async (
       "Content-Type": "multipart/form-data",
     },
   });
-
-  console.log("Respuesta del servidor (Foto):", response.data); // Log de la respuesta del servidor
   return response.data;
+};
+
+// Actualizar solo teléfono
+export const updateTelefono = async (
+  id: number,
+  telefono: string,
+  token: string
+): Promise<ConductorUpdated> => {
+  const url = `${API_BASE_URL}/conductores/${id}/telefono`;
+  const response = await axios.patch<ConductorUpdated>(
+    url,
+    { telefono },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data;
+};
+// Eliminar conductor
+export const deleteConductor = async (
+  id: number,
+  token: string
+): Promise<void> => {
+  const url = `${API_BASE_URL}/conductores/${id}`;
+  await axios.delete(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
