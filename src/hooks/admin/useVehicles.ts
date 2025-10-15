@@ -1,525 +1,203 @@
-// =============================================
-// useVehicles - Hook para gestión de vehículos
-// =============================================
-
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { api } from "../../global/apis";
-import {
-  Vehiculo,
-  VehiculoEstado,
+// src/hooks/admin/useVehicles.ts
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  Vehiculo, 
+  CreateVehiculoDto, 
+  UpdateVehiculoDto,
+  EstadoVehiculo,
   TipoVehiculo,
-  Conductor,
-  Ruta,
-  Paquete,
-} from "../../global/types";
+  VehiculosFiltro
+} from '../../global/types/vehiclesType';
+import { vehicleService } from '../../global/services/vehicleService';
 
-// ===================== TIPOS DEL HOOK =====================
-interface UseVehiclesConfig {
-  estado?: VehiculoEstado | "all";
+interface UseVehiclesOptions {
   autoFetch?: boolean;
-  refreshInterval?: number;
-  onRelatedEntitiesUpdate?: (related: {
-    ruta?: Ruta;
-    conductor?: Conductor;
-    vehiculo?: Vehiculo;
-    paquetes?: Paquete[];
-  }) => void; // Callback opcional para manejar entidades relacionadas
+  filtros?: VehiculosFiltro;
 }
 
-interface VehiclesState {
+interface UseVehiclesReturn {
+  // Datos
   data: Vehiculo[];
   loading: boolean;
   error: string | null;
-  lastFetch: Date | null;
-}
 
-interface UseVehiclesActions {
-  // CRUD básico
-  createVehicle: (data: Omit<Vehiculo, "id_vehiculo">) => Promise<boolean>;
-  updateVehicle: (id: string, data: Partial<Vehiculo>) => Promise<boolean>;
-  deleteVehicle: (id: string) => Promise<boolean>;
-
-  // Operaciones de asignación
-  assignToConductor: (
-    vehiculoId: string,
-    conductorId: string
-  ) => Promise<boolean>;
-  unassignFromConductor: (vehiculoId: string) => Promise<boolean>;
-
-  // Utilidades
-  getVehicleById: (id: string) => Vehiculo | undefined;
-  refetch: () => Promise<void>;
-  clearError: () => void;
-}
-
-interface UseVehiclesReturn extends VehiclesState, UseVehiclesActions {
-  // Datos computados por estado
+  // Listas filtradas
   vehiculosDisponibles: Vehiculo[];
   vehiculosNoDisponibles: Vehiculo[];
-  totalVehiculos: number;
+  vehiculosPorTipo: (tipo: TipoVehiculo) => Vehiculo[];
 
-  // Estados de las operaciones
-  isCreating: boolean;
-  isUpdating: boolean;
-  isDeleting: boolean;
-  isAssigning: boolean;
+  // Operaciones CRUD
+  createVehiculo: (data: CreateVehiculoDto) => Promise<boolean>;
+  updateVehiculo: (id: string, data: UpdateVehiculoDto) => Promise<boolean>;
+  deleteVehiculo: (id: string) => Promise<boolean>;
+  cambiarEstado: (id: string, disponible: boolean) => Promise<boolean>;
 
-  // Stats útiles para dashboards
-  porcentajeDisponibilidad: number;
-  vehiculosPorTipo: Record<TipoVehiculo, number>;
+  // Utilidades
+  refetch: () => Promise<void>;
+  clearError: () => void;
+  getVehiculoById: (id: string) => Vehiculo | undefined;
 }
 
-// ===================== HOOK PRINCIPAL =====================
-export const useVehicles = (
-  config: UseVehiclesConfig = {}
-): UseVehiclesReturn => {
-  const {
-    estado = "all",
-    autoFetch = true,
-    refreshInterval,
-    onRelatedEntitiesUpdate,
-  } = config;
+export const useVehicles = (options: UseVehiclesOptions = {}): UseVehiclesReturn => {
+  const { autoFetch = true, filtros = {} } = options;
 
-  // ===================== ESTADO LOCAL =====================
-  const [state, setState] = useState<VehiclesState>({
-    data: [],
-    loading: false,
-    error: null,
-    lastFetch: null,
-  });
-
-  const [operationStates, setOperationStates] = useState({
-    isCreating: false,
-    isUpdating: false,
-    isDeleting: false,
-    isAssigning: false,
-  });
-
-  // ===================== FUNCIONES DE FETCH =====================
-  const fetchVehicles = useCallback(async () => {
-    try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-
-      let vehiculos: Vehiculo[];
-
-      if (estado !== "all") {
-        vehiculos = await api.vehiculos.getByEstado(estado as VehiculoEstado);
-      } else {
-        vehiculos = await api.vehiculos.getAll();
-      }
-
-      setState((prev) => ({
-        ...prev,
-        data: vehiculos,
-        loading: false,
-        lastFetch: new Date(),
-      }));
-    } catch (error) {
-      console.error("Error al obtener vehículos:", error);
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Error desconocido al obtener vehículos",
-      }));
-    }
-  }, [estado]);
-
-  const refetch = useCallback(async () => {
-    await fetchVehicles();
-  }, [fetchVehicles]);
-
-  // ===================== EFECTOS =====================
-  // Auto-fetch inicial
-  useEffect(() => {
-    if (autoFetch) {
-      fetchVehicles();
-    }
-  }, [fetchVehicles, autoFetch]);
-
-  // Refresh interval
-  useEffect(() => {
-    if (refreshInterval && refreshInterval > 0) {
-      const interval = setInterval(fetchVehicles, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [fetchVehicles, refreshInterval]);
-
-  // ===================== OPERACIONES CRUD =====================
-  const createVehicle = useCallback(
-    async (data: Omit<Vehiculo, "id_vehiculo">): Promise<boolean> => {
-      try {
-        setOperationStates((prev) => ({ ...prev, isCreating: true }));
-
-        const result = await api.vehiculos.create(data);
-        const nuevoVehiculo = result.entidadPrincipal;
-
-        // Actualizar estado local optimista
-        setState((prev) => ({
-          ...prev,
-          data: [nuevoVehiculo, ...prev.data],
-          error: null,
-        }));
-
-        // Manejar entidadesRelacionadas si existen
-        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
-          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
-        }
-
-        setOperationStates((prev) => ({ ...prev, isCreating: false }));
-        return true;
-      } catch (error) {
-        console.error("Error al crear vehículo:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error ? error.message : "Error al crear vehículo",
-        }));
-        setOperationStates((prev) => ({ ...prev, isCreating: false }));
-        return false;
-      }
-    },
-    [onRelatedEntitiesUpdate]
-  );
-
-  const updateVehicle = useCallback(
-    async (id: string, data: Partial<Vehiculo>): Promise<boolean> => {
-      try {
-        setOperationStates((prev) => ({ ...prev, isUpdating: true }));
-
-        const result = await api.vehiculos.update(id, data);
-        const vehiculoActualizado = result.entidadPrincipal;
-
-        // Actualización optimista
-        setState((prev) => ({
-          ...prev,
-          data: prev.data.map((vehiculo) =>
-            vehiculo.id_vehiculo === id ? vehiculoActualizado : vehiculo
-          ),
-          error: null,
-        }));
-
-        // Manejar entidadesRelacionadas si existen
-        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
-          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
-        }
-
-        setOperationStates((prev) => ({ ...prev, isUpdating: false }));
-        return true;
-      } catch (error) {
-        console.error("Error al actualizar vehículo:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Error al actualizar vehículo",
-        }));
-        setOperationStates((prev) => ({ ...prev, isUpdating: false }));
-        return false;
-      }
-    },
-    [onRelatedEntitiesUpdate]
-  );
-
-  const deleteVehicle = useCallback(
-    async (id: string): Promise<boolean> => {
-      try {
-        setOperationStates((prev) => ({ ...prev, isDeleting: true }));
-
-        const result = await api.vehiculos.delete(id);
-
-        // Eliminación optimista
-        setState((prev) => ({
-          ...prev,
-          data: prev.data.filter((vehiculo) => vehiculo.id_vehiculo !== id),
-          error: null,
-        }));
-
-        // Manejar entidadesRelacionadas si existen
-        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
-          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
-        }
-
-        setOperationStates((prev) => ({ ...prev, isDeleting: false }));
-        return true;
-      } catch (error) {
-        console.error("Error al eliminar vehículo:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Error al eliminar vehículo",
-        }));
-        setOperationStates((prev) => ({ ...prev, isDeleting: false }));
-        return false;
-      }
-    },
-    [onRelatedEntitiesUpdate]
-  );
-
-  // ===================== OPERACIONES DE ASIGNACIÓN =====================
-  const assignToConductor = useCallback(
-    async (vehiculoId: string, conductorId: string): Promise<boolean> => {
-      try {
-        setOperationStates((prev) => ({ ...prev, isAssigning: true }));
-
-        const result = await api.vehiculos.assignToConductor(
-          vehiculoId,
-          conductorId
-        );
-        const vehiculoActualizado = result.entidadPrincipal;
-
-        // Actualización optimista
-        setState((prev) => ({
-          ...prev,
-          data: prev.data.map((vehiculo) =>
-            vehiculo.id_vehiculo === vehiculoId ? vehiculoActualizado : vehiculo
-          ),
-          error: null,
-        }));
-
-        // Manejar entidadesRelacionadas (e.g., conductor actualizado)
-        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
-          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
-        }
-
-        setOperationStates((prev) => ({ ...prev, isAssigning: false }));
-        return true;
-      } catch (error) {
-        console.error("Error al asignar vehículo a conductor:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Error al asignar vehículo a conductor",
-        }));
-        setOperationStates((prev) => ({ ...prev, isAssigning: false }));
-        return false;
-      }
-    },
-    [onRelatedEntitiesUpdate]
-  );
-
-  const unassignFromConductor = useCallback(
-    async (vehiculoId: string): Promise<boolean> => {
-      try {
-        setOperationStates((prev) => ({ ...prev, isAssigning: true }));
-
-        const result = await api.vehiculos.unassignFromConductor(vehiculoId);
-        const vehiculoActualizado = result.entidadPrincipal;
-
-        // Actualización optimista
-        setState((prev) => ({
-          ...prev,
-          data: prev.data.map((vehiculo) =>
-            vehiculo.id_vehiculo === vehiculoId ? vehiculoActualizado : vehiculo
-          ),
-          error: null,
-        }));
-
-        // Manejar entidadesRelacionadas (e.g., conductor liberado)
-        if (result.entidadesRelacionadas && onRelatedEntitiesUpdate) {
-          onRelatedEntitiesUpdate(result.entidadesRelacionadas);
-        }
-
-        setOperationStates((prev) => ({ ...prev, isAssigning: false }));
-        return true;
-      } catch (error) {
-        console.error("Error al desasignar vehículo:", error);
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Error al desasignar vehículo",
-        }));
-        setOperationStates((prev) => ({ ...prev, isAssigning: false }));
-        return false;
-      }
-    },
-    [onRelatedEntitiesUpdate]
-  );
-
-  // ===================== UTILIDADES =====================
-  const getVehicleById = useCallback(
-    (id: string): Vehiculo | undefined => {
-      return state.data.find((vehiculo) => vehiculo.id_vehiculo === id);
-    },
-    [state.data]
-  );
-
-  const clearError = useCallback(() => {
-    setState((prev) => ({ ...prev, error: null }));
-  }, []);
-
-  // ===================== DATOS COMPUTADOS =====================
-  const computedData = useMemo(() => {
-    const vehiculosDisponibles = state.data.filter(
-      (v) => v.estado === VehiculoEstado.Disponible
-    );
-    const vehiculosNoDisponibles = state.data.filter(
-      (v) => v.estado === VehiculoEstado.NoDisponible
-    );
-
-    const totalVehiculos = state.data.length;
-    const porcentajeDisponibilidad =
-      totalVehiculos > 0
-        ? Math.round((vehiculosDisponibles.length / totalVehiculos) * 100)
-        : 0;
-
-    // Agrupar vehículos por tipo para estadísticas
-    const vehiculosPorTipo = state.data.reduce((acc, vehiculo) => {
-      const tipo = vehiculo.tipo_vehiculo;
-      acc[tipo] = (acc[tipo] || 0) + 1;
-      return acc;
-    }, {} as Record<TipoVehiculo, number>);
-
-    return {
-      vehiculosDisponibles,
-      vehiculosNoDisponibles,
-      totalVehiculos,
-      porcentajeDisponibilidad,
-      vehiculosPorTipo,
-    };
-  }, [state.data]);
-
-  // ===================== RETURN =====================
-  return {
-    // Estado básico
-    ...state,
-
-    // Estados de operaciones
-    ...operationStates,
-
-    // Datos computados
-    ...computedData,
-
-    // Operaciones CRUD
-    createVehicle,
-    updateVehicle,
-    deleteVehicle,
-
-    // Operaciones de asignación
-    assignToConductor,
-    unassignFromConductor,
-
-    // Utilidades
-    getVehicleById,
-    refetch,
-    clearError,
-  };
-};
-
-// ===================== HOOKS ESPECÍFICOS =====================
-
-/**
- * Hook específico para obtener solo vehículos disponibles
- * Útil en modales de asignación a conductores
- */
-export const useVehiclesDisponibles = () => {
-  return useVehicles({ estado: VehiculoEstado.Disponible });
-};
-
-/**
- * Hook específico solo para operaciones de asignación
- * Más ligero para componentes que solo asignan/desasignan
- */
-export const useVehicleAssignment = () => {
-  const [loading, setLoading] = useState(false);
+  // Estados principales
+  const [data, setData] = useState<Vehiculo[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const assignToConductor = useCallback(
-    async (vehiculoId: string, conductorId: string) => {
-      try {
-        setLoading(true);
-        setError(null);
-        await api.vehiculos.assignToConductor(vehiculoId, conductorId);
-        setLoading(false);
-        return true;
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Error al asignar vehículo";
-        setError(errorMessage);
-        setLoading(false);
-        return false;
-      }
-    },
-    []
-  );
+  /**
+   * Obtiene todos los vehículos del servidor
+   */
+  const fetchVehiculos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  const unassignFromConductor = useCallback(async (vehiculoId: string) => {
     try {
-      setLoading(true);
-      setError(null);
-      await api.vehiculos.unassignFromConductor(vehiculoId);
-      setLoading(false);
-      return true;
+      const vehiculos = await vehicleService.getAll();
+      setData(vehiculos);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error al desasignar vehículo";
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar vehículos';
       setError(errorMessage);
+      console.error('Error fetching vehiculos:', err);
+    } finally {
       setLoading(false);
-      return false;
     }
   }, []);
 
+  /**
+   * Crear un nuevo vehículo
+   */
+  const createVehiculo = useCallback(async (vehiculoData: CreateVehiculoDto): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const nuevoVehiculo = await vehicleService.create(vehiculoData);
+      setData(prev => [...prev, nuevoVehiculo]);
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear vehículo';
+      setError(errorMessage);
+      console.error('Error creating vehiculo:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Actualizar un vehículo existente
+   */
+  const updateVehiculo = useCallback(async (id: string, vehiculoData: UpdateVehiculoDto): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const vehiculoActualizado = await vehicleService.update(id, vehiculoData);
+      setData(prev => prev.map(v => v.id_vehiculo === id ? vehiculoActualizado : v));
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar vehículo';
+      setError(errorMessage);
+      console.error('Error updating vehiculo:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Eliminar un vehículo
+   */
+  const deleteVehiculo = useCallback(async (id: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await vehicleService.delete(id);
+      setData(prev => prev.filter(v => v.id_vehiculo !== id));
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar vehículo';
+      setError(errorMessage);
+      console.error('Error deleting vehiculo:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Cambiar el estado de disponibilidad de un vehículo
+   */
+  const cambiarEstado = useCallback(async (id: string, disponible: boolean): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const vehiculoActualizado = await vehicleService.updateEstado(id, disponible);
+      setData(prev => prev.map(v => v.id_vehiculo === id ? vehiculoActualizado : v));
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cambiar estado';
+      setError(errorMessage);
+      console.error('Error changing estado vehiculo:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Limpiar errores
+   */
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  /**
+   * Obtener vehículo por ID
+   */
+  const getVehiculoById = useCallback((id: string): Vehiculo | undefined => {
+    return data.find(v => v.id_vehiculo === id);
+  }, [data]);
+
+  // Listas filtradas con useMemo para optimización
+  const vehiculosDisponibles = data.filter(v => v.estado_vehiculo === EstadoVehiculo.Disponible);
+  const vehiculosNoDisponibles = data.filter(v => v.estado_vehiculo === EstadoVehiculo.NoDisponible);
+
+  const vehiculosPorTipo = useCallback((tipo: TipoVehiculo): Vehiculo[] => {
+    return data.filter(v => v.tipo === tipo);
+  }, [data]);
+
+  // Efecto para cargar datos iniciales
+  useEffect(() => {
+    if (autoFetch) {
+      fetchVehiculos();
+    }
+  }, [autoFetch, fetchVehiculos]);
+
   return {
-    assignToConductor,
-    unassignFromConductor,
+    // Datos
+    data,
     loading,
     error,
-    clearError: () => setError(null),
-  };
-};
 
-/**
- * Hook para obtener estadísticas de la flota
- * Útil para dashboards y reportes de vehículos
- */
-export const useVehicleStats = () => {
-  const {
+    // Listas filtradas
     vehiculosDisponibles,
     vehiculosNoDisponibles,
-    totalVehiculos,
-    porcentajeDisponibilidad,
     vehiculosPorTipo,
-    loading,
-    error,
-  } = useVehicles();
 
-  const stats = useMemo(
-    () => ({
-      total: totalVehiculos,
-      disponibles: vehiculosDisponibles.length,
-      noDisponibles: vehiculosNoDisponibles.length,
-      porcentajeDisponibilidad,
-      vehiculosPorTipo,
-      // Stats adicionales
-      porcentajeAsignados:
-        totalVehiculos > 0
-          ? Math.round((vehiculosNoDisponibles.length / totalVehiculos) * 100)
-          : 0,
-    }),
-    [
-      totalVehiculos,
-      vehiculosDisponibles.length,
-      vehiculosNoDisponibles.length,
-      porcentajeDisponibilidad,
-      vehiculosPorTipo,
-    ]
-  );
+    // Operaciones CRUD
+    createVehiculo,
+    updateVehiculo,
+    deleteVehiculo,
+    cambiarEstado,
 
-  return {
-    stats,
-    loading,
-    error,
+    // Utilidades
+    refetch: fetchVehiculos,
+    clearError,
+    getVehiculoById,
   };
 };
-
-// ===================== EXPORT DEFAULT =====================
-export default useVehicles;
