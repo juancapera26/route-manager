@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Paper,
   Typography,
   TextField,
@@ -59,20 +58,18 @@ export default function FormDelivery({
     handleFileChange,
     handleConfirm,
     handleFinalSubmit,
-    clearPhoto, // ✅ traemos la función para limpiar la foto
+    clearPhoto,
   } = useDelivery({ initial, onSubmitSuccess, onClose });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  // 🔹 Función para cerrar modal y limpiar foto
   const handleClose = () => {
-    clearPhoto(); // limpia la imagen
-    onClose(); // cierra el modal
+    clearPhoto();
+    onClose();
   };
 
   return (
     <>
-      {/* Dialog principal */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -112,14 +109,17 @@ export default function FormDelivery({
           </Box>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ p: 0 }}>
-          <Grid
-            container
-            spacing={2}
-            sx={{ p: 1.5, minHeight: 450, alignItems: "stretch" }}
+        <DialogContent dividers sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", lg: "row" },
+              gap: 2,
+              minHeight: 450,
+            }}
           >
             {/* Izquierda: Detalles del paquete */}
-            <Grid item xs={12} lg={6}>
+            <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -143,34 +143,40 @@ export default function FormDelivery({
                   </Typography>
                 </Box>
 
-                <Grid container spacing={1} sx={{ mb: 2 }}>
-                  <Grid item xs={6}>
-                    <Paper
-                      elevation={0}
-                      sx={{ p: 1.5, bgcolor: "grey.100", borderRadius: 1 }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        Pedido
-                      </Typography>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {formData.orderId}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Paper
-                      elevation={0}
-                      sx={{ p: 1.5, bgcolor: "grey.100", borderRadius: 1 }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        Referencia
-                      </Typography>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {formData.reference}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
+                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      bgcolor: "grey.100",
+                      borderRadius: 1,
+                      flex: 1,
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Pedido
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {formData.orderId}
+                    </Typography>
+                  </Paper>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      bgcolor: "grey.100",
+                      borderRadius: 1,
+                      flex: 1,
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Referencia
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {formData.reference}
+                    </Typography>
+                  </Paper>
+                </Box>
 
                 <Paper
                   elevation={0}
@@ -250,10 +256,10 @@ export default function FormDelivery({
                   </Box>
                 </Box>
               </Paper>
-            </Grid>
+            </Box>
 
             {/* Derecha: Registro de entrega */}
-            <Grid item xs={12} lg={6}>
+            <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -401,7 +407,7 @@ export default function FormDelivery({
                       name="deliveryNotes"
                       value={formData.deliveryNotes}
                       onChange={handleInputChange}
-                      placeholder="Ejemplo: Entregado en portería, dejado con portero..."
+                      placeholder="Ejemplo: Entregado en portería..."
                       error={Boolean(errors.deliveryNotes)}
                       helperText={errors.deliveryNotes || ""}
                       sx={{
@@ -423,8 +429,8 @@ export default function FormDelivery({
                   </Box>
                 </Box>
               </Paper>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
 
         {/* Botones */}
@@ -466,8 +472,8 @@ export default function FormDelivery({
             onClick={async () => {
               const result = await handleFinalSubmit();
               if (result?.ok !== false) {
-                setOpenSnackbar(true); // muestra el mensaje de éxito
-                handleClose(); // ✅ cierra el modal principal y limpia la foto
+                setOpenSnackbar(true);
+                handleClose();
               }
               setShowConfirmModal(false);
             }}
@@ -479,7 +485,7 @@ export default function FormDelivery({
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar de éxito */}
+      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
