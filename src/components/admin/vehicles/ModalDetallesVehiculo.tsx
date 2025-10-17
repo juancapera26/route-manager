@@ -141,7 +141,7 @@ export const ModalDetallesVehiculo: React.FC<ModalDetallesVehiculoProps> = ({
           </div>
 
           {/* Estado de disponibilidad */}
-          {vehiculo.estado_vehiculo === EstadoVehiculo.NoDisponible && (
+          {vehiculo.estado_vehiculo === EstadoVehiculo.No_Disponible && (
             <div className="bg-red-50 dark:bg-red-500/10 rounded-lg p-4">
               <p className="text-sm text-red-800 dark:text-red-300">
                 <strong>⚠️ Vehículo no disponible:</strong> Este vehículo no puede ser asignado a rutas en este momento.
