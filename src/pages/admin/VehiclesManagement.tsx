@@ -7,7 +7,7 @@ import ModalEditarVehiculo from '../../components/admin/vehicles/ModalEditarVehi
 import TablaVehiculos from '../../components/admin/vehicles/TablaVehiculos';
 import Alert from '../../components/ui/alert/Alert';
 import Button from '../../components/ui/button/Button';
-import { EstadoVehiculo, TipoVehiculo } from '../../global/types/vehiclesType';
+import { EstadoVehiculo, TipoVehiculo, Vehiculo } from '../../global/types/vehiclesType';
 import { Plus, Truck, Filter } from 'lucide-react';
 
 const VehiclesManagement: React.FC = () => {
@@ -35,10 +35,59 @@ const VehiclesManagement: React.FC = () => {
     refetch,
   } = useVehiclesManagement();
 
+  // 🔹 Estado local para el modal de detalles (para actualizaciones en tiempo real)
+  const [modalDetallesLocal, setModalDetallesLocal] = useState<{
+    isOpen: boolean;
+    vehiculo: Vehiculo | null;
+  }>({
+    isOpen: false,
+    vehiculo: null,
+  });
+
   // Estados locales para filtros
   const [filtroEstado, setFiltroEstado] = useState<EstadoVehiculo | 'todos'>('todos');
   const [filtroTipo, setFiltroTipo] = useState<TipoVehiculo | 'todos'>('todos');
   const [searchTerm, setSearchTerm] = useState('');
+
+  /**
+   * Abrir modal de detalles (versión local mejorada)
+   */
+  const handleAbrirModalDetalles = (vehiculo: Vehiculo) => {
+    setModalDetallesLocal({ isOpen: true, vehiculo });
+    abrirModalDetalles(vehiculo); // También llamar al hook
+  };
+
+  /**
+   * Cerrar modal de detalles
+   */
+  const handleCerrarModalDetalles = () => {
+    setModalDetallesLocal({ isOpen: false, vehiculo: null });
+    cerrarModalDetalles(); // También llamar al hook
+  };
+
+  /**
+   * Manejar cambio de estado (actualiza tabla Y modal)
+   */
+  const handleCambiarEstadoCompleto = async (id: string, disponible: boolean) => {
+    // Ejecutar el cambio de estado
+    await handleCambiarEstado(id, disponible);
+
+    // 🔹 Actualizar el vehículo en el modal si está abierto
+    if (modalDetallesLocal.isOpen && modalDetallesLocal.vehiculo?.id_vehiculo === id) {
+      setModalDetallesLocal(prev => ({
+        ...prev,
+        vehiculo: prev.vehiculo ? {
+          ...prev.vehiculo,
+          estado_vehiculo: disponible
+            ? EstadoVehiculo.Disponible
+            : EstadoVehiculo.No_Disponible
+        } : null
+      }));
+    }
+
+    // 🔹 Refrescar los datos para actualizar las estadísticas
+    await refetch();
+  };
 
   /**
    * Aplicar filtros a la lista de vehículos
@@ -235,7 +284,7 @@ const VehiclesManagement: React.FC = () => {
             >
               <option value="todos">Todos</option>
               <option value={EstadoVehiculo.Disponible}>Disponibles</option>
-              <option value={EstadoVehiculo.NoDisponible}>No Disponibles</option>
+              <option value={EstadoVehiculo.No_Disponible}>No Disponibles</option>
             </select>
           </div>
 
@@ -290,10 +339,10 @@ const VehiclesManagement: React.FC = () => {
       ) : (
         <TablaVehiculos
           vehiculos={vehiculosFiltrados}
-          onVerDetalles={abrirModalDetalles}
+          onVerDetalles={handleAbrirModalDetalles}
           onEditar={abrirModalEditar}
           onEliminar={handleDeleteVehiculo}
-          onCambiarEstado={handleCambiarEstado}
+          onCambiarEstado={handleCambiarEstadoCompleto}
         />
       )}
 
@@ -306,9 +355,9 @@ const VehiclesManagement: React.FC = () => {
       />
 
       <ModalDetallesVehiculo
-        isOpen={modalDetallesState.isOpen}
-        onClose={cerrarModalDetalles}
-        vehiculo={modalDetallesState.vehiculo}
+        isOpen={modalDetallesLocal.isOpen}
+        onClose={handleCerrarModalDetalles}
+        vehiculo={modalDetallesLocal.vehiculo}
       />
 
       <ModalEditarVehiculo
