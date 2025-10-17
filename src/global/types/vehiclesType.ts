@@ -10,7 +10,7 @@ export enum TipoVehiculo {
 
 export enum EstadoVehiculo {
   Disponible = "Disponible",
-  NoDisponible = "No disponible"
+  No_Disponible = "No_disponible"
 }
 
 // Interfaz principal del vehículo
