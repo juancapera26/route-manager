@@ -1,3 +1,4 @@
+
 // Empresa
 export enum Empresa {
   Servientrega = "Servientrega",
@@ -38,7 +39,7 @@ export enum TipoPaquete {
 
 export interface Paquete {
   // Info de la tabla
-  id_paquete: string;
+  id_paquete: number;
   id_rutas_asignadas: string[]; // puede pasar por varias rutas
   id_conductor_asignado: string | null;
   destinatario: Destinatario;

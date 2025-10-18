@@ -4,8 +4,11 @@ import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import Alert from "../../ui/alert/Alert";
-import { Paquete, TipoPaquete } from "../../../global/types";
+import { Paquete, TipoPaquete } from "../../../global/types/paquete.types";
 import { Plus } from "lucide-react";
+import { usePackages } from "../../../hooks/admin/usePackages";
+
+//Ahora tengo que cambiar los handle con mi backend | OK
 
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
@@ -53,6 +56,9 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   onSuccess,
   isLoading = false,
 }) => {
+
+  const { createPackage } = usePackages();
+
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -522,6 +528,4 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     </Modal>
   );
 };
-
-
 export default ModalAgregarPaquete;

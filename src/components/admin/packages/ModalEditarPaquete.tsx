@@ -5,13 +5,13 @@ import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import Alert from "../../ui/alert/Alert";
-import { Paquete, TipoPaquete } from "../../../global/types";
+import { Paquete, TipoPaquete, PaqueteUpdate } from "../../../global/types/paquete.types";
 import { Edit } from "lucide-react";
 
 interface ModalEditarPaqueteProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (id: string, payload: Partial<Paquete>) => Promise<boolean>;
+  onSuccess: (id: number, payload: PaqueteUpdate) => Promise<boolean>;
   paquete: Paquete | null;
   isLoading?: boolean;
 }
@@ -59,21 +59,26 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
     type: "success" | "error";
   } | null>(null);
 
-  // Efecto para pre-poblar el formulario cuando se abre el modal
+  // ✅ FIX: Efecto para pre-poblar el formulario cuando se abre el modal
   useEffect(() => {
     if (paquete && isOpen) {
       console.log('🔄 Pre-poblando formulario con datos del paquete:', paquete.id_paquete);
-      setFormData({
-        nombre: paquete.destinatario.nombre,
-        apellido: paquete.destinatario.apellido,
-        direccion: paquete.destinatario.direccion,
-        correo: paquete.destinatario.correo,
-        telefono: paquete.destinatario.telefono,
-        tipo_paquete: paquete.tipo_paquete,
-        cantidad: paquete.cantidad,
-        valor_declarado: paquete.valor_declarado,
-        dimensiones: paquete.dimensiones,
-      });
+      
+      // ✅ CAMBIO: Usar paquete.cliente en lugar de paquete.destinatario
+      if (paquete.cliente) {
+        setFormData({
+          nombre: paquete.cliente.nombre,
+          apellido: paquete.cliente.apellido,
+          direccion: paquete.cliente.direccion,
+          correo: paquete.cliente.correo,
+          telefono: paquete.cliente.telefono_movil, // ← Nota: es telefono_movil en el backend
+          tipo_paquete: paquete.tipo_paquete,
+          cantidad: paquete.cantidad,
+          valor_declarado: paquete.valor_declarado,
+          dimensiones: paquete.dimensiones,
+        });
+      }
+      
       // Limpiar errores y mensajes al abrir
       setErrors({});
       setMensaje(null);
@@ -228,7 +233,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
     }
   };
 
-  // Handler para el envío del formulario
+  // ✅ FIX: Handler para el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -245,15 +250,10 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
       return;
     }
 
-    // Construir el payload con los datos actualizados
-    const payload: Partial<Paquete> = {
-      destinatario: {
-        nombre: formData.nombre.trim(),
-        apellido: formData.apellido.trim(),
-        direccion: formData.direccion.trim(),
-        correo: formData.correo.trim().toLowerCase(),
-        telefono: formData.telefono.trim(),
-      },
+    // ✅ CAMBIO: Construir payload usando PaqueteUpdate (solo datos del paquete)
+    // NOTA: Los datos del cliente NO se actualizan desde aquí
+    // Solo se pueden actualizar: tipo_paquete, cantidad, valor_declarado, dimensiones
+    const payload: PaqueteUpdate = {
       tipo_paquete: formData.tipo_paquete,
       cantidad: formData.cantidad,
       valor_declarado: formData.valor_declarado,
@@ -320,96 +320,81 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sección: Datos del destinatario */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Datos del destinatario
-            </h4>
+          {/* ⚠️ Sección: Datos del destinatario (SOLO LECTURA) */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-yellow-300 dark:border-yellow-600">
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Datos del destinatario
+              </h4>
+              <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded">
+                Solo lectura
+              </span>
+            </div>
             
             {/* Nombre y apellido */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Nombre *</Label>
+                <Label>Nombre</Label>
                 <Input
                   name="nombre"
                   value={formData.nombre}
-                  onChange={handleInputChange}
-                  className={errors.nombre ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled
+                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
                 />
-                {errors.nombre && (
-                  <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
-                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Los datos del cliente no se pueden editar aquí
+                </p>
               </div>
               
               <div>
-                <Label>Apellido *</Label>
+                <Label>Apellido</Label>
                 <Input
                   name="apellido"
                   value={formData.apellido}
-                  onChange={handleInputChange}
-                  className={errors.apellido ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled
+                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
                 />
-                {errors.apellido && (
-                  <p className="text-red-500 text-xs mt-1">{errors.apellido}</p>
-                )}
               </div>
             </div>
 
             {/* Dirección */}
             <div className="mt-4">
-              <Label>Dirección *</Label>
+              <Label>Dirección</Label>
               <Input
                 name="direccion"
                 value={formData.direccion}
-                onChange={handleInputChange}
-                placeholder="Ej: Calle 123 #45-67, Bogotá"
-                className={errors.direccion ? "border-red-500" : ""}
-                disabled={isLoading}
+                disabled
+                className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
               />
-              {errors.direccion && (
-                <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
-              )}
             </div>
 
             {/* Correo y teléfono */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <Label>Correo electrónico *</Label>
+                <Label>Correo electrónico</Label>
                 <Input
                   type="email"
                   name="correo"
                   value={formData.correo}
-                  onChange={handleInputChange}
-                  placeholder="ejemplo@correo.com"
-                  className={errors.correo ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled
+                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
                 />
-                {errors.correo && (
-                  <p className="text-red-500 text-xs mt-1">{errors.correo}</p>
-                )}
               </div>
               
               <div>
-                <Label>Teléfono *</Label>
+                <Label>Teléfono</Label>
                 <Input
                   type="tel"
                   name="telefono"
                   value={formData.telefono}
-                  onChange={handleInputChange}
-                  placeholder="3001234567"
-                  className={errors.telefono ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled
+                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
                 />
-                {errors.telefono && (
-                  <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
-                )}
               </div>
             </div>
           </div>
 
-          {/* Sección: Información del paquete */}
+          {/* ✅ Sección: Información del paquete (EDITABLE) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información del paquete
@@ -474,7 +459,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* Sección: Dimensiones del paquete */}
+          {/* ✅ Sección: Dimensiones del paquete (EDITABLE) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Dimensiones del paquete
