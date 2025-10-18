@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 // Types global que hace parte del contrato
-import { HorarioRuta } from "../../global/types";
 // type que rompe con el contrato
 import { RutaFormData } from "../../global/types/rutas";
 import { ModalAgregarRuta } from "../../components/admin/routes/ModalAgregarRuta";
