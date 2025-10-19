@@ -36,7 +36,6 @@ type Props = {
   initial?: Partial<DeliveryFormData>;
 };
 
-// 👇 Transición deslizante del mensaje
 function SlideTransition(props: SlideProps) {
   return <Slide {...props} direction="up" />;
 }
@@ -50,33 +49,66 @@ export default function FormDelivery({
   const {
     formData,
     deliveryPhoto,
-    showConfirmModal,
-    loading,
     errors,
     setShowConfirmModal,
     handleInputChange,
     handleFileChange,
-    handleConfirm,
     handleFinalSubmit,
     clearPhoto,
   } = useDelivery({ initial, onSubmitSuccess, onClose });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState("");
+  const [snackbarType, setSnackbarType] = useState<"success" | "warning">(
+    "success"
+  );
 
+  // 🔹 Cierra todo (solo al usar la X o Cancelar)
   const handleClose = () => {
     clearPhoto();
+    setShowConfirmModal(false);
     onClose();
+  };
+
+  // 🔹 Validación antes de confirmar
+  const handleFinalConfirm = async () => {
+    if (!deliveryPhoto) {
+      setSnackbarMsg("⚠️ Debes adjuntar una foto antes de confirmar.");
+      setSnackbarType("warning");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    if (!formData.deliveryNotes.trim()) {
+      setSnackbarMsg(
+        "⚠️ Debes escribir una nota de entrega antes de confirmar."
+      );
+      setSnackbarType("warning");
+      setOpenSnackbar(true);
+      return;
+    }
+
+    // Si todo está correcto → envía
+    const success = await handleFinalSubmit();
+    if (success) {
+      handleClose();
+      setSnackbarMsg("✅ Paquete registrado como entregado");
+      setSnackbarType("success");
+      setOpenSnackbar(true);
+      if (onSubmitSuccess) onSubmitSuccess();
+    }
   };
 
   return (
     <>
       <Dialog
         open={open}
-        onClose={handleClose}
+        onClose={handleClose} // solo se cierra con X o Cancelar
         fullWidth
         maxWidth="md"
         PaperProps={{ style: { zIndex: 1350 } }}
       >
+        {/* 🔷 Encabezado */}
         <DialogTitle
           sx={{
             display: "flex",
@@ -93,6 +125,7 @@ export default function FormDelivery({
               Sistema de Entrega
             </Typography>
           </Box>
+
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Chip
               label="En proceso"
@@ -103,12 +136,14 @@ export default function FormDelivery({
                 fontWeight: "bold",
               }}
             />
+            {/* La X siempre cierra */}
             <IconButton onClick={handleClose} sx={{ color: "white" }}>
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
 
+        {/* 🔸 Contenido */}
         <DialogContent dividers sx={{ p: 2 }}>
           <Box
             sx={{
@@ -118,7 +153,7 @@ export default function FormDelivery({
               minHeight: 450,
             }}
           >
-            {/* Izquierda: Detalles del paquete */}
+            {/* 🧾 Detalles del pedido */}
             <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
@@ -134,11 +169,7 @@ export default function FormDelivery({
                   sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
                 >
                   <FileText size={20} color="primary.main" />
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="text.primary"
-                  >
+                  <Typography variant="h6" fontWeight="bold">
                     Detalles del pedido
                   </Typography>
                 </Box>
@@ -223,15 +254,8 @@ export default function FormDelivery({
                   </Typography>
                 </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1.5,
-                    ml: 1,
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 2 }}>
+                <Box sx={{ ml: 1 }}>
+                  <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
                     <MapPin size={20} color="text.secondary" />
                     <Box>
                       <Typography variant="caption" color="text.secondary">
@@ -242,7 +266,6 @@ export default function FormDelivery({
                       </Typography>
                     </Box>
                   </Box>
-
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <Phone size={20} color="text.secondary" />
                     <Box>
@@ -258,7 +281,7 @@ export default function FormDelivery({
               </Paper>
             </Box>
 
-            {/* Derecha: Registro de entrega */}
+            {/* 📷 Registro de entrega */}
             <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
@@ -271,27 +294,11 @@ export default function FormDelivery({
                 }}
               >
                 <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                    gap: 1.5,
-                  }}
+                  sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 0.5,
-                    }}
-                  >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <CheckCircle size={20} color="success.main" />
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="text.primary"
-                    >
+                    <Typography variant="h6" fontWeight="bold">
                       Registrar entrega
                     </Typography>
                   </Box>
@@ -347,22 +354,6 @@ export default function FormDelivery({
                             borderRadius: 8,
                           }}
                         />
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            bottom: 8,
-                            left: 0,
-                            right: 0,
-                            textAlign: "center",
-                            bgcolor: "rgba(0,0,0,0.5)",
-                            color: "white",
-                            py: 0.5,
-                          }}
-                        >
-                          <Typography variant="caption">
-                            Haz clic para cambiar la foto
-                          </Typography>
-                        </Box>
                       </Box>
                     ) : (
                       <Box sx={{ textAlign: "center" }}>
@@ -433,14 +424,14 @@ export default function FormDelivery({
           </Box>
         </DialogContent>
 
-        {/* Botones */}
+        {/* 🔘 Botones */}
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
           <Button onClick={handleClose} variant="outlined" color="inherit">
             Cancelar
           </Button>
           <Button
             variant="contained"
-            onClick={handleConfirm}
+            onClick={handleFinalConfirm}
             startIcon={<CheckCircle size={20} />}
             color="primary"
             sx={{ fontWeight: "bold" }}
@@ -450,42 +441,7 @@ export default function FormDelivery({
         </DialogActions>
       </Dialog>
 
-      {/* Modal de confirmación */}
-      <Dialog
-        open={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Confirmar entrega</DialogTitle>
-        <DialogContent>
-          <Typography>
-            ¿Estás seguro que deseas confirmar la entrega?
-          </Typography>
-          {errors.submit && (
-            <Typography color="error">{errors.submit}</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowConfirmModal(false)}>Cancelar</Button>
-          <Button
-            onClick={async () => {
-              const result = await handleFinalSubmit();
-              if (result?.ok !== false) {
-                setOpenSnackbar(true);
-                handleClose();
-              }
-              setShowConfirmModal(false);
-            }}
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? "Enviando..." : "Confirmar"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar */}
+      {/* Snackbar general */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={3000}
@@ -494,11 +450,11 @@ export default function FormDelivery({
         TransitionComponent={SlideTransition}
       >
         <Alert
+          severity={snackbarType}
           onClose={() => setOpenSnackbar(false)}
-          severity="success"
           sx={{ width: "100%" }}
         >
-          Paquete registrado como entregado
+          {snackbarMsg}
         </Alert>
       </Snackbar>
     </>
