@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { deleteConductor } from "../../global/services/driverService";
-import useAuth from "../useAuth";
+import { deleteConductor } from "../../../global/services/driverService";
+import useAuth from "../../useAuth";
 
 function isAxiosError(
   err: unknown

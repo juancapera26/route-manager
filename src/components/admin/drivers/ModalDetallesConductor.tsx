@@ -1,3 +1,4 @@
+//src/components/admin/drivers/ModalDetallesConductor.tsx
 import { Conductor } from "../../../global/types";
 
 interface Props {

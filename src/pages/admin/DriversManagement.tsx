@@ -12,11 +12,12 @@ import {
 } from "../../components/ui/table/DataTable";
 import ModalEditarConductor from "../../components/admin/drivers/ModalEditDriver";
 import useAuth from "../../hooks/useAuth";
-import useDriver from "../../hooks/admin/useDriver";
-import useDeleteDriver from "../../hooks/admin/useDeleteDriver";
+import useDeleteDriver from "../../hooks/admin/condutores/useDeleteDriver";
 import { Conductor, UpdateConductorDto } from "../../global/types/conductores";
 import ModalDeleteDriver from "../../components/admin/drivers/ModalDeleteDriver";
 import { updateConductor } from "../../global/services/driverService";
+import useDriver from "../../hooks/admin/condutores/useDriver";
+import { ModalViewDriver } from "../../components/admin/drivers/MapScreenshotModal";
 
 const DriversManagement: React.FC = () => {
   const { data: conductores, loading, refetch } = useDriver();
@@ -25,21 +26,19 @@ const DriversManagement: React.FC = () => {
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false); // 👈 nuevo estado
 
-  // Hook para eliminar conductores
   const {
     handleDeleteDriver,
     loading: deleting,
     error: deleteError,
   } = useDeleteDriver(refetch!);
 
-  // 🟦 Abrir modal de edición
   const handleEdit = (item: Conductor) => {
     setSelectedDriver(item);
     setOpenEditModal(true);
   };
 
-  // 🟩 Guardar cambios del conductor
   const handleSave = async (updated: UpdateConductorDto) => {
     if (!selectedDriver) return;
     const token = await getAccessToken();
@@ -55,23 +54,22 @@ const DriversManagement: React.FC = () => {
     }
   };
 
-  // 🟥 Abrir modal de eliminación
   const handleDelete = (item: Conductor) => {
     setSelectedDriver(item);
     setOpenDeleteModal(true);
   };
 
-  // 🗑️ Confirmar eliminación usando hook
   const handleConfirmDelete = async () => {
     if (!selectedDriver) return;
     await handleDeleteDriver(selectedDriver.id);
     setOpenDeleteModal(false);
   };
 
-  // 👁️ Ver detalles del conductor (placeholder)
-  const handleView = (item: Conductor) => console.log("Ver conductor:", item);
+  const handleView = (item: Conductor) => {
+    setSelectedDriver(item);
+    setOpenViewModal(true);
+  };
 
-  // 📋 Definición de columnas
   const columns: ColumnDef<Conductor>[] = [
     { key: "id", header: "ID", accessor: "id" },
     { key: "nombre", header: "Nombre", accessor: "nombre" },
@@ -82,7 +80,6 @@ const DriversManagement: React.FC = () => {
     { key: "empresa", header: "Empresa", accessor: "nombre_empresa" },
   ];
 
-  // ⚙️ Botones de acción
   const actions: ActionButton<Conductor>[] = [
     {
       key: "view",
@@ -138,7 +135,15 @@ const DriversManagement: React.FC = () => {
         conductor={selectedDriver}
         onConfirm={handleConfirmDelete}
         isLoading={deleting}
-        error={deleteError} // opcional: mostrar error dentro del modal
+        error={deleteError}
+      />
+
+      {/* 👁️ Modal de Vista */}
+      <ModalViewDriver
+        isOpen={openViewModal} // 👈 cambia 'open' por 'isOpen'
+        onClose={() => setOpenViewModal(false)}
+        conductor={selectedDriver}
+        screenshots={[]} // 👈 mientras no tengas imágenes reales
       />
     </div>
   );

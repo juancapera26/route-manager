@@ -1,3 +1,4 @@
+//src/components/admin/routes/ModalDetallesRuta.tsx
 import React, { useState, useEffect } from "react";
 import { Ruta, Paquete } from "../../../global/types";
 import { api } from "../../../global/apis";
