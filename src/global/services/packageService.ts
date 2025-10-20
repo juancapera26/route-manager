@@ -23,6 +23,7 @@ export const PackagesService = {
   },
 
   async create(paquete: PaqueteCreate): Promise<Paquete> {
+    console.log('🚀 Enviando al backend:', paquete);
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

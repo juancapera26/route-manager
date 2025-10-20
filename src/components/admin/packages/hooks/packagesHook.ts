@@ -7,6 +7,7 @@ import {PAQUETES_COLUMNS,createPaqueteAction,PaquetesColumnKey,PaquetesActionKey
 import type {ColumnDef,ActionButton,} from "../../../../components/ui/table/DataTable";
 import { useEstadoFilter } from "../../../../hooks/useEstadoFilter";
 import {opcionesFiltorPaquetes,obtenerEstadoPaquete,} from "../../../../global/config/filterConfigs";
+import { toast } from "sonner";
 
 export function usePackagesManagementHook() {
   const navigate = useNavigate();
@@ -123,12 +124,28 @@ export function usePackagesManagementHook() {
     async (id: number) => {
       const ok = await deletePaquete(id);
       if (ok) {
-        showAlert("Paquete eliminado correctamente", "success");
         await refetch();
       }
       return ok;
     },
-    [deletePaquete, refetch, showAlert]
+    [deletePaquete, refetch]
+  );
+
+  // ✅ NUEVO: Handler para eliminar con confirmación
+  const handleDeleteWithConfirmation = useCallback(
+    async (paquete: Paquete) => {
+      const confirmar = window.confirm(
+        `¿Estás seguro de que deseas eliminar el paquete #${paquete.id_paquete}?Esta acción no se puede deshacer.`
+      );
+
+      if (confirmar) {
+        const success = await handleDeletePaquete(paquete.id_paquete);
+        if (success) {
+          toast.success("Paquete eliminado exitosamente");
+        }
+      }
+    },
+    [handleDeletePaquete]
   );
 
   const handleUpdateFromModal = useCallback(
@@ -210,7 +227,7 @@ const handleMarkFallido = useCallback(
     () => ({
       onView: abrirDetalles,
       onEdit: abrirEdicion,
-      onDelete: (p: Paquete) => void handleDeletePaquete(p.id_paquete),
+      onDelete: handleDeleteWithConfirmation, // ✅ CAMBIADO: Ahora usa confirmación
       onTrack: (p: Paquete) => handleTrack(p.id_paquete),
       onDownloadLabel: () =>
       showAlert("Descarga de etiqueta no implementada", "info"),
@@ -221,7 +238,7 @@ const handleMarkFallido = useCallback(
       onMarkEntregado: handleMarkEntregado,
       onMarkFallido: handleMarkFallido,
     }),
-    [abrirDetalles, abrirEdicion, handleDeletePaquete, handleTrack, showAlert]
+    [abrirDetalles, abrirEdicion, handleDeleteWithConfirmation, handleTrack, showAlert, handleAssign, handleCancelAssignment, handleReassign, handleMarkEnRuta, handleMarkEntregado, handleMarkFallido]
   );
 
   const getActionsForEstado = useCallback((estado: PaquetesEstados): ActionButton<Paquete>[] => {

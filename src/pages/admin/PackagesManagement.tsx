@@ -10,6 +10,7 @@ import { ModalAsignarPaquete } from "../../components/admin/packages/ModalAsigna
 import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
 import { Paquete, PaquetesEstados } from "../../global/types/paquete.types";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 const PackagesManagement: React.FC = () => {
   const {
@@ -79,7 +80,7 @@ const PackagesManagement: React.FC = () => {
     [PaquetesEstados.Fallido]: "error",
   };
 
-  // ✅ FIX 1: HANDLER crear paquete - retorna boolean correctamente
+  // ✅ HANDLER crear paquete - retorna boolean correctamente
   const handleCreate = async (payload: any): Promise<boolean> => {
     setSaving(true);
     try {
@@ -93,8 +94,7 @@ const PackagesManagement: React.FC = () => {
       setSaving(false);
     }
   };
-
-
+ 
   return (
     <div className="p-6 space-y-8">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -179,7 +179,6 @@ const PackagesManagement: React.FC = () => {
                   <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
                     {filtroEstado.estadoSeleccionado}
                   </h2>
-                  {/* ✅ FIX 3: Espacio antes de : en operador ternario */}
                   <Badge
                     variant="light"
                     color={filtroEstado.estadoSeleccionado ? badgeColors[filtroEstado.estadoSeleccionado as PaquetesEstados] : "info"}
@@ -219,7 +218,7 @@ const PackagesManagement: React.FC = () => {
         isLoading={saving}
       />
 
-      {/* ✅ Modal para editar paquetes - USA handleUpdateWrapper */}
+      {/* ✅ Modal para editar paquetes */}
       <ModalEditarPaquete
         isOpen={modalEdicion.open}
         onClose={cerrarEdicion}

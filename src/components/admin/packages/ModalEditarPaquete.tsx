@@ -4,9 +4,9 @@ import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
-import Alert from "../../ui/alert/Alert";
 import { Paquete, TipoPaquete, PaqueteUpdate } from "../../../global/types/paquete.types";
 import { Edit } from "lucide-react";
+import { toast } from "sonner";
 
 interface ModalEditarPaqueteProps {
   isOpen: boolean;
@@ -17,11 +17,6 @@ interface ModalEditarPaqueteProps {
 }
 
 interface FormErrors {
-  nombre?: string;
-  apellido?: string;
-  direccion?: string;
-  correo?: string;
-  telefono?: string;
   cantidad?: string;
   valor_declarado?: string;
   dimensiones?: {
@@ -39,7 +34,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
   paquete,
   isLoading = false,
 }) => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -52,107 +46,42 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
     dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
   });
 
-  // Estados para validación y mensajes
   const [errors, setErrors] = useState<FormErrors>({});
-  const [mensaje, setMensaje] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
 
-  // ✅ FIX: Efecto para pre-poblar el formulario cuando se abre el modal
   useEffect(() => {
     if (paquete && isOpen) {
-      console.log('🔄 Pre-poblando formulario con datos del paquete:', paquete.id_paquete);
-      
-      // ✅ CAMBIO: Usar paquete.cliente en lugar de paquete.destinatario
       if (paquete.cliente) {
         setFormData({
           nombre: paquete.cliente.nombre,
           apellido: paquete.cliente.apellido,
           direccion: paquete.cliente.direccion,
           correo: paquete.cliente.correo,
-          telefono: paquete.cliente.telefono_movil, // ← Nota: es telefono_movil en el backend
+          telefono: paquete.cliente.telefono_movil,
           tipo_paquete: paquete.tipo_paquete,
           cantidad: paquete.cantidad,
           valor_declarado: paquete.valor_declarado,
           dimensiones: paquete.dimensiones,
         });
       }
-      
-      // Limpiar errores y mensajes al abrir
       setErrors({});
-      setMensaje(null);
     }
   }, [paquete, isOpen]);
-
-  // Funciones de validación
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^\+?[\d\s\-()]{7,15}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ""));
-  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Validación del nombre
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es requerido";
-    } else if (formData.nombre.trim().length < 2) {
-      newErrors.nombre = "El nombre debe tener al menos 2 caracteres";
-    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.nombre.trim())) {
-      newErrors.nombre = "El nombre solo puede contener letras";
-    }
-
-    // Validación del apellido
-    if (!formData.apellido.trim()) {
-      newErrors.apellido = "El apellido es requerido";
-    } else if (formData.apellido.trim().length < 2) {
-      newErrors.apellido = "El apellido debe tener al menos 2 caracteres";
-    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.apellido.trim())) {
-      newErrors.apellido = "El apellido solo puede contener letras";
-    }
-
-    // Validación de la dirección
-    if (!formData.direccion.trim()) {
-      newErrors.direccion = "La dirección es requerida";
-    } else if (formData.direccion.trim().length < 5) {
-      newErrors.direccion = "La dirección debe tener al menos 5 caracteres";
-    }
-
-    // Validación del correo
-    if (!formData.correo.trim()) {
-      newErrors.correo = "El correo es requerido";
-    } else if (!validateEmail(formData.correo)) {
-      newErrors.correo = "Formato de correo inválido";
-    }
-
-    // Validación del teléfono
-    if (!formData.telefono.trim()) {
-      newErrors.telefono = "El teléfono es requerido";
-    } else if (!validatePhone(formData.telefono)) {
-      newErrors.telefono = "Formato de teléfono inválido";
-    }
-
-    // Validación de la cantidad
     if (formData.cantidad < 1) {
       newErrors.cantidad = "La cantidad debe ser mayor a 0";
     } else if (formData.cantidad > 100) {
       newErrors.cantidad = "La cantidad no puede ser mayor a 100";
     }
 
-    // Validación del valor declarado
     if (formData.valor_declarado <= 0) {
       newErrors.valor_declarado = "El valor debe ser mayor a 0";
     } else if (formData.valor_declarado > 10000000) {
       newErrors.valor_declarado = "El valor declarado es muy alto";
     }
 
-    // Validación de las dimensiones
     const dimensionesErrors: FormErrors["dimensiones"] = {};
     
     if (formData.dimensiones.largo <= 0) {
@@ -187,18 +116,15 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handler para cambios en los inputs
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
-    // Limpiar error del campo que está siendo editado
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
-    // Manejar campos de dimensiones
     if (["largo", "ancho", "alto", "peso"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
@@ -208,7 +134,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
         },
       }));
       
-      // Limpiar error específico de dimensiones
       if (errors.dimensiones?.[name as keyof FormErrors["dimensiones"]]) {
         setErrors((prev) => ({
           ...prev,
@@ -216,43 +141,33 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
         }));
       }
     } 
-    // Manejar campos numéricos
     else if (["cantidad", "valor_declarado"].includes(name)) {
       setFormData((prev) => ({ ...prev, [name]: Math.max(0, Number(value)) }));
     } 
-    // Manejar tipo de paquete
     else if (name === "tipo_paquete") {
       setFormData((prev) => ({
         ...prev,
         tipo_paquete: value as TipoPaquete,
       }));
     } 
-    // Manejar campos de texto
     else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  // ✅ FIX: Handler para el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!paquete) {
-      setMensaje({ text: "No hay paquete seleccionado", type: "error" });
+      toast.error("No hay paquete seleccionado");
       return;
     }
 
     if (!validateForm()) {
-      setMensaje({
-        text: "Por favor corrige los errores en el formulario",
-        type: "error",
-      });
+      toast.error("Por favor corrige los errores en el formulario");
       return;
     }
 
-    // ✅ CAMBIO: Construir payload usando PaqueteUpdate (solo datos del paquete)
-    // NOTA: Los datos del cliente NO se actualizan desde aquí
-    // Solo se pueden actualizar: tipo_paquete, cantidad, valor_declarado, dimensiones
     const payload: PaqueteUpdate = {
       tipo_paquete: formData.tipo_paquete,
       cantidad: formData.cantidad,
@@ -260,36 +175,24 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
       dimensiones: formData.dimensiones,
     };
 
-    console.log('📤 Enviando actualización del paquete:', {
-      id: paquete.id_paquete,
-      payload,
-    });
-
     try {
       const success = await onSuccess(paquete.id_paquete, payload);
       
       if (success) {
-        setMensaje({ text: "Paquete actualizado exitosamente", type: "success" });
+        toast.success("¡Paquete actualizado exitosamente!");
         setErrors({});
-        
-        // Cerrar el modal después de un breve delay para mostrar el mensaje
-        setTimeout(() => {
-          setMensaje(null);
-          onClose();
-        }, 1500);
+        onClose();
       } else {
-        setMensaje({ text: "Error al actualizar paquete", type: "error" });
+        toast.error("Error al actualizar el paquete");
       }
     } catch (error) {
       console.error("Error al actualizar paquete:", error);
-      setMensaje({ text: "Error al actualizar paquete", type: "error" });
+      toast.error("Error al actualizar el paquete");
     }
   };
 
-  // Handler para cerrar el modal
   const handleClose = () => {
     if (!isLoading) {
-      setMensaje(null);
       setErrors({});
       onClose();
     }
@@ -298,7 +201,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <div className="max-w-2xl mx-auto">
-        {/* Header del modal */}
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-blue-500/10 rounded-lg">
             <Edit className="w-6 h-6 text-blue-500" />
@@ -308,19 +210,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
           </h3>
         </div>
 
-        {/* Mensaje de estado */}
-        {mensaje && (
-          <Alert
-            variant={mensaje.type}
-            title={mensaje.type === "success" ? "Éxito" : "Error"}
-            message={mensaje.text}
-            className="mb-4"
-          />
-        )}
-
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* ⚠️ Sección: Datos del destinatario (SOLO LECTURA) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-yellow-300 dark:border-yellow-600">
             <div className="flex items-center gap-2 mb-4">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -331,7 +221,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
               </span>
             </div>
             
-            {/* Nombre y apellido */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Nombre</Label>
@@ -357,7 +246,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
               </div>
             </div>
 
-            {/* Dirección */}
             <div className="mt-4">
               <Label>Dirección</Label>
               <Input
@@ -368,7 +256,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
               />
             </div>
 
-            {/* Correo y teléfono */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <Label>Correo electrónico</Label>
@@ -394,14 +281,12 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* ✅ Sección: Información del paquete (EDITABLE) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información del paquete
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Tipo de paquete */}
               <div>
                 <Label>Tipo de paquete</Label>
                 <select
@@ -419,7 +304,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 </select>
               </div>
 
-              {/* Cantidad */}
               <div>
                 <Label>Cantidad *</Label>
                 <Input
@@ -437,7 +321,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 )}
               </div>
 
-              {/* Valor declarado */}
               <div>
                 <Label>Valor declarado (COP)</Label>
                 <Input
@@ -459,14 +342,12 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* ✅ Sección: Dimensiones del paquete (EDITABLE) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Dimensiones del paquete
             </h4>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Largo */}
               <div>
                 <Label>Largo (cm)</Label>
                 <Input
@@ -486,7 +367,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 )}
               </div>
 
-              {/* Ancho */}
               <div>
                 <Label>Ancho (cm)</Label>
                 <Input
@@ -506,7 +386,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 )}
               </div>
 
-              {/* Alto */}
               <div>
                 <Label>Alto (cm)</Label>
                 <Input
@@ -526,7 +405,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 )}
               </div>
 
-              {/* Peso */}
               <div>
                 <Label>Peso (kg)</Label>
                 <Input
@@ -548,7 +426,6 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
-          {/* Botones de acción */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"

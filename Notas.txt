@@ -1,0 +1,50 @@
+el flujo de paquetes(Crear) desde el front a backend es el siguiente:
+
+[ Backend Real ]
+        ↑
+PackagesService  ←→  usePackages  ←→  PackagesHook  ←→  Modal / UI
+  (HTTP)             (maneja datos)     (maneja lógica de vista)     (interfaz)
+
+// El package service es el que habla directamente con mi backend
+
+//El use package es el interprete de react y el backend(Hasta este punto no se sabe nada de UI)
+
+//El PackagesHook es la "logica de presentacion" en donde se manejan los casos de uso osea:
+ -Cuando el usuario interactua con el front
+ -Este especifica"Que pasa cuando presiono este boton" o demas
+
+//El modal es el UI donde se llama ala logica del hook para ejecutar las acciones
+
+--------------------------------------------------------------------------------
+
+!IMPORTANTE!
+-Esperar a corregir el controlador de paqutes para continuar el front | ESTADO: OK
+
+//El PackagesHook ademas de lo anterior importa al usePackage que ese es el que habla con el servicio de paquetes por lo cual debe ser
+///tenido en cuenta,
+
+//Elimine las rutas del hook de paquetes(presentacion)
+
+//Tuve que agregar la interfaz de paquetes en los types de paquetes ya que este me estaba causando error
+-Es importante que lo haya creado ya que es la que me representa el backend
+
+//He corregido el adaptador de paquetes ya que no estaba preparado para validar todos los campos
+//He vuelvo a insertar los handlers de rutas en paquetes ya que me estaban causando demasiados conflictos
+
+
+
+¡¡¡IMPORTANTE!!!
+-Ya quite los types de la api simulada, puse la importacion de los types de reales de paquetes
+--CORREGIR:
+-ModalAsignarPaquete  | ESTADO: OK
+-ModalEditarPaquete   | ESTADO: OK
+-TablaPaquetes        | ESTADO: OK
+-PackagesHook         | ESTADO: OK
+-PackagesManagement   | ESTADO: OK
+
+--------------------------------------------------------------------------------
+
+¡¡¡IMPORTANTE!!!
+-Ahora tengo que mirar como quito la data mockeada de los demas componentes ya que me anda causando error | ESTADO: N/a
+-Elimine el archivo de types.ts de la api simulada ya que no se usa y causa conflictos
+-El archivo header.tsx cuasa error pero ni siquiera se usa | ESTADO:N/a

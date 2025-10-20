@@ -1,3 +1,4 @@
+import { PaquetesEstados } from "./types/paquete.types";
 
 // Empresa
 export enum Empresa {
@@ -21,13 +22,7 @@ export interface PaquetesDimensiones {
   peso: number; // kg
 }
 
-export enum PaquetesEstados {
-  Pendiente = "Pendiente",
-  Asignado = "Asignado",
-  EnRuta = "En ruta",
-  Entregado = "Entregado",
-  Fallido = "Fallido",
-}
+
 
 export enum TipoPaquete {
   Grande = "Grande",
@@ -47,7 +42,6 @@ export interface Paquete {
   fecha_entrega: string | null;
 
   // Detalle del paquete
-  estado: PaquetesEstados;
   tipo_paquete: TipoPaquete;
   cantidad: number;
   valor_declarado: number;
