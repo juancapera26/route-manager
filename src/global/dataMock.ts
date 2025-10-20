@@ -1,5 +1,5 @@
 // src/global/dataMock.ts
-
+/*
 // Esto dejalo intacto
 function generarUltimos7Dias() {
   const hoy = new Date();
@@ -428,4 +428,4 @@ export const mockRutas: Ruta[] = [
     estado: RutaEstado.Asignada,
     puntos_entrega: "calle 77sur",
   },
-];
+];*/

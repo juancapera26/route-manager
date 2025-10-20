@@ -1,4 +1,4 @@
-const ENV_PATH = import.meta.env;
+/*const ENV_PATH = import.meta.env;
 
 const FIREBASE_API_KEY = ENV_PATH.VITE_FIREBASE_API_KEY;
 const FIREBASE_AUTH_DOMAIN = ENV_PATH.VITE_FIREBASE_AUTH_DOMAIN;
@@ -700,4 +700,4 @@ export const api = {
 };
 
 // Exportar también APIs individuales para casos específicos
-export {rutasAPI, conductoresAPI, vehiculosAPI };
+export {rutasAPI, conductoresAPI, vehiculosAPI };*/

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+/*import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
@@ -203,7 +203,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
         )}
 
         <form onSubmit={manejarEnvio} className="space-y-6">
-          {/* Horarios - PRIMERA SECCIÓN */}
+          {/* Horarios - PRIMERA SECCIÓN 
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Horarios de la ruta
@@ -246,7 +246,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </div>
           </div>
 
-          {/* Información básica de la ruta - SEGUNDA SECCIÓN */}
+          {/* Información básica de la ruta - SEGUNDA SECCIÓN 
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información de la ruta
@@ -299,7 +299,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </div>
           </div>
 
-          {/* Botones */}
+          {/* Botones *
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
@@ -321,4 +321,4 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
       </div>
     </Modal>
   );
-};
+};*/

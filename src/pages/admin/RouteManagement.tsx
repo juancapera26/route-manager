@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+/*import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 // Types global que hace parte del contrato
 // type que rompe con el contrato
@@ -302,7 +302,7 @@ const RouteManagement: React.FC = () => {
         />
       )}
 
-      {/* Para cuando NO HAY filtro (mostrar todos) */}
+        Para cuando NO HAY filtro (mostrar todos) 
       {filtroEstado.estadoSeleccionado === null && (
         <>
           <section>
@@ -427,7 +427,6 @@ const RouteManagement: React.FC = () => {
         </>
       )}
 
-      {/* Para cuando SÍ HAY filtro específico (cualquier estado) */}
       {filtroEstado.estadoSeleccionado === RutaEstado.Pendiente && (
         <section>
           <div className="mb-6">
@@ -645,7 +644,6 @@ const RouteManagement: React.FC = () => {
         </section>
       )}
 
-      {/* Modal de asignación y detalles */}
       <ModalAsignarConductor
         isOpen={modalState.isOpen && modalState.action === "assign"}
         onClose={cerrarModal}
@@ -663,4 +661,4 @@ const RouteManagement: React.FC = () => {
   );
 };
 
-export default RouteManagement;
+export default RouteManagement;*/

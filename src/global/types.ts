@@ -1,4 +1,4 @@
-import { PaquetesEstados } from "./types/paquete.types";
+/*import { PaquetesEstados } from "./types/paquete.types";
 
 // Empresa
 export enum Empresa {
@@ -132,4 +132,4 @@ export interface Vehiculo {
   tipo_vehiculo: TipoVehiculo;
   estado: VehiculoEstado;
   fecha_mantenimiento: string; // ISO
-}
+}*/

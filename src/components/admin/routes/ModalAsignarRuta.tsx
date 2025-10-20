@@ -1,4 +1,4 @@
-import React from "react";
+/*import React from "react";
 import { Modal } from "../../ui/modal";
 import {
   Table,
@@ -186,7 +186,7 @@ export const ModalAsignarConductor: React.FC<ModalAsignarConductorProps> = ({
             </Table>
           </div>
 
-          {/* Mensaje cuando no hay conductores disponibles */}
+          {/* Mensaje cuando no hay conductores disponibles 
           {conductoresDisponibles.length === 0 && (
             <div className="p-8 text-center">
               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -217,4 +217,4 @@ export const ModalAsignarConductor: React.FC<ModalAsignarConductorProps> = ({
       </div>
     </Modal>
   );
-};
+};*/

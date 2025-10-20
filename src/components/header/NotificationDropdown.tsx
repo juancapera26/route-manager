@@ -1,4 +1,5 @@
 // src/components/header/NotificationDropdown.tsx
+/*
 import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
@@ -96,7 +97,7 @@ const ElementoNotificacion = ({
         ${!notificacion.leida ? "bg-blue-50/30 dark:bg-blue-900/10" : ""}
       `}
     >
-      {/* Icono con estado visual */}
+      {/* Icono con estado visual 
       <div
         className={`relative w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${estilos.bgIcon}`}
       >
@@ -109,7 +110,7 @@ const ElementoNotificacion = ({
       </div>
       
 
-      {/* Contenido de la notificación*/} 
+      {/* Contenido de la notificación
       <div className="flex-1 min-w-0">
         <p className="mb-1 text-sm text-gray-600 dark:text-gray-300">
           <span className="font-semibold text-gray-900 dark:text-white">
@@ -162,13 +163,13 @@ export default function NotificationDropdown() {
   return (
     <div className="relative">
     
-      {/* Botón de notificaciones*/} 
+      {/* Botón de notificaciones*
       <button
         className="relative flex items-center justify-center text-gray-500 transition-all duration-200 rounded-lg h-10 w-10 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         onClick={toggleDropdown}
         aria-label="Notificaciones"
       > 
-        {/* Indicador de notificaciones no leídas */}
+        {/* Indicador de notificaciones no leídas *
         {notificacionesNoLeidas > 0 && (
           <span className="absolute -right-1 -top-1 z-10 min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium text-white bg-orange-500 rounded-full">
             {notificacionesNoLeidas > 99 ? "99+" : notificacionesNoLeidas}
@@ -177,7 +178,7 @@ export default function NotificationDropdown() {
         )}
           
 
-        {/* Icono de campana */} 
+        {/* Icono de campana *
         <svg
           className="fill-current transition-transform duration-200 hover:scale-110"
           width="20"
@@ -195,7 +196,7 @@ export default function NotificationDropdown() {
       </button>
       
 
-      {/* Dropdown */}
+      {/* Dropdown *
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
@@ -205,7 +206,7 @@ export default function NotificationDropdown() {
         "
       >
          
-        {/* Header */} 
+        {/* Header *
         <div className="flex items-center justify-between p-4 pb-3 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -241,7 +242,7 @@ export default function NotificationDropdown() {
 
         
 
-        {/* Lista */}
+        {/* Lista *
         <div className="flex-1 overflow-y-auto px-2">
           {hayNotificaciones ? (
             <ul className="space-y-1 py-2">
@@ -292,7 +293,7 @@ export default function NotificationDropdown() {
         </div>
         
 
-        {/* Footer */}
+        {/* Footer *
         {hayNotificaciones && (
           <div className="p-4 pt-3 border-t border-gray-100 dark:border-gray-700">
             <Link
@@ -307,5 +308,5 @@ export default function NotificationDropdown() {
       </Dropdown>
     </div>
   );
-}
+}*/
 

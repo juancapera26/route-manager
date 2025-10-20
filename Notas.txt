@@ -48,3 +48,7 @@ PackagesService  ←→  usePackages  ←→  PackagesHook  ←→  Modal / UI
 -Ahora tengo que mirar como quito la data mockeada de los demas componentes ya que me anda causando error | ESTADO: N/a
 -Elimine el archivo de types.ts de la api simulada ya que no se usa y causa conflictos
 -El archivo header.tsx cuasa error pero ni siquiera se usa | ESTADO:N/a
+
+
+-En el archivo app.tsx elimine la importacion de la pagina de routeMaanagment ya que se comento todo lo refereido a esos archivos y pues no se usaba.
+

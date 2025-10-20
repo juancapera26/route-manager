@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+/*import React, { useState, useEffect } from "react";
 import { Ruta } from "../../../global/types";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
@@ -100,7 +100,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       {ruta && (
         <div className="p-6 max-w-4xl mx-auto">
-          {/* Header del modal */}
+          {/* Header del modal 
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -115,7 +115,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
             </Badge>
           </div>
 
-          {/* Mini sección total de paquetes */}
+          {/* Mini sección total de paquetes 
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mb-6">
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -127,7 +127,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
             </div>
           </div>
 
-          {/* Lista de paquetes asignados */}
+          {/* Lista de paquetes asignados *
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <svg
@@ -267,4 +267,4 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
       )}
     </Modal>
   );
-};
+};*/
