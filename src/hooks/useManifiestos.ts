@@ -20,6 +20,11 @@ export interface Paquete {
   id_cliente: number;
   id_ruta?: number | null;
   id_barrio?: number | null;
+
+  // 👇 Relación con la ruta (añadido)
+  ruta?: {
+    id_conductor: number | null;
+  } | null;
 }
 
 interface ApiResponse {

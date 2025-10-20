@@ -31,7 +31,7 @@ import Updates from "./pages/admin/Updates";
 // Páginas principales para el conductor:
 import AppLayout_home from "./pages/driver/layout_conductor/AppLayout_home";
 import DriverProfile from "./pages/profile/DriverProfile";
-import { Driver } from "./pages/driver/Driver";
+import { MapDriver } from "./pages/driver/MapDriver";
 
 function App() {
   return (
@@ -67,7 +67,7 @@ function App() {
         {/* --- Rutas Protegidas para Usuario (rol "2") --- */}
         <Route element={<ProtectedRoute allowedRoles={["2"]} />}>
           <Route path="/driver" element={<AppLayout_home />}>
-            <Route index element={<Driver />} />
+            <Route index element={<MapDriver />} />
             <Route path="profile" element={<DriverProfile />} />
           </Route>
         </Route>

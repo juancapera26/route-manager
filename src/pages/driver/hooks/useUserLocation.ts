@@ -1,31 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useJsApiLoader } from "@react-google-maps/api";
+import type { Library } from "@googlemaps/js-api-loader";
+
+const LIBRARIES: Library[] = ["places", "geometry"];
 
 export const useUserLocation = () => {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+  const [location, setLocation] = useState<google.maps.LatLngLiteral | null>(
     null
-  ); // Almacenamos la ubicación
-  const [locationAvailable, setLocationAvailable] = useState<boolean>(false);
+  );
+  const [locationAvailable, setLocationAvailable] = useState(false);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY!,
+    libraries: LIBRARIES,
+  });
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      console.error("Geolocalización no soportada");
-      setLocationAvailable(false); // Indicamos que no se pudo obtener la ubicación
+      console.error("Geolocalización no soportada por el navegador");
+      setLocationAvailable(false);
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setLocation(coords); // Guardamos las coordenadas en el estado
-        setLocationAvailable(true); // Marcamos que la ubicación está disponible
+        const coords = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        setLocation(coords);
+        setLocationAvailable(true);
       },
       (err) => {
         console.error("Error obteniendo ubicación:", err.message);
-        setLocationAvailable(false); // Indicamos que no se pudo obtener la ubicación
+        setLocationAvailable(false);
       },
       { enableHighAccuracy: true }
     );
   };
 
-  return { location, locationAvailable, getUserLocation }; // Devolvemos location
+  const updateLocation = (pos: google.maps.LatLngLiteral) => {
+    setLocation(pos);
+    setLocationAvailable(true);
+  };
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+    return {
+    location,
+    locationAvailable,
+    getUserLocation,
+    updateLocation,
+    isLoaded,
+  };
 };
