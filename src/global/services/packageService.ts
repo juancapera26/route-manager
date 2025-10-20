@@ -7,7 +7,7 @@ const API_URL = "http://localhost:3000/paquetes";
 
 export const PackagesService = {
 
-  //CRUD
+  //CRUD BASICA
   async getAll(): Promise<Paquete[]> {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error("Error al obtener los paquetes");
