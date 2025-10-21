@@ -5,14 +5,14 @@ import Badge from '../../ui/badge/Badge';
 import { Table, TableHeader, TableRow, TableCell, TableBody } from '../../ui/table';
 import Button from '../../ui/button/Button';
 import { MapPin, Clock, Package } from 'lucide-react';
-import { Ruta } from '../../../global/types';
+import { Ruta } from '../../../global/types/ruta.types';
 
 interface ModalAsignarRutaProps {
   isOpen: boolean;
   action: 'assign' | 'reassign' | null;
   rutasDisponibles: Ruta[];
   cerrarModal: () => void;
-  handleConfirmarAsignacion: (rutaId: string) => void;
+  handleConfirmarAsignacion: (rutaId: number) => void;
 }
 
 export const ModalAsignarPaquete: React.FC<ModalAsignarRutaProps> = ({
@@ -95,14 +95,14 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarRutaProps> = ({
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
                         <span className="text-sm text-gray-900 dark:text-white">
-                          {new Date(ruta.horario.inicio).toLocaleTimeString('es-ES', {
+                          {new Date(ruta.horario?.inicio ?? "").toLocaleTimeString('es-ES', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </span>
                         <span className="text-gray-400 mx-2">-</span>
                         <span className="text-sm text-gray-900 dark:text-white">
-                          {new Date(ruta.horario.fin).toLocaleTimeString('es-ES', {
+                          {new Date(ruta.horario?.fin ?? "").toLocaleTimeString('es-ES', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -116,7 +116,7 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarRutaProps> = ({
                     </TableCell>
                     <TableCell className="px-4 py-3 text-center">
                       <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300">
-                        {ruta.paquetes_asignados.length}
+                        {ruta.paquetes_asignados?.length ?? 0}
                       </span>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-center">

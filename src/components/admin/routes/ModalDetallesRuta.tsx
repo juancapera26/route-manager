@@ -21,7 +21,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
   >([]);
   const [cargandoPaquetes, setCargandoPaquetes] = useState(false);
 
-  // Cargar paquetes cuando se abre el modal
+  // ✅ Generar paquetes simulados consistentes con los IDs de la ruta
   useEffect(() => {
     if (!isOpen || !ruta) {
       setPaquetesDeRuta([]);
@@ -36,13 +36,13 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
   // Ajuste de colores según estado
   const getColorEstadoPaquete = (estado: string) => {
     switch (estado) {
-      case "Entregado":
+      case PaquetesEstados.Entregado:
         return "success";
-      case "Fallido":
+      case PaquetesEstados.Fallido:
         return "error";
       case "En_ruta":
         return "primary";
-      case "Asignado":
+      case PaquetesEstados.Asignado:
         return "info";
       default:
         return "warning";
@@ -55,16 +55,24 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
         <div className="p-6 max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Paquetes de la Ruta {ruta.id_ruta}
-            </h3>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Paquetes de la Ruta {ruta.id_ruta}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Estado: <Badge variant="light" color="info" size="sm">{ruta.estado}</Badge>
+              </p>
+            </div>
+            <Badge variant="light" color="warning" size="sm">
+              Datos Simulados
+            </Badge>
           </div>
 
           {/* Total de paquetes */}
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mb-6">
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total de Paquetes:
+                Total de Paquetes Asignados:
               </span>
               <span className="text-sm font-semibold text-gray-900 dark:text-white">
                 {paquetesDeRuta.length}
@@ -95,7 +103,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
               <div className="flex justify-center items-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 <span className="ml-2 text-gray-600 dark:text-gray-400">
-                  Cargando paquetes...
+                  Generando paquetes...
                 </span>
               </div>
             ) : paquetesDeRuta.length === 0 ? (
@@ -122,12 +130,19 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                 {paquetesDeRuta.map((paquete) => (
                   <div
                     key={paquete.id_paquete}
-                    className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4"
+                    className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {paquete.id_paquete}
-                      </span>
+                      <div>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          #{paquete.id_paquete}
+                        </span>
+                        {paquete.codigo_rastreo && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {paquete.codigo_rastreo}
+                          </p>
+                        )}
+                      </div>
                       <Badge
                         variant="light"
                         size="sm"
@@ -146,11 +161,14 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           {paquete.destinatario?.nombre}{" "}
                           {paquete.destinatario?.apellido}
                         </span>
+                        <Badge variant="light" size="sm">
+                          {paquete.tipo_paquete}
+                        </Badge>
                       </div>
 
                       <div className="flex justify-between">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Teléfono:
+                          Peso:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
                           {paquete.destinatario?.telefono || "-"}
@@ -159,16 +177,16 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
 
                       <div className="flex justify-between">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Cantidad:
+                          Valor:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.cantidad}
+                          ${paquete.valor_declarado.toLocaleString()}
                         </span>
                       </div>
 
                       <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Dirección:
+                          Dirección de entrega:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
                           {paquete.destinatario?.direccion || "-"}
@@ -184,4 +202,4 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
       )}
     </Modal>
   );
-};
+};*/

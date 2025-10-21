@@ -1,20 +1,6 @@
-// src/pages/admin/Admin.tsx
 import React, { useMemo } from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import "../../App.css";
-
-import {
-  paquetesPorSemana,
-  rutasPorSemana,
-  conductoresPorSemana,
-  tiemposEntregaMensuales,
-  // Estructuras de datos para cards 4 y 6
-  estadoActualPaquetes,
-  estadoActualRutas,
-  metricasOperativasDiarias,
-  coloresGraficos,
-  etiquetasEstados,
-} from "../../global/dataMock";
 
 // Recharts
 import {
@@ -32,6 +18,132 @@ import {
   Pie,
   Cell,
 } from "recharts";
+
+// ========================================
+// DATOS MOCK INTEGRADOS
+// ========================================
+
+// Generar últimos 7 días dinámicamente
+function generarUltimos7Dias() {
+  const hoy = new Date();
+  return Array.from({ length: 7 }).map((_, i) => {
+    const fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate() - (6 - i));
+    return fecha.toISOString().split("T")[0]; // YYYY-MM-DD
+  });
+}
+
+// Generar últimos 2 meses dinámicamente
+function generarUltimos2Meses() {
+  const hoy = new Date();
+  return Array.from({ length: 2 }).map((_, i) => {
+    const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - (1 - i), 1);
+    const año = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    return `${año}-${mes}`;
+  });
+}
+
+const ultimos7Dias = generarUltimos7Dias();
+const ultimos2Meses = generarUltimos2Meses();
+
+// --- Paquetes ---
+const paquetesPorSemana = ultimos7Dias.map((fecha) => {
+  const activos = Math.floor(40 + Math.random() * 20); // 40-60
+  const inactivos = Math.floor(5 + Math.random() * 10); // 5-15
+  return { fecha, activos, inactivos, total: activos + inactivos };
+});
+
+// --- Rutas ---
+const rutasPorSemana = ultimos7Dias.map((fecha) => {
+  const activas = Math.floor(10 + Math.random() * 8); // 10-18
+  const inactivas = Math.floor(1 + Math.random() * 4); // 1-5
+  return { fecha, activas, inactivas, total: activas + inactivas };
+});
+
+// --- Conductores ---
+const conductoresPorSemana = ultimos7Dias.map((fecha) => {
+  const disponibles = Math.floor(8 + Math.random() * 5); // 8-12
+  const noDisponibles = Math.floor(1 + Math.random() * 3); // 1-4
+  return {
+    fecha,
+    disponibles,
+    noDisponibles,
+    total: disponibles + noDisponibles,
+  };
+});
+
+// --- Entregas promedio por mes ---
+const tiemposEntregaMensuales = ultimos2Meses.map((mes) => ({
+  mes,
+  minutosPromedioEntrega: Math.floor(35 + Math.random() * 25), // 35-60 minutos
+}));
+
+// --- Estado Actual de Paquetes ---
+const estadoActualPaquetes = {
+  asignados: Math.floor(25 + Math.random() * 15), // 25-40 paquetes asignados
+  entregados: Math.floor(180 + Math.random() * 40), // 180-220 paquetes entregados
+  pendientes: Math.floor(8 + Math.random() * 12), // 8-20 paquetes pendientes
+  fallidos: Math.floor(2 + Math.random() * 6), // 2-8 paquetes fallidos
+};
+
+// --- Estado actual de rutas del día ---
+const estadoActualRutas = {
+  asignadas: Math.floor(8 + Math.random() * 6), // 8-14 rutas asignadas
+  completadas: Math.floor(12 + Math.random() * 8), // 12-20 rutas completadas
+  pendientes: Math.floor(3 + Math.random() * 5), // 3-8 rutas pendientes
+  fallidas: Math.floor(0 + Math.random() * 3), // 0-3 rutas fallidas
+};
+
+// --- Métricas operativas diarias ---
+const metricasOperativasDiarias = {
+  porcentajeEntregasExitosas: Math.round(
+    (estadoActualPaquetes.entregados /
+      (estadoActualPaquetes.entregados + estadoActualPaquetes.fallidos)) *
+      100
+  ),
+  totalPaquetesDelDia: Object.values(estadoActualPaquetes).reduce(
+    (a, b) => a + b,
+    0
+  ),
+  totalRutasDelDia: Object.values(estadoActualRutas).reduce((a, b) => a + b, 0),
+};
+
+// --- Configuración de colores ---
+const coloresGraficos = {
+  paquetes: {
+    asignados: "#465FFF",
+    entregados: "#12B76A",
+    pendientes: "#FD853A",
+    fallidos: "#F04438",
+  },
+  rutas: {
+    asignadas: "#465FFF",
+    completadas: "#12B76A",
+    pendientes: "#FD853A",
+    fallidas: "#F04438",
+  },
+};
+
+// --- Etiquetas en español ---
+const etiquetasEstados = {
+  paquetes: {
+    asignados: "Asignados",
+    entregados: "Entregados",
+    pendientes: "Pendientes",
+    fallidos: "Fallidos",
+  },
+  rutas: {
+    asignadas: "Asignadas",
+    completadas: "Completadas",
+    pendientes: "Pendientes",
+    fallidas: "Fallidas",
+  },
+};
+
+// ========================================
+// FUNCIONES AUXILIARES
+// ========================================
 
 // Función para formatear fecha en español
 const formatearDia = (fechaIso: string) => {
@@ -97,6 +209,10 @@ const TooltipDonaSimple = ({ active, payload }: any) => {
   }
   return null;
 };
+
+// ========================================
+// COMPONENTE PRINCIPAL
+// ========================================
 
 const Admin: React.FC = () => {
   // Totales calculados con useMemo para rendimiento
@@ -246,7 +362,7 @@ const Admin: React.FC = () => {
         </p>
       </div>
 
-      {/* Métricas principales: tres cards horizontales - SIN CAMBIOS */}
+      {/* Métricas principales: tres cards horizontales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <ComponentCard
           title="Paquetes (última semana)"
@@ -381,9 +497,9 @@ const Admin: React.FC = () => {
         </ComponentCard>
       </div>
 
-      {/* Segunda fila: Card 4 (MODIFICADA) y Card 5 (Sin cambios) */}
+      {/* Segunda fila: Card 4 y Card 5 */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
-        {/* MODIFICADA Card 4: Estado de Paquetes (Hoy) - Dona SIN líneas conectoras */}
+        {/* Card 4: Estado de Paquetes (Hoy) - Dona SIN líneas conectoras */}
         <div className="xl:col-span-3">
           <ComponentCard title="Estado de Paquetes (Hoy)">
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
@@ -466,7 +582,7 @@ const Admin: React.FC = () => {
           </ComponentCard>
         </div>
 
-        {/* Card 5: Tiempo Promedio de Entregas - SIN CAMBIOS */}
+        {/* Card 5: Tiempo Promedio de Entregas */}
         <div className="xl:col-span-2">
           <ComponentCard title="Tiempo Promedio de Entregas">
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
@@ -528,7 +644,7 @@ const Admin: React.FC = () => {
         </div>
       </div>
 
-      {/* MODIFICADA Card 6: Panorama Operativo de Rutas - Secciones 1 y 2, sin sección 3 */}
+      {/* Card 6: Panorama Operativo de Rutas - Secciones 1 y 2 */}
       <div className="w-full">
         <ComponentCard title="Panorama Operativo de Rutas">
           <div className="mb-6 text-sm text-gray-600 dark:text-gray-400">

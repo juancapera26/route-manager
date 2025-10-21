@@ -1,4 +1,5 @@
 // ---- Api simulada, Gestión de Conductores ----
+/*
 import {
   Conductor,
   ConductorEstado,
@@ -96,3 +97,4 @@ export const asignarRutaAConductor = async (
     message: "Ruta asignada al conductor.",
   });
 };
+*/

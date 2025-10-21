@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+/*import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
@@ -301,7 +301,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </div>
           </div>
 
-          {/* Botones */}
+          {/* Botones *
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"

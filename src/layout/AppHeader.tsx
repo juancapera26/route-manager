@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchBar from "../components/header/SearchBar";
-import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 
 import { useSidebar } from "../context/SidebarContext";
@@ -61,7 +60,6 @@ const AppHeader: React.FC = () => {
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            <NotificationDropdown />
             <UserDropdown />
           </div>
         </div>

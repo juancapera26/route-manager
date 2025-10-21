@@ -1,7 +1,7 @@
 // =============================================
 // useRutas - Hook para gestión de rutas
 // =============================================
-
+/*
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../global/apis';
 import { Ruta, RutaEstado, Conductor, Paquete, Vehiculo } from '../../global/types';
@@ -417,10 +417,7 @@ export const useRutas = (config: UseRutasConfig = {}): UseRutasReturn => {
 
 // ===================== HOOKS ESPECÍFICOS (OPCIONALES) =====================
 
-/**
- * Hook específico para obtener solo rutas pendientes
- * Útil en modales de asignación
- */
+
 export const useRutasPendientes = () => {
   return useRutas({ estado: RutaEstado.Pendiente });
 };
@@ -428,7 +425,7 @@ export const useRutasPendientes = () => {
 /**
  * Hook específico para operaciones de asignación
  * Separado para componentes que solo necesitan asignar
- */
+ 
 export const useRutaAssignment = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -473,4 +470,4 @@ export const useRutaAssignment = () => {
 };
 
 // ===================== EXPORT DEFAULT =====================
-export default useRutas;
+export default useRutas;*/

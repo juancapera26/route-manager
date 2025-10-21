@@ -1,11 +1,6 @@
 // src/global/filterConfigs.ts
-import {
-  PaquetesEstados,
-  ConductorEstado,
-  RutaEstado,
-  Paquete,
-  Conductor,
-} from "../types";
+import { PaquetesEstados, Paquete } from '../types/paquete.types';
+
 import { OpcionesFiltro } from "../../hooks/useEstadoFilter";
 import { Ruta } from "../types/rutas";
 

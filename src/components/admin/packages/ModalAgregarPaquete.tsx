@@ -3,9 +3,10 @@ import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
-import Alert from "../../ui/alert/Alert";
-import { Paquete, TipoPaquete } from "../../../global/types";
+import { Paquete, TipoPaquete } from "../../../global/types/paquete.types";
 import { Plus } from "lucide-react";
+import { usePackages } from "../../../hooks/admin/usePackages";
+import { toast } from "sonner";
 
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
@@ -53,6 +54,9 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   onSuccess,
   isLoading = false,
 }) => {
+
+  const { createPackage } = usePackages();
+
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -66,10 +70,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [mensaje, setMensaje] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -202,10 +202,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      setMensaje({
-        text: "Por favor corrige los errores en el formulario",
-        type: "error",
-      });
+      toast.error("Por favor corrige los errores en el formulario");
       return;
     }
 
@@ -226,7 +223,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     try {
       const success = await onSuccess(payload);
       if (success) {
-        setMensaje({ text: "Paquete creado exitosamente", type: "success" });
+        toast.success("¡Paquete creado exitosamente!");
         setFormData({
           nombre: "",
           apellido: "",
@@ -239,22 +236,18 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
         });
         setErrors({});
-        setTimeout(() => {
-          setMensaje(null);
-          onClose();
-        }, 1500);
+        onClose();
       } else {
-        setMensaje({ text: "Error al crear paquete", type: "error" });
+        toast.error("Error al crear el paquete");
       }
     } catch (error) {
       console.error("Error al crear paquete:", error);
-      setMensaje({ text: "Error al crear paquete", type: "error" });
+      toast.error("Error al crear el paquete");
     }
   };
 
   const handleClose = () => {
     if (!isLoading) {
-      setMensaje(null);
       setErrors({});
       onClose();
     }
@@ -271,15 +264,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             Agregar nuevo paquete
           </h3>
         </div>
-
-        {mensaje && (
-          <Alert
-            variant={mensaje.type}
-            title={mensaje.type === "success" ? "Éxito" : "Error"}
-            message={mensaje.text}
-            className="mb-4"
-          />
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
@@ -522,6 +506,4 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     </Modal>
   );
 };
-
-
 export default ModalAgregarPaquete;

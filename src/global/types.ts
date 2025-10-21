@@ -1,3 +1,5 @@
+/*import { PaquetesEstados } from "./types/paquete.types";
+
 // Empresa
 export enum Empresa {
   Servientrega = "Servientrega",
@@ -20,13 +22,7 @@ export interface PaquetesDimensiones {
   peso: number; // kg
 }
 
-export enum PaquetesEstados {
-  Pendiente = "Pendiente",
-  Asignado = "Asignado",
-  EnRuta = "En ruta",
-  Entregado = "Entregado",
-  Fallido = "Fallido",
-}
+
 
 export enum TipoPaquete {
   Grande = "Grande",
@@ -38,7 +34,7 @@ export enum TipoPaquete {
 
 export interface Paquete {
   // Info de la tabla
-  id_paquete: string;
+  id_paquete: number;
   id_rutas_asignadas: string[]; // puede pasar por varias rutas
   id_conductor_asignado: string | null;
   destinatario: Destinatario;
@@ -46,7 +42,6 @@ export interface Paquete {
   fecha_entrega: string | null;
 
   // Detalle del paquete
-  estado: PaquetesEstados;
   tipo_paquete: TipoPaquete;
   cantidad: number;
   valor_declarado: number;
@@ -137,4 +132,4 @@ export interface Vehiculo {
   tipo_vehiculo: TipoVehiculo;
   estado: VehiculoEstado;
   fecha_mantenimiento: string; // ISO
-}
+}*/
