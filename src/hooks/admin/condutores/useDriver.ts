@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import useAuth from "../../hooks/useAuth";
-import { Conductor } from "../../global/types/conductores";
+import useAuth from "../../useAuth";
+import { Conductor } from "../../../global/types/conductores";
 
 export default function useDriver() {
   const [data, setData] = useState<Conductor[]>([]);

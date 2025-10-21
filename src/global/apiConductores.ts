@@ -3,7 +3,6 @@
 import {
   Conductor,
   ConductorEstado,
-  Empresa,
   RutaEstado,
   PaquetesEstados,
 } from "./types";
