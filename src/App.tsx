@@ -25,6 +25,7 @@ import PackagesManagement from "./pages/admin/PackagesManagement";
 import DriversManagement from "./pages/admin/DriversManagement";
 import VehiclesManagement from "./pages/admin/VehiclesManagement";
 import DeliveryHistory from "./pages/admin/DeliveryHistory";
+import RoutesManagement from "./pages/admin/RouteManagement";
 import Updates from "./pages/admin/Updates";
 
 // Páginas principales para el conductor:
@@ -48,6 +49,7 @@ function App() {
           <Route path="/admin" element={<AppLayout />}>
             <Route index element={<Admin />} />
             <Route path="profile" element={<AdminProfile />} />
+            <Route path="routes-management" element={<RoutesManagement />} />
             <Route
               path="packages-management"
               element={<PackagesManagement />}

@@ -1,83 +1,50 @@
-/*import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
-// Types global que hace parte del contrato
-// type que rompe con el contrato
-import { RutaFormData } from "../../global/types/rutas";
+import React, { useState, useEffect } from "react";
+
+// Componentes
 import { ModalAgregarRuta } from "../../components/admin/routes/ModalAgregarRuta";
-import { ModalAsignarConductor } from "../../components/admin/routes/ModalAsignarRuta";
+import TablaRutas from "../../components/admin/routes/TablaRutas";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
-import TablaRutas from "../../components/admin/routes/TablaRutas"; // Nueva importación
 
-// Importaciones de tipos y APIs
-import {
-  Ruta,
-  RutaEstado,
-  Conductor,
-} from "../../global/types";
-import {
-    mockConductores,
-  mockVehiculos,
-} from "../../global/dataMock"
-import {
-  createRuta,
-  getRutas,
-  updateRuta,
-  deleteRuta,
-  asignarConductorARuta,
-  cancelarAsignacionRuta,
-  completarRuta,
-  marcarRutaFallida,
-} from "../../global/apiRoutes";
+// Tipos
+import { Ruta, RutaEstado, RutaFormData } from "../../global/types/rutas";
 
-// Componentes UI
-import Button from "../../components/ui/button/Button";
+// Servicio
+import { getAllRutas } from "../../global/services/routeService";
+
+// UI
 import Badge from "../../components/ui/badge/Badge";
 import Alert from "../../components/ui/alert/Alert";
-import { Add } from "@mui/icons-material";
 
-// Nuevas importaciones para el filtro
+// Filtros
 import { useEstadoFilter } from "../../hooks/useEstadoFilter";
 import {
   opcionesFiltroRutas,
   obtenerEstadoRuta,
 } from "../../global/config/filterConfigs";
 import EstadoFilterDropdown from "../../components/common/EstadoFilter";
+import { Plus } from "lucide-react";
 
-// Interfaces locales
 interface AlertState {
   show: boolean;
   message: string;
   type: "success" | "error" | "warning" | "info";
 }
 
-interface ModalState {
-  isOpen: boolean;
-  rutaId: string | null;
-  action: "assign" | "details" | null;
-}
-
 const RouteManagement: React.FC = () => {
-  // Crear ruta
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false); // Bloquea el botón de agregar rutas
-
-  const handleAgregarRuta = async (data: RutaFormData) => {
-    setSaving(true);
-    try {
-      const nueva = await createRuta(data);
-      setTodasLasRutas((prev) => [nueva, ...prev]);
-      setIsModalOpen(false);
-      mostrarAlert("Ruta creada correctamente", "success");
-    } catch (error) {
-      mostrarAlert("Error al crear la ruta", "error");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Estados principales
   const [todasLasRutas, setTodasLasRutas] = useState<Ruta[]>([]);
-  const [conductores, setConductores] = useState<Conductor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 🔹 Estado para el modal de detalles
+  const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
+  const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
+
+  const [alert, setAlert] = useState<AlertState>({
+    show: false,
+    message: "",
+    type: "info",
+  });
 
   // Hook del filtro
   const filtroEstado = useEstadoFilter({
@@ -86,579 +53,206 @@ const RouteManagement: React.FC = () => {
     obtenerEstado: obtenerEstadoRuta,
   });
 
-  // Estados de UI
-  const [loading, setLoading] = useState(true);
-  const [modalState, setModalState] = useState<ModalState>({
-    isOpen: false,
-    rutaId: null,
-    action: null,
-  });
-  const [alert, setAlert] = useState<AlertState>({
-    show: false,
-    message: "",
-    type: "info",
-  });
-
-  // Detalles de las rutas
-  const [detallesRuta, setDetallesRuta] = useState<Ruta | null>(null);
-
-  const navigate = useNavigate();
-
-  // Cargar datos iniciales
+  // 🟢 Cargar rutas desde backend
   useEffect(() => {
+    const cargarDatos = async () => {
+      setLoading(true);
+      try {
+        const rutas = await getAllRutas();
+        setTodasLasRutas(rutas);
+      } catch (error) {
+        console.error("❌ Error al cargar rutas:", error);
+        mostrarAlert("Error al cargar las rutas", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     cargarDatos();
   }, []);
-
-  const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      const allRutas = await getRutas();
-      setTodasLasRutas(allRutas);
-      setConductores(mockConductores); // Simulación de getConductores
-    } catch (error) {
-      mostrarAlert("Error al cargar los datos", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filtrar rutas basado en el estado seleccionado
-  const rutasFiltradas = filtroEstado.filtrarPorEstado(todasLasRutas);
-
-  // Separar por estados
-  const rutasPendientes = rutasFiltradas.filter(
-    (r) => r.estado === RutaEstado.Pendiente
-  );
-  const rutasAsignadas = rutasFiltradas.filter(
-    (r) => r.estado === RutaEstado.Asignada
-  );
-  const rutasCompletadas = rutasFiltradas.filter(
-    (r) => r.estado === RutaEstado.Completada
-  );
-  const rutasFallidas = rutasFiltradas.filter(
-    (r) => r.estado === RutaEstado.Fallida
-  );
-
-  // Contadores para el filtro
-  const contadores = filtroEstado.contarPorEstado(todasLasRutas);
 
   const mostrarAlert = (message: string, type: AlertState["type"]) => {
     setAlert({ show: true, message, type });
     setTimeout(() => setAlert((prev) => ({ ...prev, show: false })), 4000);
   };
 
-  // Funciones de gestión de rutas
-  const handleEliminarRuta = async (rutaId: string) => {
-    if (window.confirm("¿Estás seguro de eliminar esta ruta?")) {
-      try {
-        const result = await deleteRuta(rutaId);
-        if (result.success) {
-          mostrarAlert("Ruta eliminada correctamente", "success");
-          cargarDatos();
-        } else {
-          mostrarAlert(result.message || "Error al eliminar", "error");
-        }
-      } catch (error) {
-        mostrarAlert("Error al eliminar la ruta", "error");
-      }
-    }
-  };
+  // 🔵 Filtrar rutas por estado
+  const rutasFiltradas = filtroEstado.filtrarPorEstado(todasLasRutas);
 
-  const handleCancelarAsignacion = async (rutaId: string) => {
-    if (
-      window.confirm(
-        "¿Seguro crack que desea cancelar la asignación de esta ruta?"
-      )
-    ) {
-      try {
-        const result = await cancelarAsignacionRuta(rutaId);
-        if (result.success) {
-          mostrarAlert("Asignación cancelada correctamente", "success");
-          cargarDatos();
-        } else {
-          mostrarAlert(
-            result.message || "Error al cancelar la asignación",
-            "error"
-          );
-        }
-      } catch (error) {
-        mostrarAlert("Error al cancelar la asignación", "error");
-      }
-    }
-  };
+  // 🔹 Función auxiliar para renderizar una sección
+  const renderSeccion = (
+    titulo: string,
+    color: React.ComponentProps<typeof Badge>["color"],
+    rutas: Ruta[]
+  ) => (
+    <section key={titulo}>
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+          {titulo}
+        </h2>
+        <Badge variant="light" color={color}>
+          {rutas.length}
+        </Badge>
+      </div>
 
-  const handleCompletarRuta = async (rutaId: string) => {
-    if (window.confirm("¿Completar esta ruta?")) {
-      try {
-        const result = await completarRuta(rutaId);
-        if (result.success) {
-          mostrarAlert("Ruta completada correctamente", "success");
-          cargarDatos();
-        } else {
-          mostrarAlert(result.message || "Error al completar", "error");
-        }
-      } catch (error) {
-        mostrarAlert("Error al completar la ruta", "error");
-      }
-    }
-  };
+      <TablaRutas
+        rutas={rutas}
+        estado={titulo}
+        onAbrirModal={handleAbrirModal}
+        onEliminarRuta={handleEliminarRuta}
+        onCancelarAsignacion={handleCancelarAsignacion}
+        onCompletarRuta={handleCompletarRuta}
+        onMarcarFallida={handleMarcarFallid_ruta}
+      />
 
-  const handleMarcarFallida = async (rutaId: string) => {
-    if (window.confirm("¿Marcar esta ruta como fallida?")) {
-      try {
-        const result = await marcarRutaFallida(rutaId);
-        if (result.success) {
-          mostrarAlert("Ruta marcada como fallida", "success");
-          cargarDatos();
-        } else {
-          mostrarAlert(result.message || "Error al marcar", "error");
-        }
-      } catch (error) {
-        mostrarAlert("Error al marcar la ruta como fallida", "error");
-      }
-    }
-  };
+      <ModalDetallesRuta
+        isOpen={modalDetallesAbierto}
+        onClose={() => setModalDetallesAbierto(false)}
+        ruta={rutaSeleccionada}
+      />
+    </section>
+  );
 
-  const abrirModal = (rutaId: string, action: "assign" | "details") => {
-    setModalState({
-      isOpen: true,
-      rutaId,
-      action,
-    });
+  // ⚙️ Manejadores de acciones
+  const handleAbrirModal = (rutaId: number, action: "details" | "assign") => {
+    const ruta = todasLasRutas.find((r) => r.id_ruta === rutaId);
+    if (!ruta) return;
+
     if (action === "details") {
-      const ruta = todasLasRutas.find((r) => r.id_ruta === rutaId);
-      setDetallesRuta(ruta || null);
+      setRutaSeleccionada(ruta);
+      setModalDetallesAbierto(true);
+    } else if (action === "assign") {
+      mostrarAlert(`Asignar ruta ${rutaId}`, "info");
+      // Aquí podrías abrir un modal de asignación si lo tienes
     }
   };
 
-  const cerrarModal = () => {
-    setModalState({
-      isOpen: false,
-      rutaId: null,
-      action: null,
-    });
-    setDetallesRuta(null);
+  const handleEliminarRuta = (id_ruta: number) => {
+    setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta));
+    mostrarAlert("Ruta eliminada correctamente", "success");
   };
 
-  const handleConfirmarAsignacion = async (conductorId: string) => {
-    if (!modalState.rutaId) return;
-
-    try {
-      const result = await asignarConductorARuta(
-        modalState.rutaId,
-        conductorId
-      );
-      if (result.success) {
-        mostrarAlert("Conductor asignado correctamente", "success");
-        cargarDatos();
-        cerrarModal();
-      } else {
-        mostrarAlert(result.message || "Error en la asignación", "error");
-      }
-    } catch (error) {
-      mostrarAlert("Error en la operación", "error");
-    }
+  const handleCancelarAsignacion = (id_ruta: number) => {
+    mostrarAlert(`Asignación de ruta ${id_ruta} cancelada`, "warning");
   };
 
-  // Handler para editar (placeholder, puedes implementar modal)
-  const handleEditarRuta = (rutaId: string) => {
-    mostrarAlert(
-      "Recordatorio: Implementar modal de edición para ruta " + rutaId,
-      "info"
-    );
+  const handleCompletarRuta = (id_ruta: number) => {
+    mostrarAlert(`Ruta ${id_ruta} completada`, "success");
+  };
+
+  const handleMarcarFallid_ruta = (id_ruta: number) => {
+    mostrarAlert(`Ruta ${id_ruta} marcada como fallida`, "error");
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500 mx-auto mb-4"></div>
-          <p className="text-gray-500 dark:text-gray-400">Cargando rutas...</p>
-        </div>
+        <p className="text-gray-500 dark:text-gray-400">Cargando rutas...</p>
       </div>
     );
   }
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-        Gestión de rutas
-      </h1>
+      {/* 🟢 Encabezado con filtro y botón para agregar ruta */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Gestión de rutas
+        </h1>
 
+        <div className="flex items-center gap-4">
+          {/* Dropdown de filtro */}
+          <EstadoFilterDropdown
+            opciones={filtroEstado.opciones}
+            valorSeleccionado={filtroEstado.estadoSeleccionado}
+            onCambio={(nuevoValor) =>
+              filtroEstado.setEstadoSeleccionado(nuevoValor)
+            }
+          />
+
+          {/* Botón verde de agregar */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            {saving ? "Creando..." : "Agregar"}
+          </button>
+        </div>
+      </div>
+
+      {/* 🟠 Alerta de acciones */}
       {alert.show && (
         <Alert
           variant={alert.type}
-          title={
-            alert.type === "success"
-              ? "Éxito"
-              : alert.type === "error"
-              ? "Error"
-              : alert.type === "warning"
-              ? "Advertencia"
-              : "Información"
-          }
           message={alert.message}
           className="mb-6"
+          title=""
         />
       )}
 
-        Para cuando NO HAY filtro (mostrar todos) 
-      {filtroEstado.estadoSeleccionado === null && (
+      {/* 🟣 Mostrar secciones según el filtro seleccionado */}
+      {filtroEstado.estadoSeleccionado === null ? (
         <>
-          <section>
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
-                <div className="order-1 sm:order-2">
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    disabled={saving}
-                    className="items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
-                  >
-                    <Add className="w-4 h-4" />
-                    {saving ? "Creando..." : ""}
-                  </button>
-                </div>
-
-                <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                      Pendientes
-                    </h2>
-                    <Badge variant="light" color="warning">
-                      {rutasPendientes.length}
-                    </Badge>
-                  </div>
-
-                  <div>
-                    <EstadoFilterDropdown
-                      opciones={filtroEstado.opciones}
-                      valorSeleccionado={filtroEstado.estadoSeleccionado}
-                      onCambio={filtroEstado.setEstadoSeleccionado}
-                      contadores={contadores}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <TablaRutas
-              rutas={rutasPendientes}
-              estado={RutaEstado.Pendiente}
-              conductores={conductores}
-              onAbrirModal={abrirModal}
-              onEliminarRuta={handleEliminarRuta}
-              onCancelarAsignacion={handleCancelarAsignacion}
-              onCompletarRuta={handleCompletarRuta}
-              onMarcarFallida={handleMarcarFallida}
-              onEditarRuta={handleEditarRuta}
-            />
-            <ModalAgregarRuta
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSuccess={handleAgregarRuta}
-              isLoading={saving}
-            />
-          </section>
-
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                Asignadas
-              </h2>
-              <Badge variant="light" color="info">
-                {rutasAsignadas.length}
-              </Badge>
-            </div>
-            <TablaRutas
-              rutas={rutasAsignadas}
-              estado={RutaEstado.Asignada}
-              conductores={conductores}
-              onAbrirModal={abrirModal}
-              onEliminarRuta={handleEliminarRuta}
-              onCancelarAsignacion={handleCancelarAsignacion}
-              onCompletarRuta={handleCompletarRuta}
-              onMarcarFallida={handleMarcarFallida}
-              onEditarRuta={handleEditarRuta}
-            />
-          </section>
-
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                Completadas
-              </h2>
-              <Badge variant="light" color="success">
-                {rutasCompletadas.length}
-              </Badge>
-            </div>
-            <TablaRutas
-              rutas={rutasCompletadas}
-              estado={RutaEstado.Completada}
-              conductores={conductores}
-              onAbrirModal={abrirModal}
-              onEliminarRuta={handleEliminarRuta}
-              onCancelarAsignacion={handleCancelarAsignacion}
-              onCompletarRuta={handleCompletarRuta}
-              onMarcarFallida={handleMarcarFallida}
-              onEditarRuta={handleEditarRuta}
-            />
-          </section>
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                Fallidas
-              </h2>
-              <Badge variant="light" color="error">
-                {rutasFallidas.length}
-              </Badge>
-            </div>
-            <TablaRutas
-              rutas={rutasFallidas}
-              estado={RutaEstado.Fallida}
-              conductores={conductores}
-              onAbrirModal={abrirModal}
-              onEliminarRuta={handleEliminarRuta}
-              onCancelarAsignacion={handleCancelarAsignacion}
-              onCompletarRuta={handleCompletarRuta}
-              onMarcarFallida={handleMarcarFallida}
-              onEditarRuta={handleEditarRuta}
-            />
-          </section>
+          {renderSeccion(
+            "Pendientes",
+            "warning",
+            todasLasRutas.filter((r) => r.estado_ruta === "Pendiente")
+          )}
+          {renderSeccion(
+            "Asignadas",
+            "info",
+            todasLasRutas.filter((r) => r.estado_ruta === "Asignada")
+          )}
+          {renderSeccion(
+            "Completadas",
+            "success",
+            todasLasRutas.filter((r) => r.estado_ruta === "Completada")
+          )}
+          {renderSeccion(
+            "Fallidas",
+            "destructive" as React.ComponentProps<typeof Badge>["color"],
+            todasLasRutas.filter((r) => r.estado_ruta === "Fallida")
+          )}
+        </>
+      ) : (
+        <>
+          {renderSeccion(
+            filtroEstado.estadoSeleccionado,
+            filtroEstado.estadoSeleccionado === "Pendiente"
+              ? "warning"
+              : filtroEstado.estadoSeleccionado === "Asignada"
+              ? "info"
+              : filtroEstado.estadoSeleccionado === "Completada"
+              ? "success"
+              : ("destructive" as React.ComponentProps<typeof Badge>["color"]),
+            rutasFiltradas
+          )}
         </>
       )}
 
-      {filtroEstado.estadoSeleccionado === RutaEstado.Pendiente && (
-        <section>
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
-              <div className="order-1 sm:order-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={saving}
-                  className="items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
-                >
-                  <Add className="w-4 h-4" />
-                  {saving ? "Creando..." : ""}
-                </button>
-              </div>
-              <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                    Pendientes
-                  </h2>
-                  <Badge variant="light" color="warning">
-                    {rutasPendientes.length}
-                  </Badge>
-                </div>
-                <div>
-                  <EstadoFilterDropdown
-                    opciones={filtroEstado.opciones}
-                    valorSeleccionado={filtroEstado.estadoSeleccionado}
-                    onCambio={filtroEstado.setEstadoSeleccionado}
-                    contadores={contadores}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <TablaRutas
-            rutas={rutasPendientes}
-            estado={RutaEstado.Pendiente}
-            conductores={conductores}
-            onAbrirModal={abrirModal}
-            onEliminarRuta={handleEliminarRuta}
-            onCancelarAsignacion={handleCancelarAsignacion}
-            onCompletarRuta={handleCompletarRuta}
-            onMarcarFallida={handleMarcarFallida}
-            onEditarRuta={handleEditarRuta}
-          />
-          <ModalAgregarRuta
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSuccess={handleAgregarRuta}
-            isLoading={saving}
-          />
-        </section>
-      )}
+      {/* ➕ Modal para agregar nueva ruta */}
+      <ModalAgregarRuta
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={(r: RutaFormData) => {
+          // Convertimos RutaFormData a Ruta
+          const nuevaRuta: Ruta = {
+            id_ruta: Math.floor(Math.random() * 100000), // o el ID que devuelva tu backend
+            estado_ruta: RutaEstado.Pendiente,
+            fecha_inicio: r.horario.inicio,
+            fecha_creacion: new Date().toISOString(),
+            ...r,
+          };
 
-      {filtroEstado.estadoSeleccionado === RutaEstado.Asignada && (
-        <section>
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
-              <div className="order-1 sm:order-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={saving}
-                  className="items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
-                >
-                  <Add className="w-4 h-4" />
-                  {saving ? "Creando..." : ""}
-                </button>
-              </div>
-              <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                    Asignadas
-                  </h2>
-                  <Badge variant="light" color="info">
-                    {rutasAsignadas.length}
-                  </Badge>
-                </div>
-                <div>
-                  <EstadoFilterDropdown
-                    opciones={filtroEstado.opciones}
-                    valorSeleccionado={filtroEstado.estadoSeleccionado}
-                    onCambio={filtroEstado.setEstadoSeleccionado}
-                    contadores={contadores}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <TablaRutas
-            rutas={rutasAsignadas}
-            estado={RutaEstado.Asignada}
-            conductores={conductores}
-            onAbrirModal={abrirModal}
-            onEliminarRuta={handleEliminarRuta}
-            onCancelarAsignacion={handleCancelarAsignacion}
-            onCompletarRuta={handleCompletarRuta}
-            onMarcarFallida={handleMarcarFallida}
-            onEditarRuta={handleEditarRuta}
-          />
-          <ModalAgregarRuta
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSuccess={handleAgregarRuta}
-            isLoading={saving}
-          />
-        </section>
-      )}
-
-      {filtroEstado.estadoSeleccionado === RutaEstado.Completada && (
-        <section>
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
-              <div className="order-1 sm:order-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={saving}
-                  className="items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
-                >
-                  <Add className="w-4 h-4" />
-                  {saving ? "Creando..." : ""}
-                </button>
-              </div>
-              <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                    Completadas
-                  </h2>
-                  <Badge variant="light" color="success">
-                    {rutasCompletadas.length}
-                  </Badge>
-                </div>
-                <div>
-                  <EstadoFilterDropdown
-                    opciones={filtroEstado.opciones}
-                    valorSeleccionado={filtroEstado.estadoSeleccionado}
-                    onCambio={filtroEstado.setEstadoSeleccionado}
-                    contadores={contadores}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <TablaRutas
-            rutas={rutasCompletadas}
-            estado={RutaEstado.Completada}
-            conductores={conductores}
-            onAbrirModal={abrirModal}
-            onEliminarRuta={handleEliminarRuta}
-            onCancelarAsignacion={handleCancelarAsignacion}
-            onCompletarRuta={handleCompletarRuta}
-            onMarcarFallida={handleMarcarFallida}
-            onEditarRuta={handleEditarRuta}
-          />
-          <ModalAgregarRuta
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSuccess={handleAgregarRuta}
-            isLoading={saving}
-          />
-        </section>
-      )}
-
-      {filtroEstado.estadoSeleccionado === RutaEstado.Fallida && (
-        <section>
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center sm:gap-8 gap-4 mb-4">
-              <div className="order-1 sm:order-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={saving}
-                  className="items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
-                >
-                  <Add className="w-4 h-4" />
-                  {saving ? "Creando..." : ""}
-                </button>
-              </div>
-              <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                    Fallidas
-                  </h2>
-                  <Badge variant="light" color="error">
-                    {rutasFallidas.length}
-                  </Badge>
-                </div>
-                <div>
-                  <EstadoFilterDropdown
-                    opciones={filtroEstado.opciones}
-                    valorSeleccionado={filtroEstado.estadoSeleccionado}
-                    onCambio={filtroEstado.setEstadoSeleccionado}
-                    contadores={contadores}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <TablaRutas
-            rutas={rutasFallidas}
-            estado={RutaEstado.Fallida}
-            conductores={conductores}
-            onAbrirModal={abrirModal}
-            onEliminarRuta={handleEliminarRuta}
-            onCancelarAsignacion={handleCancelarAsignacion}
-            onCompletarRuta={handleCompletarRuta}
-            onMarcarFallida={handleMarcarFallida}
-            onEditarRuta={handleEditarRuta}
-          />
-
-          <ModalAgregarRuta
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSuccess={handleAgregarRuta}
-            isLoading={saving}
-          />
-        </section>
-      )}
-
-      <ModalAsignarConductor
-        isOpen={modalState.isOpen && modalState.action === "assign"}
-        onClose={cerrarModal}
-        onConfirm={handleConfirmarAsignacion} // 👈 Tu función ya existente
-        conductores={mockConductores}
-        vehiculos={mockVehiculos} // 👈 Solo falta esta constante
-        titulo="Asignar Conductor a Ruta"
-      />
-      <ModalDetallesRuta
-        isOpen={modalState.isOpen && modalState.action === "details"}
-        onClose={cerrarModal}
-        ruta={detallesRuta}
+          setTodasLasRutas((prev) => [nuevaRuta, ...prev]);
+          mostrarAlert("Ruta agregada correctamente", "success");
+          setSaving(false);
+        }}
+        isLoading={saving}
       />
     </div>
   );
 };
 
-export default RouteManagement;*/
+export default RouteManagement;
