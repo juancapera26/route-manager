@@ -1,9 +1,8 @@
-//src/components/admin/routes/ModalDetallesRuta.tsx
+// src/components/admin/routes/ModalDetallesRuta.tsx
 import React, { useState, useEffect } from "react";
-import { Ruta, Paquete } from "../../../global/types";
-import { api } from "../../../global/apis";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
+import { Ruta } from "../../../global/types/rutas";
 
 interface ModalDetallesRutaProps {
   isOpen: boolean;
@@ -16,7 +15,10 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
   onClose,
   ruta,
 }) => {
-  const [paquetesDeRuta, setPaquetesDeRuta] = useState<Paquete[]>([]);
+  // ✅ Siempre array, nunca undefined
+  const [paquetesDeRuta, setPaquetesDeRuta] = useState<
+    NonNullable<Ruta["paquete"]>
+  >([]);
   const [cargandoPaquetes, setCargandoPaquetes] = useState(false);
 
   // Cargar paquetes cuando se abre el modal
@@ -26,37 +28,19 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
       return;
     }
 
-    const cargarPaquetesDeRuta = async () => {
-      if (ruta.paquetes_asignados.length === 0) {
-        setPaquetesDeRuta([]);
-        return;
-      }
-
-      setCargandoPaquetes(true);
-      try {
-        const todosPaquetes = await api.paquetes.getAll();
-        const paquetesFiltrados = todosPaquetes.filter((paquete) =>
-          ruta.paquetes_asignados.includes(paquete.id_paquete)
-        );
-        setPaquetesDeRuta(paquetesFiltrados);
-      } catch (error) {
-        console.error("Error al cargar paquetes:", error);
-        setPaquetesDeRuta([]);
-      } finally {
-        setCargandoPaquetes(false);
-      }
-    };
-
-    cargarPaquetesDeRuta();
+    setCargandoPaquetes(true);
+    setPaquetesDeRuta(ruta.paquete ?? []);
+    setCargandoPaquetes(false);
   }, [isOpen, ruta]);
 
+  // Ajuste de colores según estado
   const getColorEstadoPaquete = (estado: string) => {
     switch (estado) {
       case "Entregado":
         return "success";
       case "Fallido":
         return "error";
-      case "En Ruta":
+      case "En_ruta":
         return "primary";
       case "Asignado":
         return "info";
@@ -69,26 +53,26 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       {ruta && (
         <div className="p-6 max-w-4xl mx-auto">
-          {/* Header del modal */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               Paquetes de la Ruta {ruta.id_ruta}
             </h3>
           </div>
 
-          {/* Mini sección total de paquetes */}
+          {/* Total de paquetes */}
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mb-6">
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total de Paquetes:
               </span>
               <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                {ruta.paquetes_asignados.length}
+                {paquetesDeRuta.length}
               </span>
             </div>
           </div>
 
-          {/* Lista de paquetes asignados */}
+          {/* Lista de paquetes */}
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <svg
@@ -147,9 +131,9 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                       <Badge
                         variant="light"
                         size="sm"
-                        color={getColorEstadoPaquete(paquete.estado)}
+                        color={getColorEstadoPaquete(paquete.estado_paquete)}
                       >
-                        {paquete.estado}
+                        {paquete.estado_paquete}
                       </Badge>
                     </div>
 
@@ -159,8 +143,8 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Destinatario:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
-                          {paquete.destinatario.nombre}{" "}
-                          {paquete.destinatario.apellido}
+                          {paquete.destinatario?.nombre}{" "}
+                          {paquete.destinatario?.apellido}
                         </span>
                       </div>
 
@@ -169,7 +153,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Teléfono:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.destinatario.telefono}
+                          {paquete.destinatario?.telefono || "-"}
                         </span>
                       </div>
 
@@ -187,7 +171,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Dirección:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
-                          {paquete.destinatario.direccion}
+                          {paquete.destinatario?.direccion || "-"}
                         </p>
                       </div>
                     </div>

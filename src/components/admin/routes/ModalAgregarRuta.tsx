@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
-import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import TextArea from "../../form/input/TextArea";
 import Alert from "../../ui/alert/Alert";
 import { ZonaRuta } from "../../../global/types";
 import { RutaFormData } from "../../../global/types/rutas";
-import { Add } from "@mui/icons-material"; // Asegúrate de tener este icono o usa uno similar
+import { Add } from "@mui/icons-material";
 
 interface ModalAgregarRutaProps {
   isOpen: boolean;
@@ -43,17 +42,16 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
     type: "success" | "error";
   } | null>(null);
 
-  // Validaciones específicas
+  // ===================== VALIDACIONES =====================
   const validarFechaHora = (fechaHoraStr: string): boolean => {
     if (!fechaHoraStr) return false;
     const fecha = new Date(fechaHoraStr);
     const ahora = new Date();
-    // La fecha debe ser válida y no puede ser en el pasado
     return !isNaN(fecha.getTime()) && fecha > ahora;
   };
 
   const validarRangoTiempo = (inicio: string, fin: string): boolean => {
-    if (!inicio || !fin) return true; // Se valida individualmente
+    if (!inicio || !fin) return true;
     const fechaInicio = new Date(inicio);
     const fechaFin = new Date(fin);
     return fechaFin > fechaInicio;
@@ -62,7 +60,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   const validarFormulario = (): boolean => {
     const nuevosErrores: ErroresFormulario = {};
 
-    // Validar zona (aunque es select, por seguridad)
+    // Validar zona
     if (!formData.zona || !Object.values(ZonaRuta).includes(formData.zona)) {
       nuevosErrores.zona = "La zona es requerida";
     }
@@ -82,7 +80,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
       erroresHorario.fin = "La fecha debe ser válida y futura";
     }
 
-    // Validar que el horario de fin sea posterior al de inicio
     if (formData.horario.inicio && formData.horario.fin) {
       if (!validarRangoTiempo(formData.horario.inicio, formData.horario.fin)) {
         erroresHorario.fin = "La hora de fin debe ser posterior a la de inicio";
@@ -106,15 +103,19 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
     return Object.keys(nuevosErrores).length === 0;
   };
 
+  // ===================== MANEJADORES =====================
   const manejarCambioInput = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
-    // Limpiar error del campo cuando el usuario empiece a escribir
+    // Limpiar errores al modificar
     if (name === "zona" && errores.zona) {
       setErrores((prev) => ({ ...prev, zona: undefined }));
-    } else if (["inicio", "fin"].includes(name) && errores.horario?.[name as keyof ErroresFormulario["horario"]]) {
+    } else if (
+      ["inicio", "fin"].includes(name) &&
+      errores.horario?.[name as keyof ErroresFormulario["horario"]]
+    ) {
       setErrores((prev) => ({
         ...prev,
         horario: { ...prev.horario, [name]: undefined },
@@ -132,17 +133,15 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   };
 
   const manejarCambioTextArea = (valor: string) => {
-    // Limpiar error del campo cuando el usuario empiece a escribir
     if (errores.puntos_entrega) {
       setErrores((prev) => ({ ...prev, puntos_entrega: undefined }));
     }
-    
     setFormData((prev) => ({ ...prev, puntos_entrega: valor }));
   };
 
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validarFormulario()) {
       setMensaje({
         text: "Por favor corrige los errores en el formulario",
@@ -181,6 +180,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
     }
   };
 
+  // ===================== RENDER =====================
   return (
     <Modal isOpen={isOpen} onClose={manejarCerrar}>
       <div className="max-w-xl mx-auto">
@@ -203,7 +203,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
         )}
 
         <form onSubmit={manejarEnvio} className="space-y-6">
-          {/* Horarios - PRIMERA SECCIÓN */}
+          {/* Horarios */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Horarios de la ruta
@@ -246,7 +246,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </div>
           </div>
 
-          {/* Información básica de la ruta - SEGUNDA SECCIÓN */}
+          {/* Información de la ruta */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información de la ruta
@@ -260,8 +260,8 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
                   value={formData.zona}
                   onChange={manejarCambioInput}
                   className={`h-11 w-full rounded-lg border px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 transition-colors ${
-                    errores.zona 
-                      ? "border-red-500 dark:border-red-500" 
+                    errores.zona
+                      ? "border-red-500 dark:border-red-500"
                       : "border-gray-300 dark:border-gray-600"
                   }`}
                   disabled={isLoading}
@@ -289,7 +289,9 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
                 />
                 <div className="flex justify-between items-center mt-1">
                   {errores.puntos_entrega && (
-                    <p className="text-red-500 text-xs">{errores.puntos_entrega}</p>
+                    <p className="text-red-500 text-xs">
+                      {errores.puntos_entrega}
+                    </p>
                   )}
                   <p className="text-gray-400 text-xs ml-auto">
                     {formData.puntos_entrega.length}/500

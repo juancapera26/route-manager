@@ -1,35 +1,36 @@
 import React from "react";
-import { Ruta, RutaEstado, Conductor } from "../../../global/types"; // Ajusta la ruta relativa según tu estructura
 import {
   Table,
   TableHeader,
   TableBody,
   TableRow,
   TableCell,
-} from "../../../components/ui/table"; // Ajusta la ruta
-import Button from "../../../components/ui/button/Button"; // Ajusta la ruta
+} from "../../../components/ui/table";
 import LocationOffIcon from "@mui/icons-material/LocationOff";
-import { ArrowRight } from "lucide-react";
-import { Check } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
-import { X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  AlertTriangle,
+  X,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { Ruta } from "../../../global/types/rutas";
 
 interface TablaRutasProps {
   rutas: Ruta[];
-  estado: RutaEstado;
-  conductores: Conductor[]; // Agrego esto como prop para que sea reutilizable y no dependa de estado global
-  onAbrirModal: (rutaId: string, action: "assign" | "details") => void;
-  onEliminarRuta: (rutaId: string) => void;
-  onCancelarAsignacion: (rutaId: string) => void;
-  onCompletarRuta: (rutaId: string) => void;
-  onMarcarFallida: (rutaId: string) => void;
-  onEditarRuta?: (rutaId: string) => void; // Opcional, para futura implementación
+  estado: string;
+  onAbrirModal: (rutaId: number, action: "assign" | "details") => void;
+  onEliminarRuta: (rutaId: number) => void;
+  onCancelarAsignacion: (rutaId: number) => void;
+  onCompletarRuta: (rutaId: number) => void;
+  onMarcarFallida: (rutaId: number) => void;
+  onEditarRuta?: (rutaId: number) => void;
 }
 
 const TablaRutas: React.FC<TablaRutasProps> = ({
   rutas,
   estado,
-  conductores,
   onAbrirModal,
   onEliminarRuta,
   onCancelarAsignacion,
@@ -42,7 +43,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-12">
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-            <LocationOffIcon className="text-gray-500 dark:text-gray-400"></LocationOffIcon>
+            <LocationOffIcon className="text-gray-500 dark:text-gray-400" />
           </div>
           <p className="text-gray-500 dark:text-gray-400 font-medium">
             No hay rutas en estado: {estado}
@@ -52,44 +53,8 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
     );
   }
 
-  const getColorEstado = (estado: RutaEstado) => {
-    switch (estado) {
-      case RutaEstado.Pendiente:
-        return "warning";
-      case RutaEstado.Asignada:
-        return "info";
-      case RutaEstado.Completada:
-        return "success";
-      case RutaEstado.Fallida:
-        return "error";
-      default:
-        return "light";
-    }
-  };
-
-  const getConductorNombre = (id: string | null) => {
-    if (!id) return "Sin asignar";
-    const conductor = conductores.find((c) => c.id_conductor === id);
-    return conductor
-      ? `${conductor.nombre} ${conductor.apellido}`
-      : "Desconocido";
-  };
-
-  const formatHorario = (horario: { inicio: string; fin: string }) => {
-    const inicioTime = new Date(horario.inicio).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const finTime = new Date(horario.fin).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    return `${inicioTime} - ${finTime}`;
-  };
-
-  const formatFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString();
-  };
+  const formatFecha = (fecha: string) =>
+    new Date(fecha).toLocaleDateString("es-CO");
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -97,50 +62,26 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="border-b border-gray-200 dark:border-gray-700">
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                ID Ruta
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Conductor
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Paquetes
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Zona
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Horario
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Registro
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-6 py-4 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
-              >
-                Acciones
-              </TableCell>
+              {[
+                "Código Manifiesto", // 👈 cambiado
+                "Conductor",
+                "Vehículo",
+                "Paquetes",
+                "Fecha inicio",
+                "Fecha fin",
+                "Acciones",
+              ].map((header) => (
+                <TableCell
+                  key={header}
+                  isHeader
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide bg-gray-50 dark:bg-gray-900/50"
+                >
+                  {header}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {rutas.map((ruta, index) => (
               <TableRow
@@ -151,38 +92,39 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                     : "bg-gray-50/30 dark:bg-gray-800/50"
                 }`}
               >
-                <TableCell className="px-6 py-4">
-                  <span className="flex items-center">{ruta.id_ruta}</span>
+                {/* 👇 Mostrar el código de manifiesto en lugar del ID */}
+                <TableCell className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                  {ruta.cod_manifiesto ?? "Sin código"}
                 </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {getConductorNombre(ruta.id_conductor_asignado)}
-                  </span>
+
+                {/* Conductor */}
+                <TableCell className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                  {ruta.usuario
+                    ? `${ruta.usuario.nombre} ${ruta.usuario.apellido}`
+                    : "Sin asignar"}
                 </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm text-gray-900 dark:text-gray-300">
-                    {ruta.paquetes_asignados.length}
-                  </span>
+
+                {/* Vehículo */}
+                <TableCell className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                  {ruta.vehiculo?.placa ?? "Sin vehículo"}
                 </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm text-gray-900 dark:text-gray-300">
-                    {ruta.zona}
-                  </span>
+
+                {/* Paquetes */}
+                <TableCell className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                  {ruta.paquete?.length ?? 0}
                 </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm text-gray-900 dark:text-gray-300">
-                    {formatHorario(ruta.horario)}
-                  </span>
+
+                {/* Fechas */}
+                <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                  {formatFecha(ruta.fecha_inicio)}
                 </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {formatFecha(ruta.fecha_registro)}
-                  </span>
+                <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                  {ruta.fecha_fin ? formatFecha(ruta.fecha_fin) : "En curso"}
                 </TableCell>
+
+                {/* Acciones */}
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-center gap-2">
-                    {/* Iconos de referencia */}
-                    {/* Botón Ver detalles - siempre presente */}
                     <button
                       onClick={() => onAbrirModal(ruta.id_ruta, "details")}
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -209,87 +151,54 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                       </svg>
                     </button>
 
-                    {ruta.estado === RutaEstado.Pendiente && (
+                    {/* Acciones según estado */}
+                    {ruta.estado_ruta === "Pendiente" && (
                       <>
-                        {/* Editar */}
                         <button
-                          onClick={() =>
-                            onEditarRuta
-                              ? onEditarRuta(ruta.id_ruta)
-                              : alert(
-                                  "Recordatorio: Debo cambiar esta alerta por un modal mas adelante"
-                                )
-                          }
-                          className="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
+                          onClick={() => onEditarRuta?.(ruta.id_ruta)}
+                          className="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg"
                           title="Editar ruta"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
+                          <Edit className="w-4 h-4 text-blue-500" />
                         </button>
 
-                        {/* Eliminar */}
                         <button
                           onClick={() => onEliminarRuta(ruta.id_ruta)}
-                          className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
                           title="Eliminar ruta"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
+                          <Trash2 className="w-4 h-4" />
                         </button>
 
-                        {/* Asignar un conductor */}
                         <button
                           onClick={() => onAbrirModal(ruta.id_ruta, "assign")}
-                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10" // Usa un padding pequeño, como p-2, para un botón cuadrado de ícono
+                          className="p-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg"
                           title="Asignar ruta"
                         >
-                          <ArrowRight className="w-4 h-4 " />
+                          <ArrowRight className="w-4 h-4" />
                         </button>
                       </>
                     )}
 
-                    {ruta.estado === RutaEstado.Asignada && (
+                    {ruta.estado_ruta === "Asignada" && (
                       <>
                         <button
-                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10"
                           onClick={() => onCompletarRuta(ruta.id_ruta)}
+                          className="p-2 text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-500/10 rounded-lg"
                           title="Marcar como completada"
                         >
-                        <Check className="w-4 h-4" />
-                          
+                          <Check className="w-4 h-4" />
                         </button>
                         <button
-                          className="text-orange-600 border-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-400 dark:hover:bg-orange-500/10"
                           onClick={() => onMarcarFallida(ruta.id_ruta)}
-                          title="Marcar como falllida"
+                          className="p-2 text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-lg"
+                          title="Marcar como fallida"
                         >
                           <AlertTriangle className="w-4 h-4" />
                         </button>
                         <button
-                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
                           onClick={() => onCancelarAsignacion(ruta.id_ruta)}
+                          className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
                           title="Cancelar asignación"
                         >
                           <X className="w-4 h-4" />
