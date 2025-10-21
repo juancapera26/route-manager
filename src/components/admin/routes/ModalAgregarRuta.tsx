@@ -1,11 +1,10 @@
-/*import React, { useState } from "react";
+import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
 import TextArea from "../../form/input/TextArea";
 import Alert from "../../ui/alert/Alert";
-import { ZonaRuta } from "../../../global/types";
-import { RutaFormData } from "../../../global/types/rutas";
+import { RutaFormData, ZonaRuta } from "../../../global/types/rutas";
 import { Add } from "@mui/icons-material";
 
 interface ModalAgregarRutaProps {
@@ -301,7 +300,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </div>
           </div>
 
-          {/* Botones *
+          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"

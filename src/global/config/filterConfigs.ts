@@ -1,8 +1,8 @@
 // src/global/filterConfigs.ts
-import { PaquetesEstados, Paquete } from '../types/paquete.types';
+import { PaquetesEstados, Paquete } from "../types/paquete.types";
 
 import { OpcionesFiltro } from "../../hooks/useEstadoFilter";
-import { Ruta } from "../types/rutas";
+import { Ruta, RutaEstado } from "../types/rutas";
 
 // ===================== Configuración para Paquetes =====================
 export const opcionesFiltorPaquetes: OpcionesFiltro<PaquetesEstados> = [
@@ -16,17 +16,6 @@ export const opcionesFiltorPaquetes: OpcionesFiltro<PaquetesEstados> = [
 
 export const obtenerEstadoPaquete = (paquete: Paquete): PaquetesEstados =>
   paquete.estado;
-
-// ===================== Configuración para Conductores =====================
-export const opcionesFitroConductores: OpcionesFiltro<ConductorEstado> = [
-  { valor: null, etiqueta: "Todos" },
-  { valor: ConductorEstado.Disponible, etiqueta: "Disponibles" },
-  { valor: ConductorEstado.EnRuta, etiqueta: "En Ruta" },
-  { valor: ConductorEstado.NoDisponible, etiqueta: "No Disponibles" },
-];
-
-export const obtenerEstadoConductor = (conductor: Conductor): ConductorEstado =>
-  conductor.estado;
 
 // ===================== Configuración para Rutas =====================
 export const opcionesFiltroRutas: OpcionesFiltro<RutaEstado> = [

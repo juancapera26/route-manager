@@ -216,4 +216,4 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
   );
 };
 
-export default TablaRutas;*/}
+export default TablaRutas;
