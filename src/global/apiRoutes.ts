@@ -1,4 +1,5 @@
 // ---- Api simulada, Gestión de Rutas ----
+/*
 import { Ruta, RutaEstado, ConductorEstado } from "./types";
 import { mockRutas, mockConductores } from "./dataMock";
 
@@ -176,4 +177,4 @@ export const marcarRutaFallida = async (idRuta: string): Promise<Result> => {
     success: true,
     message: "Ruta marcada como fallida.",
   });
-};
+};*/

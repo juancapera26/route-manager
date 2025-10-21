@@ -1,5 +1,4 @@
-//src/components/admin/drivers/ModalDetallesConductor.tsx
-import { Conductor } from "../../../global/types";
+/*import { Conductor } from "../../../global/types";
 
 interface Props {
   driver: Conductor | null;
@@ -29,4 +28,4 @@ export default function DriverDetailsModal({ driver, onClose }: Props) {
       </div>
     </div>
   );
-}
+}*/

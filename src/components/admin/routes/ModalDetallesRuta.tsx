@@ -1,9 +1,8 @@
-//src/components/admin/routes/ModalDetallesRuta.tsx
-import React, { useState, useEffect } from "react";
-import { Ruta, Paquete } from "../../../global/types";
-import { api } from "../../../global/apis";
+/*import React, { useState, useEffect } from "react";
+import { Ruta } from "../../../global/types";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
+import { Paquete, PaquetesEstados } from "../../../global/types/paquete.types";
 
 interface ModalDetallesRutaProps {
   isOpen: boolean;
@@ -19,7 +18,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
   const [paquetesDeRuta, setPaquetesDeRuta] = useState<Paquete[]>([]);
   const [cargandoPaquetes, setCargandoPaquetes] = useState(false);
 
-  // Cargar paquetes cuando se abre el modal
+  // ✅ Generar paquetes simulados consistentes con los IDs de la ruta
   useEffect(() => {
     if (!isOpen || !ruta) {
       setPaquetesDeRuta([]);
@@ -27,20 +26,52 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     }
 
     const cargarPaquetesDeRuta = async () => {
-      if (ruta.paquetes_asignados.length === 0) {
+      if (!ruta.paquetes_asignados || ruta.paquetes_asignados.length === 0) {
         setPaquetesDeRuta([]);
         return;
       }
 
       setCargandoPaquetes(true);
+
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       try {
-        const todosPaquetes = await api.paquetes.getAll();
-        const paquetesFiltrados = todosPaquetes.filter((paquete) =>
-          ruta.paquetes_asignados.includes(paquete.id_paquete)
-        );
-        setPaquetesDeRuta(paquetesFiltrados);
+        // Crear paquetes simulados basados en los IDs de la ruta
+        const paquetesSimulados: Paquete[] = ruta.paquetes_asignados.map((idPaquete, index) => ({
+          id_paquete: parseInt(idPaquete) || index + 1,
+          codigo_rastreo: `PKG-${String(idPaquete).padStart(6, '0')}`,
+          fecha_registro: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          fecha_entrega: null,
+          estado: ruta.estado === 'Asignada' ? PaquetesEstados.Asignado : PaquetesEstados.Pendiente,
+          tipo_paquete: ['Pequeño', 'Mediano', 'Grande', 'Fragil'][Math.floor(Math.random() * 4)] as any,
+          dimensiones: {
+            largo: 20 + Math.floor(Math.random() * 50),
+            ancho: 15 + Math.floor(Math.random() * 30),
+            alto: 10 + Math.floor(Math.random() * 20),
+            peso: 1 + Math.floor(Math.random() * 10)
+          },
+          cantidad: 1 + Math.floor(Math.random() * 3),
+          valor_declarado: 10000 + Math.floor(Math.random() * 90000),
+          direccion_entrega: `Calle ${Math.floor(Math.random() * 100)} # ${Math.floor(Math.random() * 50)}-${Math.floor(Math.random() * 100)}`,
+          lat: 4.6 + Math.random() * 0.2,
+          lng: -74.1 + Math.random() * 0.2,
+          id_cliente: 1000 + index,
+          id_ruta: parseInt(ruta.id_ruta.split('-')[1]) || null,
+          id_barrio: Math.floor(Math.random() * 20) + 1,
+          cliente: {
+            id_cliente: 1000 + index,
+            nombre: ['Juan', 'María', 'Carlos', 'Ana', 'Luis', 'Sofia'][Math.floor(Math.random() * 6)],
+            apellido: ['García', 'Rodríguez', 'López', 'Martínez', 'González', 'Pérez'][Math.floor(Math.random() * 6)],
+            direccion: `Calle ${Math.floor(Math.random() * 100)} # ${Math.floor(Math.random() * 50)}-${Math.floor(Math.random() * 100)}`,
+            correo: `cliente${1000 + index}@ejemplo.com`,
+            telefono_movil: `300${Math.floor(Math.random() * 10000000)}`
+          }
+        }));
+
+        setPaquetesDeRuta(paquetesSimulados);
       } catch (error) {
-        console.error("Error al cargar paquetes:", error);
+        console.error("Error al generar paquetes:", error);
         setPaquetesDeRuta([]);
       } finally {
         setCargandoPaquetes(false);
@@ -50,15 +81,15 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     cargarPaquetesDeRuta();
   }, [isOpen, ruta]);
 
-  const getColorEstadoPaquete = (estado: string) => {
+  const getColorEstadoPaquete = (estado: PaquetesEstados) => {
     switch (estado) {
-      case "Entregado":
+      case PaquetesEstados.Entregado:
         return "success";
-      case "Fallido":
+      case PaquetesEstados.Fallido:
         return "error";
-      case "En Ruta":
+      case PaquetesEstados.EnRuta:
         return "primary";
-      case "Asignado":
+      case PaquetesEstados.Asignado:
         return "info";
       default:
         return "warning";
@@ -69,26 +100,34 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       {ruta && (
         <div className="p-6 max-w-4xl mx-auto">
-          {/* Header del modal */}
+          {/* Header del modal 
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Paquetes de la Ruta {ruta.id_ruta}
-            </h3>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Paquetes de la Ruta {ruta.id_ruta}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Estado: <Badge variant="light" color="info" size="sm">{ruta.estado}</Badge>
+              </p>
+            </div>
+            <Badge variant="light" color="warning" size="sm">
+              Datos Simulados
+            </Badge>
           </div>
 
-          {/* Mini sección total de paquetes */}
+          {/* Mini sección total de paquetes 
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mb-6">
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total de Paquetes:
+                Total de Paquetes Asignados:
               </span>
               <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                {ruta.paquetes_asignados.length}
+                {ruta.paquetes_asignados?.length || 0}
               </span>
             </div>
           </div>
 
-          {/* Lista de paquetes asignados */}
+          {/* Lista de paquetes asignados *
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <svg
@@ -111,7 +150,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
               <div className="flex justify-center items-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 <span className="ml-2 text-gray-600 dark:text-gray-400">
-                  Cargando paquetes...
+                  Generando paquetes...
                 </span>
               </div>
             ) : paquetesDeRuta.length === 0 ? (
@@ -138,12 +177,19 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                 {paquetesDeRuta.map((paquete) => (
                   <div
                     key={paquete.id_paquete}
-                    className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4"
+                    className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {paquete.id_paquete}
-                      </span>
+                      <div>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          #{paquete.id_paquete}
+                        </span>
+                        {paquete.codigo_rastreo && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {paquete.codigo_rastreo}
+                          </p>
+                        )}
+                      </div>
                       <Badge
                         variant="light"
                         size="sm"
@@ -154,40 +200,61 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                     </div>
 
                     <div className="space-y-2">
+                      {paquete.cliente && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              Destinatario:
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
+                              {paquete.cliente.nombre} {paquete.cliente.apellido}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              Teléfono:
+                            </span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-white">
+                              {paquete.cliente.telefono_movil}
+                            </span>
+                          </div>
+                        </>
+                      )}
+
                       <div className="flex justify-between">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Destinatario:
+                          Tipo:
                         </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
-                          {paquete.destinatario.nombre}{" "}
-                          {paquete.destinatario.apellido}
+                        <Badge variant="light" size="sm">
+                          {paquete.tipo_paquete}
+                        </Badge>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                          Peso:
+                        </span>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">
+                          {paquete.dimensiones.peso} kg
                         </span>
                       </div>
 
                       <div className="flex justify-between">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Teléfono:
+                          Valor:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.destinatario.telefono}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Cantidad:
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.cantidad}
+                          ${paquete.valor_declarado.toLocaleString()}
                         </span>
                       </div>
 
                       <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Dirección:
+                          Dirección de entrega:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
-                          {paquete.destinatario.direccion}
+                          {paquete.direccion_entrega || paquete.cliente?.direccion || 'No especificada'}
                         </p>
                       </div>
                     </div>
@@ -200,4 +267,4 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
       )}
     </Modal>
   );
-};
+};*/

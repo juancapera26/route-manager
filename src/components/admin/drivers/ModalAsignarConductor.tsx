@@ -1,4 +1,4 @@
-import { Ruta } from "../../../global/types";
+/*import { Ruta } from "../../../global/types";
 
 interface Props {
   routes: Ruta[];
@@ -48,4 +48,4 @@ export default function AssignRouteModal({ routes, onAssign, onClose }: Props) {
       </div>
     </div>
   );
-}
+}*/

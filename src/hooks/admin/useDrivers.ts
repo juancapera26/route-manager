@@ -1,7 +1,7 @@
 // =============================================
 // useDrivers - Hook para gestión de conductores
 // =============================================
-
+/*
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { api } from "../../global/apis";
 import {
@@ -330,18 +330,18 @@ export const useDrivers = (config: UseDriversConfig = {}): UseDriversReturn => {
 
 // ===================== HOOKS ESPECÍFICOS =====================
 
-/**
- * Hook específico para obtener solo conductores disponibles
- * Útil en modales de asignación de rutas
- */
+
+ // Hook específico para obtener solo conductores disponibles
+ // Útil en modales de asignación de rutas
+ 
 export const useDriversDisponibles = () => {
   return useDrivers({ estado: ConductorEstado.Disponible });
 };
 
-/**
- * Hook específico para monitoreo de conductores en ruta
- * Útil para dashboards de seguimiento
- */
+
+ //Hook específico para monitoreo de conductores en ruta
+ // Útil para dashboards de seguimiento
+ 
 export const useDriversEnRuta = () => {
   return useDrivers({
     estado: ConductorEstado.EnRuta,
@@ -349,10 +349,10 @@ export const useDriversEnRuta = () => {
   });
 };
 
-/**
- * Hook específico solo para operaciones de asignación
- * Más ligero para componentes que solo asignan rutas
- */
+
+ //Hook específico solo para operaciones de asignación
+ // Más ligero para componentes que solo asignan rutas
+ 
 export const useDriverAssignment = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -404,10 +404,10 @@ export const useDriverAssignment = () => {
   };
 };
 
-/**
- * Hook para obtener estadísticas de conductores
- * Útil para dashboards y reportes
- */
+
+ //Hook para obtener estadísticas de conductores
+ // Útil para dashboards y reportes
+ 
 export const useDriversStats = () => {
   const {
     conductoresDisponibles,
@@ -449,4 +449,4 @@ export const useDriversStats = () => {
 };
 
 // ===================== EXPORT DEFAULT =====================
-export default useDrivers;
+export default useDrivers;*/

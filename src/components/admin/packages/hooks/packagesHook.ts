@@ -1,70 +1,39 @@
 // src/components/admin/packages/hooks/packagesHook.ts
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { Paquete, PaquetesEstados, Ruta } from "../../../../global/types";
-import { usePaquetes } from "../../../../hooks/admin/usePackages";
-import { useRutas } from "../../../../hooks/admin/useRoutes";
-import {
-  PAQUETES_COLUMNS,
-  createPaqueteAction,
-  PaquetesColumnKey,
-  PaquetesActionKey,
-  PaquetesActionCallbacks,
-} from "../TablaPaquetes";
-import type { ColumnDef, ActionButton } from "../../../../components/ui/table/DataTable";
+import { usePackages } from "../../../../hooks/admin/usePackages"; 
+import { Paquete, PaquetesEstados } from "../../../../global/types/paquete.types";
+import {PAQUETES_COLUMNS,createPaqueteAction,PaquetesColumnKey,PaquetesActionKey,PaquetesActionCallbacks,} from "../TablaPaquetes";
+import type {ColumnDef,ActionButton,} from "../../../../components/ui/table/DataTable";
 import { useEstadoFilter } from "../../../../hooks/useEstadoFilter";
-import { opcionesFiltorPaquetes, obtenerEstadoPaquete } from "../../../../global/config/filterConfigs";
+import {opcionesFiltorPaquetes,obtenerEstadoPaquete,} from "../../../../global/config/filterConfigs";
+import { toast } from "sonner";
 
 export function usePackagesManagementHook() {
   const navigate = useNavigate();
-  
-  // Filtro de estado
+
+  // 🔹 Filtro por estado de paquete
   const filtroEstado = useEstadoFilter({
     opciones: opcionesFiltorPaquetes,
     valorInicial: null,
     obtenerEstado: obtenerEstadoPaquete,
   });
 
-  // Hook central de datos de paquetes
-  const {
-    data,
+  // 🔹 Hook de paquetes (datos y operaciones CRUD)
+    const {
+    packages: data,              // ← renombrar packages a data
     loading,
     error,
-    refetch,
-    paquetesPendientes,
-    paquetesAsignados,
-    paquetesEnRuta,
-    paquetesEntregados,
-    paquetesFallidos,
-    createPaquete,
-    updatePaquete,
-    deletePaquete,
-    assignPaquete,
-    cancelAssignment,
-    reassignPaquete,
-    markEnRuta,
-    markEntregado,
-    markFallido,
-    updateFilters,
-    clearError,
-  } = usePaquetes({
-    estado: "all",
-    autoFetch: true,
-  });
+    fetchPackages: refetch,      // ← renombrar fetchPackages a refetch
+    createPackage: createPaquete, // ← renombrar createPackage a createPaquete
+    updatePackage: updatePaquete, // ← renombrar updatePackage a updatePaquete
+    deletePackage: deletePaquete, // ← renombrar deletePackage a deletePaquete
+  } = usePackages();
+   // Constante de clearError la quite de UsePackages ya que estaba generando error 
+  const clearError = useCallback(() => {
+}, []);
 
-  // Hook de rutas para el modal de asignación
-  const { 
-    rutasPendientes, 
-    rutasAsignadas,
-    loading: rutasLoading,
-    error: rutasError,
-    refetch: refetchRutas,
-  } = useRutas({
-    estado: 'all',
-    autoFetch: true,
-  });
-
-  // Estado local para modals/alerts
+  // 🔹 Estado de alertas
   const [alertState, setAlertState] = useState<{
     show: boolean;
     msg?: string;
@@ -79,209 +48,56 @@ export function usePackagesManagementHook() {
     []
   );
 
-  // Efecto para mostrar errores de la API
+  // 🔹 Mostrar errores del backend automáticamente
   useEffect(() => {
     if (error) {
-      console.log('Error detectado del API paquetes:', error);
+      console.error("❌ Error del backend:", error);
       showAlert(error, "error");
-      setTimeout(() => {
-        console.log('Limpiando error automáticamente');
-        clearError();
-      }, 4500);
+      setTimeout(() => clearError(), 4000);
     }
   }, [error, showAlert, clearError]);
 
-  // Estado para modal de asignación de rutas
-  const [modalAsignacionState, setModalAsignacionState] = useState<{
-    isOpen: boolean;
-    paqueteId: string | null;
-    action: 'assign' | 'reassign' | null;
-  }>({
-    isOpen: false,
-    paqueteId: null,
-    action: null,
-  });
-
-  // Estado para modal de detalles
-  const [modalDetallesState, setModalDetallesState] = useState<{
-    isOpen: boolean;
+  // 🔹 Modal de detalles
+  const [modalDetalles, setModalDetalles] = useState<{
+    open: boolean;
     paquete: Paquete | null;
-  }>({
-    isOpen: false,
-    paquete: null,
-  });
+  }>({ open: false, paquete: null });
 
-  // NUEVO: Estado para modal de edición
-  const [modalEdicionState, setModalEdicionState] = useState<{
-    isOpen: boolean;
-    paquete: Paquete | null;
-    isLoading: boolean;
-  }>({
-    isOpen: false,
-    paquete: null,
-    isLoading: false,
-  });
-
-  // Funciones para manejar modal de asignación
-  const abrirModalAsignacion = useCallback((paqueteId: string, action: 'assign' | 'reassign') => {
-    console.log('Abriendo modal de asignación:', { paqueteId, action });
-    setModalAsignacionState({
-      isOpen: true,
-      paqueteId,
-      action,
-    });
-    refetchRutas();
-  }, [refetchRutas]);
-
-  const cerrarModalAsignacion = useCallback(() => {
-    console.log('Cerrando modal de asignación');
-    setModalAsignacionState({
-      isOpen: false,
-      paqueteId: null,
-      action: null,
-    });
+  const abrirDetalles = useCallback((paquete: Paquete) => {
+    setModalDetalles({ open: true, paquete });
   }, []);
 
-  // Lógica para obtener rutas disponibles para asignación
-  const rutasDisponiblesParaAsignacion = useMemo(() => {
-    const rutasConConductor = rutasAsignadas.filter(ruta => 
-      ruta.id_conductor_asignado && ruta.paquetes_asignados.length < 10
-    );
-    
-    return [...rutasPendientes, ...rutasConConductor]
-      .sort((a, b) => {
-        if (a.id_conductor_asignado && !b.id_conductor_asignado) return -1;
-        if (!a.id_conductor_asignado && b.id_conductor_asignado) return 1;
-        return 0;
-      });
-  }, [rutasPendientes, rutasAsignadas]);
+  const cerrarDetalles = useCallback(() => {
+    setModalDetalles({ open: false, paquete: null });
+  }, []);
 
-  // Handler para confirmar asignación de ruta
-  const handleConfirmarAsignacionRuta = useCallback(
-    async (rutaId: string) => {
-      if (!modalAsignacionState.paqueteId) {
-        showAlert("No hay paquete seleccionado para asignar", "warning");
-        return false;
+  // 🔹 Modal de edición
+  const [modalEdicion, setModalEdicion] = useState<{
+    open: boolean;
+    paquete: Paquete | null;
+    loading: boolean;
+  }>({ open: false, paquete: null, loading: false });
+
+  const abrirEdicion = useCallback(
+    (paquete: Paquete) => {
+      if (![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(paquete.estado)) {
+        showAlert("Solo se pueden editar paquetes Pendientes o Fallidos", "warning");
+        return;
       }
-
-      console.log('🎯 Confirmando asignación:', {
-        paqueteId: modalAsignacionState.paqueteId,
-        rutaId,
-        action: modalAsignacionState.action,
-      });
-
-      const ok = modalAsignacionState.action === "assign"
-        ? await assignPaquete(modalAsignacionState.paqueteId, rutaId)
-        : await reassignPaquete(modalAsignacionState.paqueteId, rutaId);
-
-      if (ok) {
-        showAlert(
-          modalAsignacionState.action === "assign"
-            ? "Paquete asignado a ruta correctamente"
-            : "Paquete reasignado a ruta correctamente",
-          "success"
-        );
-        await Promise.all([refetch(), refetchRutas()]);
-        cerrarModalAsignacion();
-      }
-      return ok;
+      setModalEdicion({ open: true, paquete, loading: false });
     },
-    [
-      modalAsignacionState,
-      assignPaquete,
-      reassignPaquete,
-      refetch,
-      refetchRutas,
-      showAlert,
-      cerrarModalAsignacion,
-    ]
+    [showAlert]
   );
 
-  // Funciones para modal de detalles
-  const abrirModalDetalles = useCallback((paquete: Paquete) => {
-    console.log('🔍 Abriendo modal de detalles para:', paquete.id_paquete);
-    setModalDetallesState({
-      isOpen: true,
-      paquete: paquete,
-    });
+  const cerrarEdicion = useCallback(() => {
+    setModalEdicion({ open: false, paquete: null, loading: false });
   }, []);
 
-  const cerrarModalDetalles = useCallback(() => {
-    console.log('❌ Cerrando modal de detalles');
-    setModalDetallesState({
-      isOpen: false,
-      paquete: null,
-    });
-  }, []);
-
-  // NUEVO: Funciones para modal de edición
-  const abrirModalEdicion = useCallback((paquete: Paquete) => {
-    console.log('✏️ Abriendo modal de edición para:', paquete.id_paquete);
-    
-    // Verificar que el paquete puede ser editado (solo pendientes y fallidos)
-    if (![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(paquete.estado)) {
-      showAlert("Solo se pueden editar paquetes en estado Pendiente o Fallido", "warning");
-      return;
-    }
-
-    setModalEdicionState({
-      isOpen: true,
-      paquete: paquete,
-      isLoading: false,
-    });
-  }, [showAlert]);
-
-  const cerrarModalEdicion = useCallback(() => {
-    console.log('❌ Cerrando modal de edición');
-    setModalEdicionState({
-      isOpen: false,
-      paquete: null,
-      isLoading: false,
-    });
-  }, []);
-
-  const handleUpdatePaqueteFromModal = useCallback(
-    async (id: string, payload: Partial<Paquete>) => {
-      console.log('📝 Iniciando actualización de paquete:', { id, payload });
-      
-      // Activar estado de carga
-      setModalEdicionState(prev => ({
-        ...prev,
-        isLoading: true,
-      }));
-
-      try {
-        const success = await updatePaquete(id, payload);
-        
-        if (success) {
-          console.log('✅ Paquete actualizado exitosamente');
-          showAlert("Paquete actualizado exitosamente", "success");
-          await refetch(); // Recargar datos
-        } else {
-          console.log('❌ Error al actualizar paquete');
-          showAlert("Error al actualizar el paquete", "error");
-        }
-
-        return success;
-      } catch (error) {
-        console.error('❌ Excepción al actualizar paquete:', error);
-        showAlert("Error inesperado al actualizar el paquete", "error");
-        return false;
-      } finally {
-        // Desactivar estado de carga
-        setModalEdicionState(prev => ({
-          ...prev,
-          isLoading: false,
-        }));
-      }
-    },
-    [updatePaquete, refetch, showAlert]
-  );
-
-  // Handlers de operaciones existentes
+  // 🔹 Handlers CRUD 
+  //Debo buscar cual es el tipo verdadero de payload--mientras es un any
   const handleCreatePaquete = useCallback(
-    async (payload: Parameters<typeof createPaquete>[0]) => {
-      const ok = await createPaquete(payload as any);
+    async (payload: any) => {
+      const ok = await createPaquete(payload);
       if (ok) {
         showAlert("Paquete creado correctamente", "success");
         await refetch();
@@ -290,10 +106,11 @@ export function usePackagesManagementHook() {
     },
     [createPaquete, refetch, showAlert]
   );
-
+  
+  //Debo buscar cual es el tipo verdadero de payload--mientras es un any
   const handleUpdatePaquete = useCallback(
-    async (id: string, changes: Partial<Paquete>) => {
-      const ok = await updatePaquete(id, changes);
+    async (id: number, payload: any) => {
+      const ok = await updatePaquete(id, payload);
       if (ok) {
         showAlert("Paquete actualizado correctamente", "success");
         await refetch();
@@ -304,136 +121,134 @@ export function usePackagesManagementHook() {
   );
 
   const handleDeletePaquete = useCallback(
-    async (id: string) => {
-      console.log('🗑️ Iniciando eliminación del paquete:', id);
+    async (id: number) => {
       const ok = await deletePaquete(id);
-      console.log('🗑️ Resultado de eliminación:', ok);
       if (ok) {
-        showAlert("Paquete eliminado correctamente", "success");
         await refetch();
       }
       return ok;
     },
-    [deletePaquete, refetch, showAlert]
+    [deletePaquete, refetch]
   );
 
-  const handleCancelAssignment = useCallback(
-    async (paqueteId: string) => {
-      const p = data.find((d) => d.id_paquete === paqueteId);
-      if (!p || !p.id_rutas_asignadas?.length) {
-        showAlert("No hay ruta asignada para cancelar", "warning");
-        return false;
+  // ✅ NUEVO: Handler para eliminar con confirmación
+  const handleDeleteWithConfirmation = useCallback(
+    async (paquete: Paquete) => {
+      const confirmar = window.confirm(
+        `¿Estás seguro de que deseas eliminar el paquete #${paquete.id_paquete}?Esta acción no se puede deshacer.`
+      );
+
+      if (confirmar) {
+        const success = await handleDeletePaquete(paquete.id_paquete);
+        if (success) {
+          toast.success("Paquete eliminado exitosamente");
+        }
       }
-      const ok = await cancelAssignment(paqueteId, p.id_rutas_asignadas[0]);
-      if (ok) {
-        showAlert("Asignación cancelada correctamente", "success");
-        await Promise.all([refetch(), refetchRutas()]);
-      }
-      return ok;
     },
-    [data, cancelAssignment, refetch, refetchRutas, showAlert]
+    [handleDeletePaquete]
   );
 
-  const handleMarkEnRuta = useCallback(
-    async (id: string) => {
-      const ok = await markEnRuta(id);
-      if (ok) {
-        showAlert("Paquete marcado como en ruta", "success");
-        await refetch();
-      }
-      return ok;
+  const handleUpdateFromModal = useCallback(
+    async (id: number, payload: Partial<Paquete>) => {
+      setModalEdicion((prev) => ({ ...prev, loading: true }));
+      const success = await handleUpdatePaquete(id, payload);
+      setModalEdicion({ open: false, paquete: null, loading: false });
+      return !!success;//Esto me retorna un booleano
     },
-    [markEnRuta, refetch, showAlert]
-  );
-
-  const handleMarkEntregado = useCallback(
-    async (id: string) => {
-      const ok = await markEntregado(id);
-      if (ok) {
-        showAlert("Paquete marcado como entregado", "success");
-        await refetch();
-      }
-      return ok;
-    },
-    [markEntregado, refetch, showAlert]
-  );
-
-  const handleMarkFallido = useCallback(
-    async (id: string) => {
-      const ok = await markFallido(id);
-      if (ok) {
-        showAlert("Paquete marcado como fallido", "success");
-        await refetch();
-      }
-      return ok;
-    },
-    [markFallido, refetch, showAlert]
+    [handleUpdatePaquete]
   );
 
   const handleTrack = useCallback(
-    (id: string) => {
-      navigate(`/admin/monitoreo/${id}`);
-    },
+    (id: number) => navigate(`/admin/monitoreo/${id}`),
     [navigate]
   );
 
-  // Action callbacks ACTUALIZADOS con el nuevo modal de edición
+  // 🔹 Callbacks stub para acciones futuras (AGREGAR ANTES DE actionCallbacks)
+const handleAssign = useCallback(
+  (paquete: Paquete) => {
+    showAlert("Función de asignación pendiente", "info");
+  },
+  [showAlert]
+);
+
+const handleCancelAssignment = useCallback(
+  (paquete: Paquete) => {
+    showAlert("Función de cancelar asignación pendiente", "info");
+  },
+  [showAlert]
+);
+
+const handleReassign = useCallback(
+  (paquete: Paquete) => {
+    showAlert("Función de reasignar pendiente", "info");
+  },
+  [showAlert]
+);
+
+const handleMarkEnRuta = useCallback(
+  async (paquete: Paquete) => {
+    const ok = await handleUpdatePaquete(paquete.id_paquete, {
+      estado: PaquetesEstados.EnRuta,
+    } as any); // ← Agregar 'as any' temporalmente
+    if (ok) {
+      showAlert("Paquete marcado como En Ruta", "success");
+    }
+  },
+  [handleUpdatePaquete, showAlert]
+);
+
+const handleMarkEntregado = useCallback(
+  async (paquete: Paquete) => {
+    const ok = await handleUpdatePaquete(paquete.id_paquete, {
+      estado: PaquetesEstados.Entregado,
+      fecha_entrega: new Date().toISOString(),
+    } as any); // ← Agregar 'as any' temporalmente
+    if (ok) {
+      showAlert("Paquete marcado como Entregado", "success");
+    }
+  },
+  [handleUpdatePaquete, showAlert]
+);
+
+const handleMarkFallido = useCallback(
+  async (paquete: Paquete) => {
+    const ok = await handleUpdatePaquete(paquete.id_paquete, {
+      estado: PaquetesEstados.Fallido,
+    } as any); // ← Agregar 'as any' temporalmente
+    if (ok) {
+      showAlert("Paquete marcado como Fallido", "success");
+    }
+  },
+  [handleUpdatePaquete, showAlert]
+);
+
+  // 🔹 Acciones de la tabla
   const actionCallbacks: PaquetesActionCallbacks = useMemo(
     () => ({
-      onView: (paquete: Paquete) => {
-        abrirModalDetalles(paquete);
-      },
-      // ACTUALIZADO: Usa el nuevo modal de edición
-      onEdit: (paquete: Paquete) => {
-        abrirModalEdicion(paquete);
-      },
-      onDelete: (p: Paquete) => {
-        void handleDeletePaquete(p.id_paquete);
-      },
-      onAssign: (p: Paquete) => {
-        abrirModalAsignacion(p.id_paquete, "assign");
-      },
-      onCancelAssignment: (p: Paquete) => {
-        void handleCancelAssignment(p.id_paquete);
-      },
-      onReassign: (p: Paquete) => {
-        abrirModalAsignacion(p.id_paquete, "reassign");
-      },
-      onMarkEnRuta: (p: Paquete) => {
-        void handleMarkEnRuta(p.id_paquete);
-      },
-      onMarkEntregado: (p: Paquete) => {
-        void handleMarkEntregado(p.id_paquete);
-      },
-      onMarkFallido: (p: Paquete) => {
-        void handleMarkFallido(p.id_paquete);
-      },
-      onDownloadLabel: (p: Paquete) => {
-        showAlert("Descarga de etiqueta no implementada", "info");
-      },
-      onTrack: (p: Paquete) => {
-        handleTrack(p.id_paquete);
-      },
+      onView: abrirDetalles,
+      onEdit: abrirEdicion,
+      onDelete: handleDeleteWithConfirmation, // ✅ CAMBIADO: Ahora usa confirmación
+      onTrack: (p: Paquete) => handleTrack(p.id_paquete),
+      onDownloadLabel: () =>
+      showAlert("Descarga de etiqueta no implementada", "info"),
+      onAssign: handleAssign,
+      onCancelAssignment: handleCancelAssignment,
+      onReassign: handleReassign,
+      onMarkEnRuta: handleMarkEnRuta,
+      onMarkEntregado: handleMarkEntregado,
+      onMarkFallido: handleMarkFallido,
     }),
-    [
-      abrirModalDetalles,
-      abrirModalEdicion, // NUEVO
-      handleDeletePaquete,
-      abrirModalAsignacion,
-      handleCancelAssignment,
-      handleMarkEnRuta,
-      handleMarkEntregado,
-      handleMarkFallido,
-      handleTrack,
-      showAlert,
-    ]
+    [abrirDetalles, abrirEdicion, handleDeleteWithConfirmation, handleTrack, showAlert, handleAssign, handleCancelAssignment, handleReassign, handleMarkEnRuta, handleMarkEntregado, handleMarkFallido]
   );
 
-  // Columnas y acciones (sin cambios)
+  const getActionsForEstado = useCallback((estado: PaquetesEstados): ActionButton<Paquete>[] => {
+  const keys = ACTIONS_BY_ESTADO[estado];
+  return keys.map((k) => createPaqueteAction(k, actionCallbacks));
+}, [actionCallbacks]);
+
+  // 🔹 Columnas y acciones
   const COLUMNS_FOR_ALL_STATES: PaquetesColumnKey[] = [
     "id_paquete",
-    "conductor_nombre",
-    "ruta_asignada",
     "destinatario",
     "fecha_registro",
     "fecha_entrega",
@@ -441,35 +256,12 @@ export function usePackagesManagementHook() {
   ];
 
   const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
-    [PaquetesEstados.Pendiente]: ["view", "edit", "delete", "assign"],
-    [PaquetesEstados.Asignado]: [
-      "view",
-      "cancel_assignment",
-      "mark_en_ruta",
-      "mark_fallido",
-    ],
-    [PaquetesEstados.EnRuta]: [
-      "view",
-      "mark_entregado",
-      "mark_fallido",
-      "track",
-    ],
+    [PaquetesEstados.Pendiente]: ["view", "edit", "delete"],
+    [PaquetesEstados.EnRuta]: ["view", "track"],
     [PaquetesEstados.Entregado]: ["view", "track"],
-    [PaquetesEstados.Fallido]: ["view", "edit", "delete", "reassign"],
+    [PaquetesEstados.Fallido]: ["view", "edit", "delete"],
+    [PaquetesEstados.Asignado]: ["view"], // Temporal, ya que rutas no aplica
   };
-
-  const ALL_POSSIBLE_ACTIONS: PaquetesActionKey[] = [
-    "view",
-    "edit",
-    "delete",
-    "assign",
-    "cancel_assignment",
-    "reassign",
-    "mark_en_ruta",
-    "mark_entregado",
-    "mark_fallido",
-    "track",
-  ];
 
   const columnsForCurrentState: ColumnDef<Paquete>[] = useMemo(
     () => COLUMNS_FOR_ALL_STATES.map((k) => PAQUETES_COLUMNS[k]),
@@ -477,92 +269,40 @@ export function usePackagesManagementHook() {
   );
 
   const actionsForCurrentState: ActionButton<Paquete>[] = useMemo(() => {
-    let keys: PaquetesActionKey[];
-    if (filtroEstado.estadoSeleccionado === null) {
-      keys = ALL_POSSIBLE_ACTIONS;
-    } else {
-      keys =
-        ACTIONS_BY_ESTADO[filtroEstado.estadoSeleccionado] ??
-        ACTIONS_BY_ESTADO[PaquetesEstados.Pendiente];
-    }
+    const estado: PaquetesEstados = filtroEstado.estadoSeleccionado ?? PaquetesEstados.Pendiente;
+    const keys = ACTIONS_BY_ESTADO[estado];
     return keys.map((k) => createPaqueteAction(k, actionCallbacks));
   }, [filtroEstado.estadoSeleccionado, actionCallbacks]);
 
-  // Filtrado local
+  // 🔹 Filtrado por estado
   const datosFiltrados = useMemo(() => {
-    if (!filtroEstado.estadoSeleccionado) {
-      return data;
-    }
-    return data.filter(
-      (paquete) => paquete.estado === filtroEstado.estadoSeleccionado
-    );
+    if (!filtroEstado.estadoSeleccionado) return data;
+    return data.filter((p) => p.estado === filtroEstado.estadoSeleccionado);
   }, [data, filtroEstado.estadoSeleccionado]);
 
-  // Contadores
-  const contadores = useMemo(
-    () => ({
-      todos: data.length,
-      [PaquetesEstados.Pendiente]: paquetesPendientes.length,
-      [PaquetesEstados.Asignado]: paquetesAsignados.length,
-      [PaquetesEstados.EnRuta]: paquetesEnRuta.length,
-      [PaquetesEstados.Entregado]: paquetesEntregados.length,
-      [PaquetesEstados.Fallido]: paquetesFallidos.length,
-    }),
-    [
-      data,
-      paquetesPendientes,
-      paquetesAsignados,
-      paquetesEnRuta,
-      paquetesEntregados,
-      paquetesFallidos,
-    ]
-  );
-
-  // RETORNO ACTUALIZADO con nuevos estados y funciones
   return {
     data,
     datosFiltrados,
-    loading: loading || rutasLoading,
-    error,
-    refetch,
-    contadores,
+    loading,
+    alertState,
+    filtroEstado,
     columnsForCurrentState,
     actionsForCurrentState,
-    filtroEstado,
-    alertState,
-    
-    // Funciones de operaciones
+    getActionsForEstado,
+
+    // Modales
+    modalDetalles,
+    abrirDetalles,
+    cerrarDetalles,
+    modalEdicion,
+    abrirEdicion,
+    cerrarEdicion,
+    handleUpdateFromModal,
+
+    // Handlers CRUD
     handleCreatePaquete,
+    handleUpdatePaquete,
     handleDeletePaquete,
-    handleCancelAssignment,
-    handleMarkEnRuta,
-    handleMarkEntregado,
-    handleMarkFallido,
     handleTrack,
-    
-    // Listas filtradas
-    paquetesPendientes,
-    paquetesAsignados,
-    paquetesEnRuta,
-    paquetesEntregados,
-    paquetesFallidos,
-    
-    // Modal de detalles
-    modalDetallesState,
-    abrirModalDetalles,
-    cerrarModalDetalles,
-    
-    // Modal de asignación
-    modalAsignacionState,
-    rutasDisponiblesParaAsignacion,
-    abrirModalAsignacion,
-    cerrarModalAsignacion,
-    handleConfirmarAsignacionRuta,
-    
-    // NUEVO: Modal de edición
-    modalEdicionState,
-    abrirModalEdicion,
-    cerrarModalEdicion,
-    handleUpdatePaqueteFromModal,
   };
 }

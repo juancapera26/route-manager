@@ -1,4 +1,4 @@
-import React from "react";
+/*import React from "react";
 import { Ruta, RutaEstado, Conductor } from "../../../global/types"; // Ajusta la ruta relativa según tu estructura
 import {
   Table,
@@ -181,8 +181,8 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-center gap-2">
-                    {/* Iconos de referencia */}
-                    {/* Botón Ver detalles - siempre presente */}
+                    {/* Iconos de referencia */
+                    {/* Botón Ver detalles - siempre presente 
                     <button
                       onClick={() => onAbrirModal(ruta.id_ruta, "details")}
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -211,7 +211,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
 
                     {ruta.estado === RutaEstado.Pendiente && (
                       <>
-                        {/* Editar */}
+                        {/* Editar *
                         <button
                           onClick={() =>
                             onEditarRuta
@@ -238,7 +238,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                           </svg>
                         </button>
 
-                        {/* Eliminar */}
+                        {/* Eliminar *
                         <button
                           onClick={() => onEliminarRuta(ruta.id_ruta)}
                           className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
@@ -259,7 +259,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                           </svg>
                         </button>
 
-                        {/* Asignar un conductor */}
+                        {/* Asignar un conductor *
                         <button
                           onClick={() => onAbrirModal(ruta.id_ruta, "assign")}
                           className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10" // Usa un padding pequeño, como p-2, para un botón cuadrado de ícono
@@ -307,4 +307,4 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
   );
 };
 
-export default TablaRutas;
+export default TablaRutas;*/}
