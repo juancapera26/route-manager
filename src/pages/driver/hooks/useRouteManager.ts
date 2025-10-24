@@ -274,6 +274,5 @@ export const useRouteManager = (
     drawRoute,
     currentDestino,
     setSelectedPaquete,
-    rutaId,
   };
 };

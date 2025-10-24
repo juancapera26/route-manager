@@ -9,11 +9,7 @@ import { useDriverMap } from "./hooks/useDriverMap";
 import { useDriverSimulation } from "./hooks/useDriverSimulation";
 import { useRouteManager } from "./hooks/useRouteManager";
 
-interface MapDriverProps {
-  rutaId: number; 
-}
-
-export const MapDriver = ({ rutaId }: MapDriverProps) => {
+export const MapDriver = () => {
   const { location, getUserLocation, isLoaded, updateLocation } =
     useUserLocation();
   const { mapRef, userMarkerRef } = useDriverMap(location || undefined);
@@ -32,7 +28,7 @@ export const MapDriver = ({ rutaId }: MapDriverProps) => {
     routePath,
     currentDestino,
     setSelectedPaquete,
-  } = useRouteManager(mapRef, location, rutaId); // 🔹 Pasar rutaId
+  } = useRouteManager(mapRef, location,); // 🔹 Pasar rutaId
 
   const hasStartedRef = useRef(false);
   const [autoMode, setAutoMode] = useState(false);
