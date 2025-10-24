@@ -105,8 +105,8 @@ export default function FormDelivery({
         open={open}
         onClose={handleClose} // solo se cierra con X o Cancelar
         fullWidth
-        maxWidth="md"
-        PaperProps={{ style: { zIndex: 1350 } }}
+        maxWidth="sm"
+        PaperProps={{ style: { zIndex: 1350, maxHeight: "78vh", maxWidth: "60%" } }}
       >
         {/* 🔷 Encabezado */}
         <DialogTitle
@@ -116,7 +116,7 @@ export default function FormDelivery({
             alignItems: "center",
             bgcolor: "primary.dark",
             color: "white",
-            py: 1.5,
+            py: 1,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

@@ -1,12 +1,16 @@
 import { mapApiToPaquete } from "../../adapters/paquete.adapter";
-import {Paquete ,AsignarPaqueteDTO, PaqueteCreate, PaqueteUpdate } from "../../global/types/paquete.types";
+import {
+  Paquete,
+  AsignarPaqueteDTO,
+  PaqueteCreate,
+  PaqueteUpdate,
+} from "../../global/types/paquete.types";
 
 // API real del backend
 
 const API_URL = "http://localhost:3000/paquetes";
 
 export const PackagesService = {
-
   //CRUD BASICA
   async getAll(): Promise<Paquete[]> {
     const res = await fetch(API_URL);
@@ -23,7 +27,7 @@ export const PackagesService = {
   },
 
   async create(paquete: PaqueteCreate): Promise<Paquete> {
-    console.log('🚀 Enviando al backend:', paquete);
+    console.log("🚀 Enviando al backend:", paquete);
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -71,7 +75,36 @@ export const PackagesService = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado }),
     });
-    if (!res.ok) throw new Error(`Error al cambiar el estado del paquete ${id}`);
+    if (!res.ok)
+      throw new Error(`Error al cambiar el estado del paquete ${id}`);
+    const data = await res.json();
+    return mapApiToPaquete(data);
+  },
+  async registrarEntrega(
+    id: number,
+    estado_paquete: string,
+    observacion_entrega?: string,
+    imagen?: File
+  ): Promise<Paquete> {
+    const formData = new FormData();
+    formData.append("estado_paquete", estado_paquete);
+
+    if (observacion_entrega) {
+      formData.append("observacion_entrega", observacion_entrega);
+    }
+
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+
+    const res = await fetch(`${API_URL}/${id}/entrega`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok)
+      throw new Error(`Error al registrar la entrega del paquete ${id}`);
+
     const data = await res.json();
     return mapApiToPaquete(data);
   },

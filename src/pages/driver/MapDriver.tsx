@@ -9,12 +9,14 @@ import { useDriverMap } from "./hooks/useDriverMap";
 import { useDriverSimulation } from "./hooks/useDriverSimulation";
 import { useRouteManager } from "./hooks/useRouteManager";
 
-export const MapDriver = () => {
+interface MapDriverProps {
+  rutaId: number; 
+}
+
+export const MapDriver = ({ rutaId }: MapDriverProps) => {
   const { location, getUserLocation, isLoaded, updateLocation } =
     useUserLocation();
-
   const { mapRef, userMarkerRef } = useDriverMap(location || undefined);
-
   const { isSimulating, startSimulation, stopSimulation } = useDriverSimulation(
     mapRef,
     userMarkerRef,
@@ -29,18 +31,20 @@ export const MapDriver = () => {
     toDeliveryFormData,
     routePath,
     currentDestino,
-    setSelectedPaquete, 
-  } = useRouteManager(mapRef, location);
+    setSelectedPaquete,
+  } = useRouteManager(mapRef, location, rutaId); // 🔹 Pasar rutaId
 
   const hasStartedRef = useRef(false);
   const [autoMode, setAutoMode] = useState(false);
 
+  // Centrar mapa en la ubicación del conductor
   useEffect(() => {
     if (mapRef.current && location) {
       mapRef.current.setCenter(location);
     }
   }, [location, mapRef]);
 
+  // Iniciar simulación de la ruta
   const handleStartSimulation = () => {
     if (!routePath.length || isSimulating) return;
     hasStartedRef.current = true;
@@ -51,43 +55,39 @@ export const MapDriver = () => {
 
       if (currentDestino) {
         setSelectedPaquete(currentDestino);
+        setOpenForm(true);
       }
+    });
+  };
 
+  // Manejar el envío del formulario de entrega
+  const handleSubmitSuccess = async () => {
+    setOpenForm(false);
+
+    const { newPath, nextDestino } = await handleNextDestination(location!);
+
+    if (!newPath || !nextDestino) {
+      stopSimulation();
+      console.log("Todas las entregas completadas 🚚✅");
+      return;
+    }
+
+    setSelectedPaquete(nextDestino);
+
+    await startSimulation(newPath, async () => {
       setOpenForm(true);
     });
   };
 
-  const handleSubmitSuccess = async () => {
-    setOpenForm(false);
-
-    setTimeout(async () => {
-      const newPath = await handleNextDestination(location!); // devuelve path o null
-
-      if (newPath) {
-        startSimulation(newPath, async () => {
-          stopSimulation();
-
-          if (currentDestino) {
-            setSelectedPaquete(currentDestino);
-          }
-
-          setOpenForm(true);
-        });
-      } else {
-        stopSimulation();
-        console.log(" Todas las entregas completadas");
-      }
-    }, 1000);
-  };
-
-  // 🔄 Mostrar mientras carga mapa o ubicación
-  if (!isLoaded || !location)
+  if (!isLoaded || !location) {
     return <div>Cargando mapa y ubicación del conductor...</div>;
+  }
 
   return (
     <Box sx={{ position: "relative", width: "100%", height: "89vh" }}>
       <Box id="map" sx={{ width: "100%", height: "100%" }} />
 
+      {/* Controles */}
       <Box
         sx={{
           position: "absolute",
@@ -126,6 +126,7 @@ export const MapDriver = () => {
         )}
       </Box>
 
+      {/* Modal de entrega */}
       <FormDelivery
         open={openForm}
         onClose={() => setOpenForm(false)}

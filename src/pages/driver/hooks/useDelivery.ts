@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
-import { createDelivery } from "../../../global/services/deliveryService";
+import { PackagesService } from "../../../global/services/packageService";
 import { DeliveryFormData } from "../../../global/types/deliveries";
 
 type UseDeliveryParams = {
@@ -9,7 +9,6 @@ type UseDeliveryParams = {
   onClose?: () => void;
 };
 
-// 🔹 Tipo de resultado de la función de envío
 type SubmitResult = {
   ok: boolean;
   error?: string;
@@ -36,14 +35,12 @@ export function useDelivery({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 🔹 Cargar datos iniciales
   useEffect(() => {
     if (initial) {
       setFormData((prev) => ({ ...prev, ...initial }));
     }
   }, [initial]);
 
-  // 🔹 Manejar cambios de inputs
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -52,7 +49,6 @@ export function useDelivery({
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // 🔹 Manejar archivo (foto)
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setDeliveryPhoto(e.target.files[0]);
@@ -61,10 +57,8 @@ export function useDelivery({
     }
   };
 
-  // 🔹 Limpiar solo la foto
   const clearPhoto = () => setDeliveryPhoto(null);
 
-  // 🔹 Validación simple
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (formData.deliveryNotes.length > 350) {
@@ -74,32 +68,40 @@ export function useDelivery({
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔹 Confirmar entrega
   const handleConfirm = () => {
     if (validateForm()) setShowConfirmModal(true);
   };
 
-  // 🔹 Enviar entrega
+  // 🔹 Corrección: extraemos solo números del orderId
   const handleFinalSubmit = async (): Promise<SubmitResult> => {
     setShowConfirmModal(false);
     setLoading(true);
 
-    const result = await createDelivery(formData, deliveryPhoto);
+    try {
+      const packageId = Number(formData.orderId.replace(/\D/g, ""));
+      if (isNaN(packageId)) throw new Error("ID de paquete inválido");
 
-    setLoading(false);
+      await PackagesService.registrarEntrega(
+        packageId,
+        "Entregado",
+        formData.deliveryNotes,
+        deliveryPhoto || undefined
+      );
 
-    if (result.ok) {
+      setLoading(false);
       onSubmitSuccess?.();
       onClose?.();
-      // Limpiar campos editables
       setFormData((prev) => ({ ...prev, deliveryNotes: "" }));
       setDeliveryPhoto(null);
-    } else {
-      console.error("Error al crear entrega:", result.error);
-      setErrors({ ...errors, submit: result.error ?? "Error desconocido" });
-    }
 
-    return result;
+      return { ok: true };
+    } catch (err: unknown) {
+      setLoading(false);
+      console.error("Error al registrar entrega:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      setErrors({ ...errors, submit: message || "Error desconocido" });
+      return { ok: false, error: message };
+    }
   };
 
   return {

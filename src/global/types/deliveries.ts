@@ -1,3 +1,4 @@
+// src/global/types/deliveries.ts
 export interface DeliveryFormData {
   orderId: string;
   reference: string;
@@ -7,4 +8,14 @@ export interface DeliveryFormData {
   address: string;
   phone: string;
   deliveryNotes: string;
+}
+
+export interface DeliveryFormDatapa {
+  notaEntrega?: string;
+  codigo?: string;
+  referencia?: string;
+  contenido?: string;
+  valor?: number;
+  direccion?: string;
+  telefono?: string;
 }

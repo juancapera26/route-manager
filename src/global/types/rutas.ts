@@ -1,5 +1,6 @@
 // src/global/types/rutas.ts
 
+// ----------------- Rutas -----------------
 export interface Ruta {
   id_ruta: number;
   estado_ruta: RutaEstado;
@@ -24,7 +25,6 @@ export interface Ruta {
     estado_vehiculo: string;
   } | null;
 
-  // ✅ Array de paquetes asignados a la ruta
   paquete?: {
     id_paquete: number;
     codigo_rastreo?: string | null;
@@ -44,7 +44,7 @@ export interface Ruta {
   }[];
 }
 
-// 👇 Nuevo tipo para el formulario
+// ----------------- Formularios -----------------
 export interface RutaFormData {
   zona: ZonaRuta;
   horario: {
@@ -54,9 +54,26 @@ export interface RutaFormData {
   puntos_entrega: string;
 }
 
+// ----------------- DTO para crear ruta -----------------
+export interface CreateRutaDto {
+  ruta_estado?: RutaEstado; // opcional, backend usa "Pendiente" por defecto
+  fecha_inicio?: string; // ISO string
+  fecha_fin?: string; // ISO string opcional
+  id_conductor: number;
+  id_vehiculo: number;
+  cod_manifiesto?: string;
+}
+
+// ----------------- DTO para cambiar estado -----------------
+export interface CambiarEstadoRutaDto {
+  estado_ruta: RutaEstado;
+}
+
+// ----------------- Enums -----------------
 export enum RutaEstado {
   Pendiente = "Pendiente",
   Asignada = "Asignada",
+  En_ruta = "En_ruta",
   Completada = "Completada",
   Fallida = "Fallida",
 }
