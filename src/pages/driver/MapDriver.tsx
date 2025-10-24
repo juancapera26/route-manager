@@ -28,7 +28,7 @@ export const MapDriver = () => {
     routePath,
     currentDestino,
     setSelectedPaquete,
-  } = useRouteManager(mapRef, location,); // 🔹 Pasar rutaId
+  } = useRouteManager(mapRef, location,); 
 
   const hasStartedRef = useRef(false);
   const [autoMode, setAutoMode] = useState(false);
@@ -64,7 +64,7 @@ export const MapDriver = () => {
 
     if (!newPath || !nextDestino) {
       stopSimulation();
-      console.log("Todas las entregas completadas 🚚✅");
+      console.log("Todas las entregas completadas ");
       return;
     }
 

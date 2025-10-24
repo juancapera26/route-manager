@@ -63,14 +63,13 @@ export default function FormDelivery({
     "success"
   );
 
-  // 🔹 Cierra todo (solo al usar la X o Cancelar)
   const handleClose = () => {
     clearPhoto();
     setShowConfirmModal(false);
     onClose();
   };
 
-  // 🔹 Validación antes de confirmar
+  //  Validación antes de confirmar
   const handleFinalConfirm = async () => {
     if (!deliveryPhoto) {
       setSnackbarMsg("⚠️ Debes adjuntar una foto antes de confirmar.");
@@ -88,11 +87,11 @@ export default function FormDelivery({
       return;
     }
 
-    // Si todo está correcto → envía
+    // Si todo correcto → envía
     const success = await handleFinalSubmit();
     if (success) {
       handleClose();
-      setSnackbarMsg("✅ Paquete registrado como entregado");
+      setSnackbarMsg(" Paquete registrado como entregado");
       setSnackbarType("success");
       setOpenSnackbar(true);
       if (onSubmitSuccess) onSubmitSuccess();
@@ -103,12 +102,12 @@ export default function FormDelivery({
     <>
       <Dialog
         open={open}
-        onClose={handleClose} // solo se cierra con X o Cancelar
+        onClose={handleClose} 
         fullWidth
         maxWidth="sm"
         PaperProps={{ style: { zIndex: 1350, maxHeight: "78vh", maxWidth: "60%" } }}
       >
-        {/* 🔷 Encabezado */}
+        {/* Encabezado */}
         <DialogTitle
           sx={{
             display: "flex",
@@ -136,14 +135,13 @@ export default function FormDelivery({
                 fontWeight: "bold",
               }}
             />
-            {/* La X siempre cierra */}
             <IconButton onClick={handleClose} sx={{ color: "white" }}>
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
 
-        {/* 🔸 Contenido */}
+        {/*  Contenido */}
         <DialogContent dividers sx={{ p: 2 }}>
           <Box
             sx={{
@@ -153,7 +151,6 @@ export default function FormDelivery({
               minHeight: 450,
             }}
           >
-            {/* 🧾 Detalles del pedido */}
             <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
@@ -281,7 +278,7 @@ export default function FormDelivery({
               </Paper>
             </Box>
 
-            {/* 📷 Registro de entrega */}
+            {/* Registro de entrega */}
             <Box sx={{ flex: 1 }}>
               <Paper
                 elevation={0}
@@ -368,7 +365,6 @@ export default function FormDelivery({
                     )}
                   </Paper>
 
-                  {/* Notas */}
                   <Box
                     sx={{
                       flexGrow: 1,
@@ -424,7 +420,6 @@ export default function FormDelivery({
           </Box>
         </DialogContent>
 
-        {/* 🔘 Botones */}
         <DialogActions sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
           <Button onClick={handleClose} variant="outlined" color="inherit">
             Cancelar

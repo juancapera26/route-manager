@@ -3,13 +3,13 @@ import { Paquete } from "../../../hooks/useManifiestos";
 import { DeliveryFormData } from "../../../global/types/deliveries";
 import { createPaqueteIcon } from "../utils/mapIcons";
 import { ordenarPaquetesPorDistancia } from "../utils/paquetesUtils";
-import { cambiarEstadoRuta } from "../../../global/services/routeService"; // 🔹 Importar servicio
+import { cambiarEstadoRuta } from "../../../global/services/routeService";
 import { RutaEstado } from "../../../global/types/rutas";
 
 export const useRouteManager = (
   mapRef: React.MutableRefObject<google.maps.Map | null>,
   location?: google.maps.LatLngLiteral | null,
-  rutaId?: number // 🔹 Recibir el id de la ruta
+  rutaId?: number 
 ) => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
@@ -184,8 +184,7 @@ export const useRouteManager = (
     }
   }, [location?.lat, location?.lng, sortedPaquetes]);
 
-  // ⚡ Manejar siguiente destino y marcar ruta completa
-  // ⚡ Manejar siguiente destino y marcar ruta completa
+  //  Manejar siguiente destino y marcar ruta completa
   const handleNextDestination = async (
     currentLocation?: google.maps.LatLngLiteral
   ): Promise<{
@@ -195,11 +194,11 @@ export const useRouteManager = (
     if (!currentDestino || !sortedPaquetes.length || !currentLocation)
       return { newPath: null, nextDestino: null };
 
-    // 🔹 Quita el paquete actual de la lista
+    //  Quita el paquete actual de la lista
     const nuevos = sortedPaquetes.filter((p) => p !== currentDestino);
     setSortedPaquetes(nuevos);
 
-    // 🔹 Si ya no quedan más destinos, marcar la ruta como completada
+    //  Si ya no quedan más destinos, marcar la ruta como completada
     if (!nuevos.length) {
       setCurrentDestino(null);
       clearRoute();
@@ -213,19 +212,19 @@ export const useRouteManager = (
           await cambiarEstadoRuta(rutaId, {
             estado_ruta: RutaEstado.Completada,
           }).then((res) => {
-            console.log("✅ Respuesta backend cambio de estado:", res);
+            console.log("Respuesta backend cambio de estado:", res);
           });
 
-          console.log("Ruta marcada como completada ✅");
+          console.log("Ruta marcada como completada ");
         } catch (error) {
-          console.error("❌ Error al actualizar el estado de la ruta:", error);
+          console.error(" Error al actualizar el estado de la ruta:", error);
         }
       }
 
       return { newPath: null, nextDestino: null };
     }
 
-    // 🔹 Buscar el paquete más cercano siguiente
+    // Buscar el paquete más cercano siguiente
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
 
