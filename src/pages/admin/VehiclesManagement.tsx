@@ -22,7 +22,7 @@ const VehiclesManagement: React.FC = () => {
     loading,
     error,
     modalAgregarState,
-    modalDetallesState,
+
     modalEditarState,
     alertState,
     abrirModalAgregar,
@@ -159,37 +159,31 @@ const VehiclesManagement: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-            {/* Header */}     {" "}
+      {/* Header */}{" "}
       <div className="mb-8">
-               {" "}
+        {" "}
         <div className="flex items-center justify-between mb-4">
-                   {" "}
+          {" "}
           <div>
-                       {" "}
+            {" "}
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                            <Truck className="w-8 h-8 text-blue-500" />         
-                  Gestión de Vehículos            {" "}
-            </h1>
-                       {" "}
+              <Truck className="w-8 h-8 text-blue-500" />
+              Gestión de Vehículos{" "}
+            </h1>{" "}
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-                            Administra los vehículos de tu flota            {" "}
-            </p>
-                     {" "}
-          </div>
-                   {" "}
+              Administra los vehículos de tu flota{" "}
+            </p>{" "}
+          </div>{" "}
           <Button
             variant="primary"
             onClick={abrirModalAgregar}
             className="flex items-center gap-2"
           >
-                        <Plus className="w-5 h-5" />            Agregar Vehículo
-                     {" "}
-          </Button>
-                 {" "}
-        </div>
-             {" "}
+            <Plus className="w-5 h-5" /> Agregar Vehículo{" "}
+          </Button>{" "}
+        </div>{" "}
       </div>
-            {/* Alertas */}     {" "}
+      {/* Alertas */}{" "}
       {alertState.show && alertState.msg && (
         <Alert
           variant={alertState.type || "info"}
@@ -206,126 +200,105 @@ const VehiclesManagement: React.FC = () => {
           className="mb-6"
         />
       )}
-            {/* Estadísticas */}     {" "}
+      {/* Estadísticas */}{" "}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                {/* Total de vehículos */}       {" "}
+        {/* Total de vehículos */}{" "}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-6">
-                   {" "}
+          {" "}
           <div className="flex items-center justify-between">
-                       {" "}
+            {" "}
             <div>
-                           {" "}
+              {" "}
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Total Vehículos
-              </p>
-                           {" "}
+              </p>{" "}
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                                {vehiculos.length}             {" "}
-              </p>
-                         {" "}
-            </div>
-                       {" "}
+                {vehiculos.length}{" "}
+              </p>{" "}
+            </div>{" "}
             <div className="p-3 bg-blue-500/10 rounded-lg">
-                            <Truck className="w-6 h-6 text-blue-500" />         
-               {" "}
-            </div>
-                     {" "}
-          </div>
-                 {" "}
+              <Truck className="w-6 h-6 text-blue-500" />{" "}
+            </div>{" "}
+          </div>{" "}
         </div>
-                {/* Vehículos disponibles */}       {" "}
+        {/* Vehículos disponibles */}{" "}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-6">
-                   {" "}
+          {" "}
           <div className="flex items-center justify-between">
-                       {" "}
+            {" "}
             <div>
-                           {" "}
+              {" "}
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Disponibles
-              </p>
-                           {" "}
+              </p>{" "}
               <p className="text-2xl font-bold text-green-600 dark:text-green-500 mt-1">
-                                {vehiculosDisponibles.length}             {" "}
-              </p>
-                         {" "}
-            </div>
-                       {" "}
+                {vehiculosDisponibles.length}{" "}
+              </p>{" "}
+            </div>{" "}
             <div className="p-3 bg-green-500/10 rounded-lg">
-                           {" "}
+              {" "}
               <svg
                 className="w-6 h-6 text-green-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                               {" "}
+                {" "}
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M5 13l4 4L19 7"
-                />
-                             {" "}
-              </svg>
-                         {" "}
-            </div>
-                     {" "}
-          </div>
-                 {" "}
+                />{" "}
+              </svg>{" "}
+            </div>{" "}
+          </div>{" "}
         </div>
-                {/* Vehículos no disponibles */}       {" "}
+        {/* Vehículos no disponibles */}{" "}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-6">
-                   {" "}
+          {" "}
           <div className="flex items-center justify-between">
-                       {" "}
+            {" "}
             <div>
-                           {" "}
+              {" "}
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 No Disponibles
-              </p>
-                           {" "}
+              </p>{" "}
               <p className="text-2xl font-bold text-red-600 dark:text-red-500 mt-1">
-                                {vehiculosNoDisponibles.length}             {" "}
-              </p>
-                         {" "}
-            </div>
-                       {" "}
+                {vehiculosNoDisponibles.length}{" "}
+              </p>{" "}
+            </div>{" "}
             <div className="p-3 bg-red-500/10 rounded-lg">
-                           {" "}
+              {" "}
               <svg
                 className="w-6 h-6 text-red-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                               {" "}
+                {" "}
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12"
-                />
-                             {" "}
-              </svg>
-                         {" "}
-            </div>
-                     {" "}
-          </div>
-                 {" "}
+                />{" "}
+              </svg>{" "}
+            </div>{" "}
+          </div>{" "}
         </div>
-                {/* Tipo más común */}       {" "}
+        {/* Tipo más común */}{" "}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-6">
-                   {" "}
+          {" "}
           <div className="flex items-center justify-between">
-                       {" "}
+            {" "}
             <div>
-                           {" "}
+              {" "}
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Tipo más común
-              </p>
-                           {" "}
+              </p>{" "}
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                               {" "}
+                {" "}
                 {contadorPorTipo.moto >=
                 Math.max(
                   contadorPorTipo.camioneta,
@@ -338,52 +311,42 @@ const VehiclesManagement: React.FC = () => {
                   ? "Camioneta"
                   : contadorPorTipo.furgon >= contadorPorTipo.camion
                   ? "Furgón"
-                  : "Camión"}
-                             {" "}
-              </p>
-                         {" "}
-            </div>
-                       {" "}
+                  : "Camión"}{" "}
+              </p>{" "}
+            </div>{" "}
             <div className="p-3 bg-purple-500/10 rounded-lg">
-                            <Filter className="w-6 h-6 text-purple-500" />     
-                   {" "}
-            </div>
-                     {" "}
-          </div>
-                 {" "}
-        </div>
-             {" "}
+              <Filter className="w-6 h-6 text-purple-500" />{" "}
+            </div>{" "}
+          </div>{" "}
+        </div>{" "}
       </div>
-            {/* Filtros */}     {" "}
+      {/* Filtros */}{" "}
       <form
         className="bg-white dark:bg-gray-800 rounded-lg shadow-theme-sm border border-gray-200 dark:border-gray-700 p-4 mb-6" // Solución 1: Prevenir el envío de formulario para evitar recargas
         onSubmit={(e) => e.preventDefault()}
       >
-               {" "}
+        {" "}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {/* Búsqueda */}         {" "}
+          {/* Búsqueda */}{" "}
           <div>
-                       {" "}
+            {" "}
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Buscar            {" "}
-            </label>
-                       {" "}
+              Buscar{" "}
+            </label>{" "}
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Placa o ID..."
               className="w-full h-10 px-4 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            />
-                     {" "}
+            />{" "}
           </div>
-                    {/* Filtro por estado */}         {" "}
+          {/* Filtro por estado */}{" "}
           <div>
-                       {" "}
+            {" "}
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Estado            {" "}
-            </label>
-                       {" "}
+              Estado{" "}
+            </label>{" "}
             <select
               value={filtroEstado}
               onChange={(e) =>
@@ -391,23 +354,19 @@ const VehiclesManagement: React.FC = () => {
               }
               className="w-full h-10 px-4 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
-                            <option value="todos">Todos</option>             {" "}
-              <option value={EstadoVehiculo.Disponible}>Disponibles</option>   
-                       {" "}
+              <option value="todos">Todos</option>{" "}
+              <option value={EstadoVehiculo.Disponible}>Disponibles</option>{" "}
               <option value={EstadoVehiculo.No_Disponible}>
                 No Disponibles
-              </option>
-                         {" "}
-            </select>
-                     {" "}
+              </option>{" "}
+            </select>{" "}
           </div>
-                    {/* Filtro por tipo */}         {" "}
+          {/* Filtro por tipo */}{" "}
           <div>
-                       {" "}
+            {" "}
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Tipo            {" "}
-            </label>
-                       {" "}
+              Tipo{" "}
+            </label>{" "}
             <select
               value={filtroTipo}
               onChange={(e) =>
@@ -415,41 +374,35 @@ const VehiclesManagement: React.FC = () => {
               }
               className="w-full h-10 px-4 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
-                            <option value="todos">Todos</option>             {" "}
-              <option value={TipoVehiculo.Moto}>Moto</option>             {" "}
-              <option value={TipoVehiculo.Camioneta}>Camioneta</option>         
-                  <option value={TipoVehiculo.Furgon}>Furgón</option>           
-                <option value={TipoVehiculo.Camion}>Camión</option>           {" "}
-            </select>
-                     {" "}
+              <option value="todos">Todos</option>{" "}
+              <option value={TipoVehiculo.Moto}>Moto</option>{" "}
+              <option value={TipoVehiculo.Camioneta}>Camioneta</option>
+              <option value={TipoVehiculo.Furgon}>Furgón</option>
+              <option value={TipoVehiculo.Camion}>Camión</option>{" "}
+            </select>{" "}
           </div>
-                    {/* Botón limpiar filtros */}         {" "}
+          {/* Botón limpiar filtros */}{" "}
           <div className="flex items-end">
-                       {" "}
+            {" "}
             <Button
               variant="outline"
               onClick={limpiarFiltros}
               className="w-full"
             >
-                            Limpiar Filtros            {" "}
-            </Button>
-                     {" "}
-          </div>
-                 {" "}
+              Limpiar Filtros{" "}
+            </Button>{" "}
+          </div>{" "}
         </div>
-                {/* Indicador de resultados */}       {" "}
+        {/* Indicador de resultados */}{" "}
         <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                    Mostrando {vehiculosFiltrados.length} de {vehiculos.length}{" "}
-          vehículos        {" "}
-        </div>
-             {" "}
+          Mostrando {vehiculosFiltrados.length} de {vehiculos.length} vehículos{" "}
+        </div>{" "}
       </form>
-            {/* Tabla de vehículos */}     {" "}
+      {/* Tabla de vehículos */}{" "}
       {loading ? (
         <div className="flex justify-center items-center py-12">
-                   {" "}
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                 {" "}
+          {" "}
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>{" "}
         </div>
       ) : error ? (
         <Alert variant="error" title="Error" message={error} className="mb-6" />
@@ -462,29 +415,25 @@ const VehiclesManagement: React.FC = () => {
           onCambiarEstado={handleCambiarEstadoCompleto}
         />
       )}
-            {/* Modales */}
-           {" "}
+      {/* Modales */}{" "}
       <ModalAgregarVehiculo
         isOpen={modalAgregarState.isOpen}
         onClose={cerrarModalAgregar}
         onSuccess={handleCreateVehiculo}
         isLoading={modalAgregarState.isLoading}
-      />
-           {" "}
+      />{" "}
       <ModalDetallesVehiculo
         isOpen={modalDetallesLocal.isOpen}
         onClose={handleCerrarModalDetalles}
         vehiculo={modalDetallesLocal.vehiculo}
-      />
-           {" "}
+      />{" "}
       <ModalEditarVehiculo
         isOpen={modalEditarState.isOpen}
         onClose={cerrarModalEditar}
         onSuccess={handleUpdateVehiculo}
         vehiculo={modalEditarState.vehiculo}
         isLoading={modalEditarState.isLoading}
-      />
-         {" "}
+      />{" "}
     </div>
   );
 };

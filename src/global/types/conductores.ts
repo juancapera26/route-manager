@@ -24,6 +24,6 @@ export interface Conductor {
   vehiculo?: string;
   foto_perfil?: string;
   estado?: string;
-  empresa?: Empresa; // 👈 añadimos empresa aquí
+  empresa?: Empresa;
   nombre_empresa?: string;
 }

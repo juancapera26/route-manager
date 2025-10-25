@@ -26,7 +26,7 @@ const DriversManagement: React.FC = () => {
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [openViewModal, setOpenViewModal] = useState(false); // 👈 nuevo estado
+  const [openViewModal, setOpenViewModal] = useState(false);
 
   const {
     handleDeleteDriver,
@@ -72,7 +72,7 @@ const DriversManagement: React.FC = () => {
 
   const columns: ColumnDef<Conductor>[] = [
     { key: "id", header: "ID", accessor: "id" },
-    { key: "nombre", header: "Nombre", accessor: "nombre" },
+    { key: "nomre", header: "Nombre", accessor: "nombre" },
     { key: "apellido", header: "Apellido", accessor: "apellido" },
     { key: "correo", header: "Correo", accessor: "correo" },
     { key: "telefono", header: "Teléfono", accessor: "telefono" },
