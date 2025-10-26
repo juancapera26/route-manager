@@ -43,7 +43,7 @@ export function useManifiestos() {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/manifiestos/${codigo}`
+        `http://localhost:8080/api/manifiestos/${codigo}`
       );
       if (!res.ok) throw new Error("Manifiesto no encontrado");
 

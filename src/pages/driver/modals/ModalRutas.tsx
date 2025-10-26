@@ -54,7 +54,7 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/manifiestos/${codigo}`
+        `http://localhost:8080/api/manifiestos/${codigo}`
       );
       if (!response.ok) throw new Error("Error al consultar el manifiesto");
 

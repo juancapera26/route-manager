@@ -8,7 +8,7 @@ import {
 
 // API real del backend
 
-const API_URL = "http://localhost:3000/paquetes";
+const API_URL = "http://localhost:8080/paquetes";
 
 export const PackagesService = {
   //CRUD BASICA

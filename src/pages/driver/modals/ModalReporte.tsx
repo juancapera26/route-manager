@@ -76,7 +76,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
       if (!user) throw new Error("Usuario no autenticado");
       const idToken = await user.getIdToken();
 
-      const response = await fetch("http://localhost:3000/reportes/subir", {
+      const response = await fetch("http://localhost:8080/reportes/subir", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`, // enviar token
@@ -288,7 +288,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
                       <TableCell>
                         {r.imagen ? (
                           <img
-                            src={`http://localhost:3000/${r.imagen}`}
+                            src={`http://localhost:8080/${r.imagen}`}
                             alt="Evidencia"
                             width={80}
                           />
