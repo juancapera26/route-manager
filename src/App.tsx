@@ -28,10 +28,17 @@ import DeliveryHistory from "./pages/admin/DeliveryHistory";
 import RoutesManagement from "./pages/admin/RouteManagement";
 import Updates from "./pages/admin/Updates";
 
+
+
+
 // Páginas principales para el conductor:
 import AppLayout_home from "./pages/driver/layout_conductor/AppLayout_home";
 import DriverProfile from "./pages/profile/DriverProfile";
+
 import { MapDriver } from "./pages/driver/MapDriver";
+
+import { Driver } from "./pages/driver/Driver";
+import NovedadesPage from "./pages/admin/Novedad";
 
 function App() {
   return (
