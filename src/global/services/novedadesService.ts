@@ -1,10 +1,20 @@
+// src/modules/novedades/services/novedadService.ts
+import { Novedad } from "../types/novedades";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const novedadService = {
-    getAll: async () => {
-        const res = await fetch(`${API_URL}/reportes`);
-        if (!res.ok) throw new Error("Error al obtener las novedades");
-        return await res.json();
+  // Obtener todas las novedades
+  async getAll(): Promise<Novedad[]> {
+    const res = await fetch(`${API_URL}/reportes`, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Error al obtener novedades: ${text}`);
     }
+
+    return await res.json();
+  },
 };

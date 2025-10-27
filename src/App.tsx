@@ -67,7 +67,7 @@ function App() {
               element={<VehiclesManagement />}
             />
             <Route path="delivery-history" element={<DeliveryHistory />} />
-            <Route path="updates" element={<Updates />} />
+            <Route path="updates" element={<NovedadesPage />} />
           </Route>
         </Route>
 
