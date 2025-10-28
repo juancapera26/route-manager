@@ -23,7 +23,7 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/admin",
   },
-    {
+  {
     icon: <Inventory2 className="menu-item-icon-size fill-current" />,
     name: "Gestión de paquetes",
     path: "/admin/packages-management",
@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
     name: "Gestión de rutas",
     path: "/admin/routes-management",
   },
-    {
+  {
     icon: <LocalShipping className="menu-item-icon-size" />,
     name: "Gestión de vehículos",
     path: "/admin/vehicles-management",
@@ -51,7 +51,7 @@ const navItems: NavItem[] = [
   {
     icon: <Bell className="menu-item-icon-size fill-current" />,
     name: "Novedades",
-    path: "/admin/updates",
+    path: "/admin/novedades",
   },
 ];
 
@@ -59,7 +59,6 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const IconStudyImpetus = "/images/logo/logo.png";
   const IconResponsive = "/images/logo/logo_responsive.png";
-  
 
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-4">
@@ -110,7 +109,11 @@ const AppSidebar: React.FC = () => {
     >
       <div className="flex justify-center items-center bg-white dark:bg-gray-900">
         <img
-          src={isExpanded || isHovered || isMobileOpen ? IconStudyImpetus : IconResponsive}
+          src={
+            isExpanded || isHovered || isMobileOpen
+              ? IconStudyImpetus
+              : IconResponsive
+          }
           alt="Logo"
           className={`mt-5 mb-4 transition-all ${
             isExpanded || isHovered || isMobileOpen ? "h-16" : "h-10"
