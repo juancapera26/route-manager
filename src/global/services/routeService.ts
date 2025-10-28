@@ -2,7 +2,7 @@
 import axios from "axios";
 import { Ruta, CreateRutaDto, CambiarEstadoRutaDto } from "../types/rutas";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 console.log("🔧 API_URL configurada:", API_URL);
 

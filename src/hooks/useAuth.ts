@@ -53,7 +53,7 @@ const useAuth = () => {
           const token = await firebaseUser.getIdToken();
           console.log("ID Token:", token);
           const API_BASE_URL =
-            import.meta.env.VITE_API_URL || "http://localhost:3000";
+            import.meta.env.VITE_API_URL || "http://localhost:8080";
 
           const response = await fetch(`${API_BASE_URL}/auth/verify`, {
             method: "GET",
@@ -158,7 +158,7 @@ const useAuth = () => {
 
       const token = await userCredential.user.getIdToken();
       const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3000";
+        import.meta.env.VITE_API_URL || "http://localhost:8080";
 
       const response = await fetch(`${API_BASE_URL}/auth/verify`, {
         method: "GET",
@@ -231,7 +231,7 @@ const useAuth = () => {
       };
 
       const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3000";
+        import.meta.env.VITE_API_URL || "http://localhost:8080";
 
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",

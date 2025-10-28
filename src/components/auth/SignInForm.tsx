@@ -33,7 +33,7 @@ export default function SignInForm() {
 
       const timer = setTimeout(() => {
         setSuccessMessage("");
-      }, 3000);
+      }, 8080);
 
       return () => clearTimeout(timer); // limpiar timeout si el compo se desmonta
     }
