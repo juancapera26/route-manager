@@ -9,7 +9,7 @@ import {
   TableCell,
 } from "../../ui/table";
 import Badge from "../../ui/badge/Badge";
-import { Eye, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Eye, Edit, Trash2, CheckCircle, XCircle, TruckIcon } from "lucide-react";
 
 interface TablaVehiculosProps {
   vehiculos: Vehiculo[];
@@ -17,6 +17,7 @@ interface TablaVehiculosProps {
   onEditar: (vehiculo: Vehiculo) => void;
   onEliminar: (id: string) => void;
   onCambiarEstado: (id: string, disponible: boolean) => void;
+  onAsignarVehiculo: (vehiculo: Vehiculo) => void;
 }
 
 const TablaVehiculos: React.FC<TablaVehiculosProps> = ({
@@ -25,6 +26,7 @@ const TablaVehiculos: React.FC<TablaVehiculosProps> = ({
   onEditar,
   onEliminar,
   onCambiarEstado,
+  onAsignarVehiculo,
 }) => {
   /**
    * Obtener color del badge según el estado
@@ -192,6 +194,17 @@ const TablaVehiculos: React.FC<TablaVehiculosProps> = ({
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+
+                    {/* nuevo: Boton  Asignar a una ruta */}
+                    {vehiculo.estado_vehiculo === EstadoVehiculo.Disponible && (
+                      <button
+                        onClick={() => onAsignarVehiculo(vehiculo)}
+                        className="p-2 text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-lg transition-colors"
+                        title="Asignar a ruta"
+                      >
+                        <TruckIcon className="w-4 h-4" />
+                      </button>
+                    )}
 
                     {/* Cambiar estado */}
                     {vehiculo.estado_vehiculo === EstadoVehiculo.Disponible ? (

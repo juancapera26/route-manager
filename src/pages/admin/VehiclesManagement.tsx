@@ -12,6 +12,7 @@ import {
   Vehiculo,
 } from "../../global/types/vehiclesType";
 import { Plus, Truck, Filter } from "lucide-react";
+import { ModalAsignarVehiculo } from "../../components/admin/vehicles/ModalAsignarVehiculo";
 
 const VehiclesManagement: React.FC = () => {
   // Hook principal de gestión
@@ -156,6 +157,30 @@ const VehiclesManagement: React.FC = () => {
       camion: vehiculos.filter((v) => v.tipo === TipoVehiculo.Camion).length,
     };
   }, [vehiculos]);
+
+  const [modalAsignacionState, setModalAsignacionState] = useState<{
+    isOpen: boolean;
+    vehiculo: Vehiculo | null;
+  }>({
+    isOpen: false,
+    vehiculo: null,
+  });
+
+  // 🔹 NUEVA: Función para abrir modal de asignación
+  const handleAbrirModalAsignacion = (vehiculo: Vehiculo) => {
+    setModalAsignacionState({
+      isOpen: true,
+      vehiculo: vehiculo,
+    });
+  };
+
+  // 🔹 NUEVA: Función para cerrar modal de asignación
+  const handleCerrarModalAsignacion = () => {
+    setModalAsignacionState({
+      isOpen: false,
+      vehiculo: null,
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -413,6 +438,7 @@ const VehiclesManagement: React.FC = () => {
           onEditar={abrirModalEditar}
           onEliminar={handleDeleteVehiculo}
           onCambiarEstado={handleCambiarEstadoCompleto}
+          onAsignarVehiculo={handleAbrirModalAsignacion}
         />
       )}
       {/* Modales */}{" "}
@@ -434,6 +460,14 @@ const VehiclesManagement: React.FC = () => {
         vehiculo={modalEditarState.vehiculo}
         isLoading={modalEditarState.isLoading}
       />{" "}
+
+       {/* 🔹 NUEVO: Modal de asignación */}
+       
+      <ModalAsignarVehiculo
+        isOpen={modalAsignacionState.isOpen}
+        onClose={handleCerrarModalAsignacion}
+        vehiculo={modalAsignacionState.vehiculo}
+      />
     </div>
   );
 };
