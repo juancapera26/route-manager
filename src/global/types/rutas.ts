@@ -26,6 +26,8 @@ export interface Ruta {
   } | null;
 
   paquete?: {
+    cliente: any;
+    direccion_entrega: any;
     id_paquete: number;
     codigo_rastreo?: string | null;
     estado_paquete:

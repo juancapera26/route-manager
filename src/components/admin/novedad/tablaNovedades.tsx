@@ -1,6 +1,7 @@
 // components/admin/novedad/tablaNovedades.tsx
 import { useState, useEffect } from "react";
 import { auth } from "../../../firebase/firebaseConfig"; // Ajusta la ruta según tu proyecto
+import { API_URL } from "../../../config";
 
 interface Novedad {
   id_novedad: number;
@@ -9,7 +10,6 @@ interface Novedad {
   fecha: string;
   imagen: string | null;
   usuario?: {
-    // <-- opcional
     nombre: string;
     apellido: string;
     correo: string;
@@ -40,7 +40,7 @@ const NovedadesTable = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/reportes/historial", {
+      const response = await fetch(`${API_URL}/reportes/historial`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -64,7 +64,7 @@ const NovedadesTable = () => {
         return;
       }
 
-      const url = `http://localhost:8080/reportes/imagen/${idNovedad}`;
+      const url = `${API_URL}/reportes/imagen/${idNovedad}`;
 
       const response = await fetch(url, {
         method: "HEAD",

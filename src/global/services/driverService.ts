@@ -1,7 +1,6 @@
 import axios from "axios";
 import { UpdateConductorDto } from "../types/conductores";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+import { API_URL } from "../../config";
 
 export interface ConductorUpdated {
   id: number;
@@ -18,7 +17,7 @@ export const updateConductor = async (
   data: UpdateConductorDto,
   token: string
 ): Promise<ConductorUpdated> => {
-  const url = `${API_BASE_URL}/conductores/${id}`;
+  const url = `${API_URL}/conductores/${id}`;
   const response = await axios.put<ConductorUpdated>(url, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -31,7 +30,7 @@ export const updateFotoPerfil = async (
   file: File,
   token: string
 ): Promise<ConductorUpdated> => {
-  const url = `${API_BASE_URL}/conductores/${id}/foto`;
+  const url = `${API_URL}/conductores/${id}/foto`;
   const formData = new FormData();
   formData.append("foto", file);
 
@@ -50,7 +49,7 @@ export const updateTelefono = async (
   telefono: string,
   token: string
 ): Promise<ConductorUpdated> => {
-  const url = `${API_BASE_URL}/conductores/${id}/telefono`;
+  const url = `${API_URL}/conductores/${id}/telefono`;
   const response = await axios.patch<ConductorUpdated>(
     url,
     { telefono },
@@ -60,12 +59,13 @@ export const updateTelefono = async (
   );
   return response.data;
 };
+
 // Eliminar conductor
 export const deleteConductor = async (
   id: number,
   token: string
 ): Promise<void> => {
-  const url = `${API_BASE_URL}/conductores/${id}`;
+  const url = `${API_URL}/conductores/${id}`;
   await axios.delete(url, {
     headers: { Authorization: `Bearer ${token}` },
   });

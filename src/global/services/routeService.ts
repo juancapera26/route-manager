@@ -1,14 +1,8 @@
 // src/global/services/routeService.ts
 import axios from "axios";
 import { Ruta, CreateRutaDto, CambiarEstadoRutaDto } from "../types/rutas";
+import { API_URL } from "../../config";
 
-// Detecta si estamos en localhost
-const isLocalhost = window.location.hostname === "localhost";
-
-// Usa la variable de entorno local o la URL del backend en Cloud Run
-const API_URL = isLocalhost
-  ? import.meta.env.VITE_API_URL || "http://localhost:8080"
-  : "https://router-manager-backend-456769918123.us-central1.run.app";
 
 console.log("🔧 API_URL configurada:", API_URL);
 

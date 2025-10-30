@@ -34,6 +34,7 @@ type Props = {
   onClose: () => void;
   onSubmitSuccess?: () => void;
   initial?: Partial<DeliveryFormData>;
+  id_paquete?: number;
 };
 
 function SlideTransition(props: SlideProps) {
@@ -45,6 +46,7 @@ export default function FormDelivery({
   onClose,
   onSubmitSuccess,
   initial,
+  id_paquete,
 }: Props) {
   const {
     formData,
@@ -55,7 +57,7 @@ export default function FormDelivery({
     handleFileChange,
     handleFinalSubmit,
     clearPhoto,
-  } = useDelivery({ initial, onSubmitSuccess, onClose });
+  } = useDelivery({ initial, onSubmitSuccess, onClose, id_paquete });
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState("");
@@ -102,10 +104,12 @@ export default function FormDelivery({
     <>
       <Dialog
         open={open}
-        onClose={handleClose} 
+        onClose={handleClose}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ style: { zIndex: 1350, maxHeight: "78vh", maxWidth: "60%" } }}
+        PaperProps={{
+          style: { zIndex: 1350, maxHeight: "78vh", maxWidth: "60%" },
+        }}
       >
         {/* Encabezado */}
         <DialogTitle

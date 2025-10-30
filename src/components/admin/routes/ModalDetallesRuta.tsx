@@ -15,13 +15,11 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
   onClose,
   ruta,
 }) => {
-  // ✅ Siempre array, nunca undefined
   const [paquetesDeRuta, setPaquetesDeRuta] = useState<
     NonNullable<Ruta["paquete"]>
   >([]);
   const [cargandoPaquetes, setCargandoPaquetes] = useState(false);
 
-  // Cargar paquetes cuando se abre el modal
   useEffect(() => {
     if (!isOpen || !ruta) {
       setPaquetesDeRuta([]);
@@ -33,7 +31,6 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
     setCargandoPaquetes(false);
   }, [isOpen, ruta]);
 
-  // Ajuste de colores según estado
   const getColorEstadoPaquete = (estado: string) => {
     switch (estado) {
       case "Entregado":
@@ -75,19 +72,6 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
           {/* Lista de paquetes */}
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <svg
-                className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
               Paquetes Asignados
             </h4>
 
@@ -100,19 +84,6 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
               </div>
             ) : paquetesDeRuta.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                <svg
-                  className="w-12 h-12 mx-auto text-gray-400 mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                  />
-                </svg>
                 <p className="text-gray-500 dark:text-gray-400">
                   No hay paquetes asignados a esta ruta
                 </p>
@@ -143,8 +114,8 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Destinatario:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
-                          {paquete.destinatario?.nombre}{" "}
-                          {paquete.destinatario?.apellido}
+                          {paquete.cliente?.nombre}{" "}
+                          {paquete.cliente?.apellido || "-"}
                         </span>
                       </div>
 
@@ -153,7 +124,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Teléfono:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.destinatario?.telefono || "-"}
+                          {paquete.cliente?.telefono_movil || "-"}
                         </span>
                       </div>
 
@@ -171,7 +142,9 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Dirección:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
-                          {paquete.destinatario?.direccion || "-"}
+                          {paquete.direccion_entrega ||
+                            paquete.cliente?.direccion ||
+                            "-"}
                         </p>
                       </div>
                     </div>

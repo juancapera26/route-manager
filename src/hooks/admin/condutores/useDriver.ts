@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import useAuth from "../../useAuth";
 import { Conductor } from "../../../global/types/conductores";
+import { API_URL } from "../../../config"; // Ajusta la ruta según tu proyecto
 
 export default function useDriver() {
   const [data, setData] = useState<Conductor[]>([]);
@@ -18,13 +19,11 @@ export default function useDriver() {
         return;
       }
 
-      // 👇 Tipamos la respuesta como Conductor[]
-      const res = await axios.get<Conductor[]>(
-        "http://localhost:8080/conductores",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // 👇 Usamos API_URL desde config.ts
+      const res = await axios.get<Conductor[]>(`${API_URL}/conductores`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      // 👇 Transformamos los datos sin usar `any`
       const conductores = res.data.map((c) => ({
         ...c,
         nombre_empresa: c.empresa?.nombre_empresa ?? "Sin empresa",

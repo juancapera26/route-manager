@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getAuth } from "firebase/auth"; // ⬅️ Import Firebase Auth
+import { API_URL } from "../../../config"; // Ajusta la ruta según tu proyecto
 
 const PALABRAS_PROHIBIDAS: string[] = [
   "groseria1",
@@ -76,7 +77,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
       if (!user) throw new Error("Usuario no autenticado");
       const idToken = await user.getIdToken();
 
-      const response = await fetch("http://localhost:8080/reportes/subir", {
+      const response = await fetch(`${API_URL}/reportes/subir`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`, // enviar token
@@ -288,7 +289,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
                       <TableCell>
                         {r.imagen ? (
                           <img
-                            src={`http://localhost:8080/${r.imagen}`}
+                            src={`${API_URL}/${r.imagen}`}
                             alt="Evidencia"
                             width={80}
                           />

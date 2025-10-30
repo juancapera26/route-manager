@@ -28,7 +28,7 @@ export const MapDriver = () => {
     routePath,
     currentDestino,
     setSelectedPaquete,
-  } = useRouteManager(mapRef, location,); 
+  } = useRouteManager(mapRef, location);
 
   const hasStartedRef = useRef(false);
   const [autoMode, setAutoMode] = useState(false);
@@ -117,7 +117,7 @@ export const MapDriver = () => {
             disabled={isSimulating || !routePath.length}
             onClick={handleStartSimulation}
           >
-            Simular ruta
+            Iniciar ruta
           </Button>
         )}
       </Box>
@@ -130,6 +130,7 @@ export const MapDriver = () => {
         initial={
           selectedPaquete ? toDeliveryFormData(selectedPaquete) : undefined
         }
+        id_paquete={selectedPaquete?.id_paquete}
       />
     </Box>
   );

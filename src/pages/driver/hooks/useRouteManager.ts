@@ -8,11 +8,18 @@ import { RutaEstado } from "../../../global/types/rutas";
 
 export const useRouteManager = (
   mapRef: React.MutableRefObject<google.maps.Map | null>,
-  location?: google.maps.LatLngLiteral | null,
-  rutaId?: number 
+  // Eliminamos `location` como dependencia directa
+  _location?: google.maps.LatLngLiteral | null,
+  rutaId?: number
 ) => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
+
+  // ✅ Ubicación fija de inicio
+  const location1: google.maps.LatLngLiteral = {
+    lat: 4.721193,
+    lng: -74.069999,
+  };
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedPaquete, setSelectedPaquete] = useState<Paquete | null>(null);
@@ -21,7 +28,6 @@ export const useRouteManager = (
   const [routePath, setRoutePath] = useState<google.maps.LatLng[]>([]);
   const [currentDestino, setCurrentDestino] = useState<Paquete | null>(null);
 
-  // Calcular distancia
   const calcularDistancia = (
     a: google.maps.LatLngLiteral,
     b: google.maps.LatLngLiteral
@@ -48,7 +54,7 @@ export const useRouteManager = (
   // Manejar actualización de paquetes
   useEffect(() => {
     const handler = async () => {
-      if (!location || !mapRef.current || !paqueteIcon) return;
+      if (!mapRef.current || !paqueteIcon) return;
 
       const stored = localStorage.getItem("paquetesRuta");
       if (!stored) {
@@ -58,9 +64,10 @@ export const useRouteManager = (
         return;
       }
 
+      // ✅ Usa location1 como referencia de distancia
       const paquetes = ordenarPaquetesPorDistancia(
         JSON.parse(stored),
-        location
+        location1
       );
       setSortedPaquetes(paquetes);
 
@@ -83,7 +90,7 @@ export const useRouteManager = (
 
     window.addEventListener("paquetesRutaUpdated", handler);
     return () => window.removeEventListener("paquetesRutaUpdated", handler);
-  }, [location, paqueteIcon]);
+  }, [paqueteIcon]);
 
   // Limpiar ruta
   const clearRoute = () => {
@@ -95,8 +102,8 @@ export const useRouteManager = (
     markersRef.current = [];
     setRoutePath([]);
 
-    if (location && mapRef.current) {
-      mapRef.current.setCenter(location);
+    if (mapRef.current) {
+      mapRef.current.setCenter(location1);
       mapRef.current.setZoom(14);
     }
   };
@@ -164,14 +171,17 @@ export const useRouteManager = (
 
   // Recalcular ruta automáticamente
   useEffect(() => {
-    if (!location || !sortedPaquetes.length) return;
+    if (!sortedPaquetes.length) return;
 
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
 
     for (const p of sortedPaquetes) {
       if (!p.lat || !p.lng) continue;
-      const distancia = calcularDistancia(location, { lat: p.lat, lng: p.lng });
+      const distancia = calcularDistancia(location1, {
+        lat: p.lat,
+        lng: p.lng,
+      });
       if (distancia < menorDistancia) {
         menorDistancia = distancia;
         masCercano = p;
@@ -180,51 +190,40 @@ export const useRouteManager = (
 
     if (masCercano && masCercano !== currentDestino) {
       setCurrentDestino(masCercano);
-      drawRoute(location, masCercano);
+      drawRoute(location1, masCercano);
     }
-  }, [location?.lat, location?.lng, sortedPaquetes]);
+  }, [sortedPaquetes]);
 
   //  Manejar siguiente destino y marcar ruta completa
   const handleNextDestination = async (
-    currentLocation?: google.maps.LatLngLiteral
+    currentLocation: google.maps.LatLngLiteral = location1
   ): Promise<{
     newPath: google.maps.LatLng[] | null;
     nextDestino: Paquete | null;
   }> => {
-    if (!currentDestino || !sortedPaquetes.length || !currentLocation)
+    if (!currentDestino || !sortedPaquetes.length)
       return { newPath: null, nextDestino: null };
 
-    //  Quita el paquete actual de la lista
     const nuevos = sortedPaquetes.filter((p) => p !== currentDestino);
     setSortedPaquetes(nuevos);
 
-    //  Si ya no quedan más destinos, marcar la ruta como completada
     if (!nuevos.length) {
       setCurrentDestino(null);
       clearRoute();
 
       if (rutaId) {
         try {
-          console.log("Actualizando ruta:", rutaId, {
-            estado_ruta: RutaEstado.Completada,
-          });
-
           await cambiarEstadoRuta(rutaId, {
             estado_ruta: RutaEstado.Completada,
-          }).then((res) => {
-            console.log("Respuesta backend cambio de estado:", res);
           });
-
-          console.log("Ruta marcada como completada ");
+          console.log("Ruta marcada como completada");
         } catch (error) {
-          console.error(" Error al actualizar el estado de la ruta:", error);
+          console.error("Error al actualizar el estado de la ruta:", error);
         }
       }
-
       return { newPath: null, nextDestino: null };
     }
 
-    // Buscar el paquete más cercano siguiente
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
 
@@ -252,6 +251,7 @@ export const useRouteManager = (
 
   const toDeliveryFormData = (p: Paquete): DeliveryFormData => ({
     orderId: p.codigo_rastreo || "",
+    id_paquete: p.id_paquete,
     reference: p.tipo_paquete || "",
     content: `${p.largo}x${p.ancho}x${p.alto} cm (${p.peso} kg)`,
     value: p.valor_declarado ?? null,
