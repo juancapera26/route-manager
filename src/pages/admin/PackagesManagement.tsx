@@ -61,11 +61,14 @@ const PackagesManagement: React.FC = () => {
 
   // ✅ CALCULAR: Contadores por estado
   const contadores = useMemo(() => {
+    const total = data.length;
     return {
       [PaquetesEstados.Pendiente]: paquetesPorEstado[PaquetesEstados.Pendiente].length,
       [PaquetesEstados.Asignado]: paquetesPorEstado[PaquetesEstados.Asignado].length,
       [PaquetesEstados.Entregado]: paquetesPorEstado[PaquetesEstados.Entregado].length,
       [PaquetesEstados.Fallido]: paquetesPorEstado[PaquetesEstados.Fallido].length,
+      todos: total,
+      
     };
   }, [paquetesPorEstado]);
 
