@@ -6,6 +6,8 @@ import InicioRuta from "./modalRutas/InicioRuta";
 import ListaPaquetes from "./modalRutas/ListaPaquetes";
 import VistaMinimizada from "./modalRutas/VistaMinimizada";
 import { Paquete } from "../../../hooks/useManifiestos";
+import useAuth from "../../../hooks/useAuth";
+import { API_URL } from "../../../config";
 
 interface ModalRutasProps {
   isOpen: boolean;
@@ -15,7 +17,6 @@ interface ModalRutasProps {
   isMobileOpen: boolean;
 }
 
-// Enum para steps
 enum Steps {
   Formulario,
   Minimizada,
@@ -40,10 +41,11 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
 
   const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const paqueteActual = paquetes.length > 0 ? paquetes[currentIndex] : null;
+  const {  getAccessToken } = useAuth();
 
-  // Función de submit que consulta el backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!codigo) {
       setMensajeError("El código es obligatorio");
       return;
@@ -53,16 +55,35 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
     setMensajeError("");
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/manifiestos/${codigo}`
-      );
-      if (!response.ok) throw new Error("Error al consultar el manifiesto");
+      const token = await getAccessToken();
+      if (!token) throw new Error("Usuario no autenticado.");
 
-      const data: { codigo: string; paquetes: Paquete[] } =
-        await response.json();
+      const response = await fetch(`${API_URL}/api/manifiestos/${codigo}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 403) {
+        throw new Error(
+          "No tienes permiso para ver los paquetes de este manifiesto."
+        );
+      }
+
+      if (response.status === 404) {
+        throw new Error("No se encontró el manifiesto con ese código.");
+      }
+
+      if (!response.ok) throw new Error("Error al consultar el manifiesto.");
+
+      const data: {
+        codigo: string;
+        paquetes: Paquete[];
+      } = await response.json();
 
       if (!data.paquetes || data.paquetes.length === 0) {
-        setMensajeError("No se encontraron paquetes para este código");
+        setMensajeError("No se encontraron paquetes para este manifiesto.");
         return;
       }
 
@@ -75,7 +96,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
     }
   };
 
-  // Vistas según step
   const views = {
     [Steps.Formulario]: (
       <Formulario
@@ -113,7 +133,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
           setMostrarLetras(true);
           setCurrentIndex(0);
           setActiveStep(Steps.Colapsada);
-          console.log(paquetes);
           localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
           window.dispatchEvent(new Event("paquetesRutaUpdated"));
         }}
@@ -167,7 +186,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
                 setMensajeError("");
                 setActiveStep(Steps.Formulario);
 
-                // 🚀 Limpiar ruta en Driver
                 localStorage.removeItem("paquetesRuta");
                 window.dispatchEvent(new Event("paquetesRutaUpdated"));
               }

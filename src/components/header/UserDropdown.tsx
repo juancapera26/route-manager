@@ -57,21 +57,19 @@ export default function UserDropdown() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative mr-6">
       <button
         onClick={toggleDropdown}
         className="flex items-center text-secondary dropdown-toggle dark:text-gray-400"
       >
-        <span className="inline-block mr-2 font-medium text-theme-sm max-w-[150px] truncate text-gray-200">
+        <span className="inline-block mr-2 font-medium text-theme-sm max-w-[150px] truncate text-gray-600 dark:text-gray-400">
           {nombre && apellido ? `${nombre} ${apellido}` : "Usuario"}
         </span>
 
-        <span className="ml-2 text-xs text-gray-300">{getRoleName(role)}</span>
-
         <span className="ml-2 mr-2 overflow-hidden rounded-full h-11 w-11 flex-shrink-0">
           <img
-            src={foto || "/default-avatar.png"}
-            alt="User profile"
+            src={foto || "/images/user/default-avatar.jpg"}
+            alt="Foto"
             className="w-full h-full object-cover"
           />
         </span>
@@ -107,6 +105,10 @@ export default function UserDropdown() {
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {correo ?? "correo@ejemplo.com"}
+          </span>
+          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+            Rol:
+            <i className="ml-1">{getRoleName(role)}</i>
           </span>
         </div>
 

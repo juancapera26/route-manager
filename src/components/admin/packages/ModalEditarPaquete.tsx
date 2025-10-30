@@ -309,7 +309,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="cantidad"
-                  value={formData.cantidad}
+                  placeholder="0"
+                  value={formData.cantidad === 0 ? "" : formData.cantidad}
                   onChange={handleInputChange}
                   min="1"
                   max="100"
@@ -326,7 +327,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="valor_declarado"
-                  value={formData.valor_declarado}
+                  placeholder="0"
+                  value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
                   onChange={handleInputChange}
                   min="0"
                   step={1000}
@@ -353,7 +355,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="largo"
-                  value={formData.dimensiones.largo}
+                  placeholder="0"
+                  value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -372,7 +375,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="ancho"
-                  value={formData.dimensiones.ancho}
+                  placeholder="0"
+                  value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -391,7 +395,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="alto"
-                  value={formData.dimensiones.alto}
+                  placeholder="0"
+                  value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -410,7 +415,8 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="peso"
-                  value={formData.dimensiones.peso}
+                  placeholder="0"
+                  value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}

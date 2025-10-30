@@ -7,6 +7,7 @@ type UseDeliveryParams = {
   initial?: Partial<DeliveryFormData>;
   onSubmitSuccess?: () => void;
   onClose?: () => void;
+  id_paquete?: number;
 };
 
 type SubmitResult = {
@@ -18,6 +19,7 @@ export function useDelivery({
   initial,
   onSubmitSuccess,
   onClose,
+  id_paquete,
 }: UseDeliveryParams = {}) {
   const [formData, setFormData] = useState<DeliveryFormData>({
     orderId: "",
@@ -78,11 +80,10 @@ export function useDelivery({
     setLoading(true);
 
     try {
-      const packageId = Number(formData.orderId.replace(/\D/g, ""));
-      if (isNaN(packageId)) throw new Error("ID de paquete inválido");
+      if (!id_paquete) throw new Error("ID de paquete no definido");
 
       await PackagesService.registrarEntrega(
-        packageId,
+        id_paquete,
         "Entregado",
         formData.deliveryNotes,
         deliveryPhoto || undefined
