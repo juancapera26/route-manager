@@ -1,12 +1,27 @@
 // src/components/admin/packages/hooks/packagesHook.ts
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { usePackages } from "../../../../hooks/admin/usePackages"; 
-import { Paquete, PaquetesEstados } from "../../../../global/types/paquete.types";
-import {PAQUETES_COLUMNS,createPaqueteAction,PaquetesColumnKey,PaquetesActionKey,PaquetesActionCallbacks,} from "../TablaPaquetes";
-import type {ColumnDef,ActionButton,} from "../../../../components/ui/table/DataTable";
+import { usePackages } from "../../../../hooks/admin/usePackages";
+import {
+  Paquete,
+  PaquetesEstados,
+} from "../../../../global/types/paquete.types";
+import {
+  PAQUETES_COLUMNS,
+  createPaqueteAction,
+  PaquetesColumnKey,
+  PaquetesActionKey,
+  PaquetesActionCallbacks,
+} from "../TablaPaquetes";
+import type {
+  ColumnDef,
+  ActionButton,
+} from "../../../../components/ui/table/DataTable";
 import { useEstadoFilter } from "../../../../hooks/useEstadoFilter";
-import {opcionesFiltorPaquetes,obtenerEstadoPaquete,} from "../../../../global/config/filterConfigs";
+import {
+  opcionesFiltorPaquetes,
+  obtenerEstadoPaquete,
+} from "../../../../global/config/filterConfigs";
 import { toast } from "sonner";
 
 export function usePackagesManagementHook() {
@@ -20,18 +35,23 @@ export function usePackagesManagementHook() {
   });
 
   // 🔹 Hook de paquetes (datos y operaciones CRUD)
-    const {
-    packages: data,              // ← renombrar packages a data
+  const {
+    packages: data, // ← renombrar packages a data
     loading,
     error,
-    fetchPackages: refetch,      // ← renombrar fetchPackages a refetch
+    fetchPackages: refetch, // ← renombrar fetchPackages a refetch
     createPackage: createPaquete, // ← renombrar createPackage a createPaquete
     updatePackage: updatePaquete, // ← renombrar updatePackage a updatePaquete
     deletePackage: deletePaquete, // ← renombrar deletePackage a deletePaquete
   } = usePackages();
-   // Constante de clearError la quite de UsePackages ya que estaba generando error 
-  const clearError = useCallback(() => {
-}, []);
+  // Constante de clearError la quite de UsePackages ya que estaba generando error
+  const clearError = useCallback(() => {}, []);
+
+  // 🔹 Contadores por estado (incluye 'todos')
+  const contadores = useMemo(
+    () => filtroEstado.contarPorEstado(data),
+    [data, filtroEstado]
+  );
 
   // 🔹 Estado de alertas
   const [alertState, setAlertState] = useState<{
@@ -80,8 +100,15 @@ export function usePackagesManagementHook() {
 
   const abrirEdicion = useCallback(
     (paquete: Paquete) => {
-      if (![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(paquete.estado)) {
-        showAlert("Solo se pueden editar paquetes Pendientes o Fallidos", "warning");
+      if (
+        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(
+          paquete.estado
+        )
+      ) {
+        showAlert(
+          "Solo se pueden editar paquetes Pendientes o Fallidos",
+          "warning"
+        );
         return;
       }
       setModalEdicion({ open: true, paquete, loading: false });
@@ -93,7 +120,7 @@ export function usePackagesManagementHook() {
     setModalEdicion({ open: false, paquete: null, loading: false });
   }, []);
 
-  // 🔹 Handlers CRUD 
+  // 🔹 Handlers CRUD
   //Debo buscar cual es el tipo verdadero de payload--mientras es un any
   const handleCreatePaquete = useCallback(
     async (payload: any) => {
@@ -106,7 +133,7 @@ export function usePackagesManagementHook() {
     },
     [createPaquete, refetch, showAlert]
   );
-  
+
   //Debo buscar cual es el tipo verdadero de payload--mientras es un any
   const handleUpdatePaquete = useCallback(
     async (id: number, payload: any) => {
@@ -153,7 +180,7 @@ export function usePackagesManagementHook() {
       setModalEdicion((prev) => ({ ...prev, loading: true }));
       const success = await handleUpdatePaquete(id, payload);
       setModalEdicion({ open: false, paquete: null, loading: false });
-      return !!success;//Esto me retorna un booleano
+      return !!success; //Esto me retorna un booleano
     },
     [handleUpdatePaquete]
   );
@@ -164,63 +191,61 @@ export function usePackagesManagementHook() {
   );
 
   // 🔹 Callbacks stub para acciones futuras (AGREGAR ANTES DE actionCallbacks)
-const handleAssign = useCallback(
-  (paquete: Paquete) => {
-    showAlert("Función de asignación pendiente", "info");
-  },
-  [showAlert]
-);
+  const handleAssign = useCallback(
+    (paquete: Paquete) => {
+      showAlert("Función de asignación pendiente", "info");
+    },
+    [showAlert]
+  );
 
-const handleCancelAssignment = useCallback(
-  (paquete: Paquete) => {
-    showAlert("Función de cancelar asignación pendiente", "info");
-  },
-  [showAlert]
-);
+  const handleCancelAssignment = useCallback(
+    (paquete: Paquete) => {
+      showAlert("Función de cancelar asignación pendiente", "info");
+    },
+    [showAlert]
+  );
 
-const handleReassign = useCallback(
-  (paquete: Paquete) => {
-    showAlert("Función de reasignar pendiente", "info");
-  },
-  [showAlert]
-);
+  const handleReassign = useCallback(
+    (paquete: Paquete) => {
+      showAlert("Función de reasignar pendiente", "info");
+    },
+    [showAlert]
+  );
 
-const handleMarkEnRuta = useCallback(
-  async (paquete: Paquete) => {
-    const ok = await handleUpdatePaquete(paquete.id_paquete, {
-      estado: PaquetesEstados.EnRuta,
-    } as any); // ← Agregar 'as any' temporalmente
-    if (ok) {
-      showAlert("Paquete marcado como En Ruta", "success");
-    }
-  },
-  [handleUpdatePaquete, showAlert]
-);
+  const handleMarkEnRuta = useCallback(
+    async (paquete: Paquete) => {
+      const ok = await handleUpdatePaquete(paquete.id_paquete, {} as any); // ← Agregar 'as any' temporalmente
+      if (ok) {
+        showAlert("Paquete marcado como En Ruta", "success");
+      }
+    },
+    [handleUpdatePaquete, showAlert]
+  );
 
-const handleMarkEntregado = useCallback(
-  async (paquete: Paquete) => {
-    const ok = await handleUpdatePaquete(paquete.id_paquete, {
-      estado: PaquetesEstados.Entregado,
-      fecha_entrega: new Date().toISOString(),
-    } as any); // ← Agregar 'as any' temporalmente
-    if (ok) {
-      showAlert("Paquete marcado como Entregado", "success");
-    }
-  },
-  [handleUpdatePaquete, showAlert]
-);
+  const handleMarkEntregado = useCallback(
+    async (paquete: Paquete) => {
+      const ok = await handleUpdatePaquete(paquete.id_paquete, {
+        estado: PaquetesEstados.Entregado,
+        fecha_entrega: new Date().toISOString(),
+      } as any); // ← Agregar 'as any' temporalmente
+      if (ok) {
+        showAlert("Paquete marcado como Entregado", "success");
+      }
+    },
+    [handleUpdatePaquete, showAlert]
+  );
 
-const handleMarkFallido = useCallback(
-  async (paquete: Paquete) => {
-    const ok = await handleUpdatePaquete(paquete.id_paquete, {
-      estado: PaquetesEstados.Fallido,
-    } as any); // ← Agregar 'as any' temporalmente
-    if (ok) {
-      showAlert("Paquete marcado como Fallido", "success");
-    }
-  },
-  [handleUpdatePaquete, showAlert]
-);
+  const handleMarkFallido = useCallback(
+    async (paquete: Paquete) => {
+      const ok = await handleUpdatePaquete(paquete.id_paquete, {
+        estado: PaquetesEstados.Fallido,
+      } as any); // ← Agregar 'as any' temporalmente
+      if (ok) {
+        showAlert("Paquete marcado como Fallido", "success");
+      }
+    },
+    [handleUpdatePaquete, showAlert]
+  );
 
   // 🔹 Acciones de la tabla
   const actionCallbacks: PaquetesActionCallbacks = useMemo(
@@ -230,7 +255,7 @@ const handleMarkFallido = useCallback(
       onDelete: handleDeleteWithConfirmation, // ✅ CAMBIADO: Ahora usa confirmación
       onTrack: (p: Paquete) => handleTrack(p.id_paquete),
       onDownloadLabel: () =>
-      showAlert("Descarga de etiqueta no implementada", "info"),
+        showAlert("Descarga de etiqueta no implementada", "info"),
       onAssign: handleAssign,
       onCancelAssignment: handleCancelAssignment,
       onReassign: handleReassign,
@@ -238,13 +263,28 @@ const handleMarkFallido = useCallback(
       onMarkEntregado: handleMarkEntregado,
       onMarkFallido: handleMarkFallido,
     }),
-    [abrirDetalles, abrirEdicion, handleDeleteWithConfirmation, handleTrack, showAlert, handleAssign, handleCancelAssignment, handleReassign, handleMarkEnRuta, handleMarkEntregado, handleMarkFallido]
+    [
+      abrirDetalles,
+      abrirEdicion,
+      handleDeleteWithConfirmation,
+      handleTrack,
+      showAlert,
+      handleAssign,
+      handleCancelAssignment,
+      handleReassign,
+      handleMarkEnRuta,
+      handleMarkEntregado,
+      handleMarkFallido,
+    ]
   );
 
-  const getActionsForEstado = useCallback((estado: PaquetesEstados): ActionButton<Paquete>[] => {
-  const keys = ACTIONS_BY_ESTADO[estado];
-  return keys.map((k) => createPaqueteAction(k, actionCallbacks));
-}, [actionCallbacks]);
+  const getActionsForEstado = useCallback(
+    (estado: PaquetesEstados): ActionButton<Paquete>[] => {
+      const keys = ACTIONS_BY_ESTADO[estado];
+      return keys.map((k) => createPaqueteAction(k, actionCallbacks));
+    },
+    [actionCallbacks]
+  );
 
   // 🔹 Columnas y acciones
   const COLUMNS_FOR_ALL_STATES: PaquetesColumnKey[] = [
@@ -257,7 +297,6 @@ const handleMarkFallido = useCallback(
 
   const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
     [PaquetesEstados.Pendiente]: ["view", "edit", "delete"],
-    [PaquetesEstados.EnRuta]: ["view", "track"],
     [PaquetesEstados.Entregado]: ["view", "track"],
     [PaquetesEstados.Fallido]: ["view", "edit", "delete"],
     [PaquetesEstados.Asignado]: ["view"], // Temporal, ya que rutas no aplica
@@ -269,7 +308,8 @@ const handleMarkFallido = useCallback(
   );
 
   const actionsForCurrentState: ActionButton<Paquete>[] = useMemo(() => {
-    const estado: PaquetesEstados = filtroEstado.estadoSeleccionado ?? PaquetesEstados.Pendiente;
+    const estado: PaquetesEstados =
+      filtroEstado.estadoSeleccionado ?? PaquetesEstados.Pendiente;
     const keys = ACTIONS_BY_ESTADO[estado];
     return keys.map((k) => createPaqueteAction(k, actionCallbacks));
   }, [filtroEstado.estadoSeleccionado, actionCallbacks]);
@@ -286,6 +326,7 @@ const handleMarkFallido = useCallback(
     loading,
     alertState,
     filtroEstado,
+    contadores,
     columnsForCurrentState,
     actionsForCurrentState,
     getActionsForEstado,
