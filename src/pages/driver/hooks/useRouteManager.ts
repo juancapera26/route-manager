@@ -9,7 +9,7 @@ import { RutaEstado } from "../../../global/types/rutas";
 export const useRouteManager = (
   mapRef: React.MutableRefObject<google.maps.Map | null>,
   location?: google.maps.LatLngLiteral | null,
-  rutaId?: number 
+  rutaId?: number
 ) => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
@@ -252,6 +252,7 @@ export const useRouteManager = (
 
   const toDeliveryFormData = (p: Paquete): DeliveryFormData => ({
     orderId: p.codigo_rastreo || "",
+    id_paquete: p.id_paquete,
     reference: p.tipo_paquete || "",
     content: `${p.largo}x${p.ancho}x${p.alto} cm (${p.peso} kg)`,
     value: p.valor_declarado ?? null,

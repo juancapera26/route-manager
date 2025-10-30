@@ -31,7 +31,7 @@ const AppSidebar: React.FC = () => {
 
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
-  const IconStudyImpetus = "/public/images/logo/logo.png";
+  const IconStudyImpetus = "/images/logo/logo.png";
 
   const navItems: NavItem[] = [
     {

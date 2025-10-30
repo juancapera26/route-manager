@@ -1,5 +1,6 @@
 // src/global/types/deliveries.ts
 export interface DeliveryFormData {
+  id_paquete?: number;
   orderId: string;
   reference: string;
   content: string;
