@@ -309,6 +309,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="cantidad"
+                  placeholder="0"
                   value={formData.cantidad === 0 ? "" : formData.cantidad}
                   onChange={handleInputChange}
                   min="1"
@@ -326,6 +327,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="valor_declarado"
+                  placeholder="0"
                   value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
                   onChange={handleInputChange}
                   min="0"
@@ -353,6 +355,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="largo"
+                  placeholder="0"
                   value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
                   onChange={handleInputChange}
                   min="0"
@@ -372,6 +375,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="ancho"
+                  placeholder="0"
                   value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
                   onChange={handleInputChange}
                   min="0"
@@ -391,6 +395,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="alto"
+                  placeholder="0"
                   value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
                   onChange={handleInputChange}
                   min="0"
@@ -410,6 +415,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="peso"
+                  placeholder="0"
                   value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
                   onChange={handleInputChange}
                   min="0"
