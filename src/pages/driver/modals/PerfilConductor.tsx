@@ -18,6 +18,7 @@ import {
   updateFotoPerfil,
   ConductorUpdated,
 } from "../../../global/services/driverService";
+import { API_URL } from "../../../config"; // ✅ Usando config centralizado
 
 interface PerfilConductorProps {
   nombre: string;
@@ -31,8 +32,6 @@ interface PerfilConductorProps {
   foto: string | null;
   onEditar: () => void;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const PerfilConductor: React.FC<PerfilConductorProps> = ({
   nombre,
@@ -50,10 +49,9 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   const navigate = useNavigate();
   const { getAccessToken, idUsuario } = useAuth();
 
-  const [previewFoto, setPreviewFoto] = useState<string | undefined>(undefined);
+  const [previewFoto, setPreviewFoto] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
 
-  // 🔄 Normalizamos la URL que viene desde backend
   useEffect(() => {
     if (foto) {
       setPreviewFoto(foto.startsWith("http") ? foto : `${API_URL}/${foto}`);
@@ -61,10 +59,9 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
   }, [foto]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
+    if (!e.target.files || !idUsuario) return;
 
-    if (!idUsuario) return;
+    const file = e.target.files[0];
     const token = await getAccessToken();
     if (!token) return;
 
@@ -75,7 +72,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
         file,
         token
       );
-
       if (updated.foto_perfil) {
         setPreviewFoto(
           updated.foto_perfil.startsWith("http")
@@ -83,7 +79,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
             : `${API_URL}/${updated.foto_perfil}`
         );
       }
-
       console.log("✅ Foto de perfil actualizada");
     } catch (err) {
       console.error("❌ Error al actualizar foto:", err);
@@ -169,13 +164,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
           color={enLinea ? "success" : "default"}
         />
 
-        {/* 🔹 Sección de Disponibilidad */}
-        <Box
-          sx={{
-            textAlign: "center",
-            mt: 2,
-          }}
-        >
+        <Box sx={{ textAlign: "center", mt: 2 }}>
           <Typography variant="subtitle1" fontWeight="600">
             Disponibilidad
           </Typography>

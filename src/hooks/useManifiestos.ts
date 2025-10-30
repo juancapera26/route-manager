@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { API_URL } from "../config";
 
 // 👇 Tipos que deben coincidir con los del backend
 export interface Paquete {
@@ -20,8 +21,6 @@ export interface Paquete {
   id_cliente: number;
   id_ruta?: number | null;
   id_barrio?: number | null;
-
-  // 👇 Relación con la ruta (añadido)
   ruta?: {
     id_conductor: number | null;
   } | null;
@@ -42,9 +41,7 @@ export function useManifiestos() {
     setError(null);
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/manifiestos/${codigo}`
-      );
+      const res = await fetch(`${API_URL}/api/manifiestos/${codigo}`);
       if (!res.ok) throw new Error("Manifiesto no encontrado");
 
       const result: ApiResponse = await res.json();

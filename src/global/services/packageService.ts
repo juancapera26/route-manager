@@ -5,22 +5,22 @@ import {
   PaqueteCreate,
   PaqueteUpdate,
 } from "../../global/types/paquete.types";
+import { API_URL } from "../../config"; // Ajusta la ruta según tu proyecto
 
-// API real del backend
-
-const API_URL = "http://localhost:8080/paquetes";
+// Usaremos API_URL desde config.ts
+const API_BASE = `${API_URL}/paquetes`;
 
 export const PackagesService = {
-  //CRUD BASICA
+  // CRUD básica
   async getAll(): Promise<Paquete[]> {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_BASE);
     if (!res.ok) throw new Error("Error al obtener los paquetes");
     const data = await res.json();
     return data.map(mapApiToPaquete);
   },
 
   async getOne(id: number): Promise<Paquete> {
-    const res = await fetch(`${API_URL}/${id}`);
+    const res = await fetch(`${API_BASE}/${id}`);
     if (!res.ok) throw new Error(`Error al obtener el paquete con ID ${id}`);
     const data = await res.json();
     return mapApiToPaquete(data);
@@ -28,7 +28,7 @@ export const PackagesService = {
 
   async create(paquete: PaqueteCreate): Promise<Paquete> {
     console.log("🚀 Enviando al backend:", paquete);
-    const res = await fetch(API_URL, {
+    const res = await fetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(paquete),
@@ -39,7 +39,7 @@ export const PackagesService = {
   },
 
   async update(id: number, paquete: PaqueteUpdate): Promise<Paquete> {
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await fetch(`${API_BASE}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(paquete),
@@ -50,14 +50,13 @@ export const PackagesService = {
   },
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error(`Error al eliminar el paquete ${id}`);
   },
 
   // Funciones adicionales
-
   async asignar(id: number, dto: AsignarPaqueteDTO): Promise<Paquete> {
-    const res = await fetch(`${API_URL}/${id}/asignar`, {
+    const res = await fetch(`${API_BASE}/${id}/asignar`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
@@ -70,7 +69,7 @@ export const PackagesService = {
   },
 
   async cambiarEstado(id: number, estado: string): Promise<Paquete> {
-    const res = await fetch(`${API_URL}/${id}/estado`, {
+    const res = await fetch(`${API_BASE}/${id}/estado`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado }),
@@ -80,6 +79,7 @@ export const PackagesService = {
     const data = await res.json();
     return mapApiToPaquete(data);
   },
+
   async registrarEntrega(
     id: number,
     estado_paquete: string,
@@ -89,15 +89,11 @@ export const PackagesService = {
     const formData = new FormData();
     formData.append("estado_paquete", estado_paquete);
 
-    if (observacion_entrega) {
+    if (observacion_entrega)
       formData.append("observacion_entrega", observacion_entrega);
-    }
+    if (imagen) formData.append("imagen", imagen);
 
-    if (imagen) {
-      formData.append("imagen", imagen);
-    }
-
-    const res = await fetch(`${API_URL}/${id}/entrega`, {
+    const res = await fetch(`${API_BASE}/${id}/entrega`, {
       method: "POST",
       body: formData,
     });
