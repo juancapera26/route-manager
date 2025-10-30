@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -10,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { auth } from "../firebase/firebaseConfig";
+import { API_URL } from "../config"; // <-- Importamos la URL dinámica
 
 // Tipos para el registro
 export interface RegisterData {
@@ -52,10 +52,8 @@ const useAuth = () => {
         try {
           const token = await firebaseUser.getIdToken();
           console.log("ID Token:", token);
-          const API_BASE_URL =
-            import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-          const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          const response = await fetch(`${API_URL}/auth/verify`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -68,7 +66,6 @@ const useAuth = () => {
           const data = await response.json();
           const userData = data.data;
 
-          // Guardar todas las propiedades importantes
           setRole(userData.role?.toString() || null);
           setNombre(userData.nombre || null);
           setApellido(userData.apellido || null);
@@ -92,6 +89,7 @@ const useAuth = () => {
         setTipoDocumento(null);
         setEmpresa(null);
         setIdUsuario(null);
+        setFoto(null);
       }
 
       setLoading(false);
@@ -157,10 +155,8 @@ const useAuth = () => {
       );
 
       const token = await userCredential.user.getIdToken();
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+      const response = await fetch(`${API_URL}/auth/verify`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +180,7 @@ const useAuth = () => {
       setDocumento(userData.documento || null);
       setTipoDocumento(userData.tipo_documento || null);
       setEmpresa(userData.empresa || null);
-      setIdUsuario(userData.id_usuario || null); // <--- aquí se guarda el id
+      setIdUsuario(userData.id_usuario || null);
       setFoto(userData.foto_perfil || null);
 
       // Redirección por rol
@@ -204,7 +200,7 @@ const useAuth = () => {
     registerData: RegisterData,
     setError: React.Dispatch<React.SetStateAction<string>>,
     setSuccess?: React.Dispatch<React.SetStateAction<string>>,
-    onSuccess?: (msg: string) => void // 👈 coma y callback opcional
+    onSuccess?: (msg: string) => void
   ) => {
     setError("");
     setLoading(true);
@@ -230,10 +226,7 @@ const useAuth = () => {
         documento: registerData.documento,
       };
 
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -244,20 +237,12 @@ const useAuth = () => {
         throw new Error(errMsg || "Error en el registro");
       }
 
-      //
       const successMsg =
         "Usuario registrado exitosamente. Ya puedes iniciar sesión.";
 
-      if (setSuccess) {
-        setSuccess(successMsg);
-      } else if (onSuccess) {
-        onSuccess(successMsg);
-      } else {
-        toast.success(successMsg);
-      }
-
-      // 👉 OJO: aquí ya no haces navigate directo
-      // porque si usas onSuccess puedes redirigir desde afuera
+      if (setSuccess) setSuccess(successMsg);
+      else if (onSuccess) onSuccess(successMsg);
+      else toast.success(successMsg);
     } catch (err) {
       console.error("❌ Error en el registro:", err);
       setError((err as Error).message);
@@ -284,10 +269,7 @@ const useAuth = () => {
     }
   };
 
-  const getAccessToken = async () => {
-    if (user) return user.getIdToken();
-    return null;
-  };
+  const getAccessToken = async () => (user ? user.getIdToken() : null);
 
   return {
     authLoading: loading,
@@ -297,8 +279,6 @@ const useAuth = () => {
     handlePasswordReset,
     getAccessToken,
     user,
-
-    // datos del backend
     role,
     nombre,
     apellido,
