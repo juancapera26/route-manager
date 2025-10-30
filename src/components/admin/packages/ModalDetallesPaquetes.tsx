@@ -24,8 +24,6 @@ export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ detallesPa
                 detallesPaquete.estado === PaquetesEstados.Entregado
                   ? 'success'
                   : detallesPaquete.estado === PaquetesEstados.Fallido
-                  ? 'error'
-                  : detallesPaquete.estado === PaquetesEstados.EnRuta
                   ? 'primary'
                   : detallesPaquete.estado === PaquetesEstados.Asignado
                   ? 'info'

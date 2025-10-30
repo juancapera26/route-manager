@@ -40,7 +40,6 @@ const mapEstadoPaquete = (estado: string): PaquetesEstados => {
   const estadoMap: Record<string, PaquetesEstados> = {
     'Pendiente': PaquetesEstados.Pendiente,
     'Asignado': PaquetesEstados.Asignado,
-    'EnRuta': PaquetesEstados.EnRuta,
     'Entregado': PaquetesEstados.Entregado,
     'Fallido': PaquetesEstados.Fallido,
   };

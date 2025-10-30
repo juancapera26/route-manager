@@ -54,7 +54,7 @@ const AppHeader: React.FC = () => {
               onClick={handleToggle}
               aria-label="Toggle Sidebar"
             >
-              <MenuIcon className="text-gray-500" />
+              <MenuIcon className="text-gray-500 dark:text-gray-400" />
             </button>
 
           </div>

@@ -3,7 +3,6 @@
 export enum PaquetesEstados {
   Pendiente = "Pendiente",
   Asignado = "Asignado",
-  EnRuta = "EnRuta",
   Entregado = "Entregado",
   Fallido = "Fallido",
 }

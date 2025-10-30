@@ -23,7 +23,6 @@ export type PaquetesActionKey =
   | "assign"
   | "cancel_assignment"
   | "reassign"
-  | "mark_en_ruta"
   | "mark_entregado"
   | "mark_fallido"
   | "track";
@@ -114,7 +113,6 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
       const colorMap: Record<PaquetesEstados, BadgeColor> = {
         [PaquetesEstados.Pendiente]: "warning",
         [PaquetesEstados.Asignado]: "info",
-        [PaquetesEstados.EnRuta]: "primary",
         [PaquetesEstados.Entregado]: "success",
         [PaquetesEstados.Fallido]: "error",
       };
@@ -148,14 +146,6 @@ const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
     "fecha_registro",
     "estado",
   ],
-  [PaquetesEstados.EnRuta]: [
-    "id_paquete",
-    "ruta_asignada",
-    "conductor_nombre",
-    "destinatario",
-    "fecha_registro",
-    "estado",
-  ],
   [PaquetesEstados.Entregado]: [
     "id_paquete",
     "ruta_asignada",
@@ -178,10 +168,8 @@ export const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
   [PaquetesEstados.Asignado]: [
     "view",
     "cancel_assignment",
-    "mark_en_ruta",
     "mark_fallido",
   ],
-  [PaquetesEstados.EnRuta]: ["view", "mark_entregado", "mark_fallido", "track"],
   [PaquetesEstados.Entregado]: ["view", "track"],
   [PaquetesEstados.Fallido]: ["view", "edit", "delete", "reassign"],
 };
@@ -256,15 +244,6 @@ export const createPaqueteAction = (
       onClick: callbacks.onCancelAssignment,
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
-    mark_en_ruta: {
-      key: "mark_en_ruta",
-      label: "",
-      tooltip: "Marcar como en ruta",
-      icon: <Truck className="w-4 h-4" />,
-      variant: "default",
-      onClick: callbacks.onMarkEnRuta,
-      visible: (item) => item.estado === PaquetesEstados.Asignado,
-    },
     mark_entregado: {
       key: "mark_entregado",
       label: "",
@@ -272,7 +251,6 @@ export const createPaqueteAction = (
       icon: <Check className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onMarkEntregado,
-      visible: (item) => item.estado === PaquetesEstados.EnRuta,
     },
     mark_fallido: {
       key: "mark_fallido",
@@ -281,8 +259,6 @@ export const createPaqueteAction = (
       icon: <AlertTriangle className="w-4 h-4" />,
       variant: "outline",
       onClick: callbacks.onMarkFallido,
-      visible: (item) =>
-        [PaquetesEstados.Asignado, PaquetesEstados.EnRuta].includes(item.estado),
     },
     track: {
       key: "track",
@@ -291,8 +267,6 @@ export const createPaqueteAction = (
       icon: <MapPin className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onTrack,
-      visible: (item) =>
-        [PaquetesEstados.EnRuta, PaquetesEstados.Entregado].includes(item.estado),
     },
   };
 
