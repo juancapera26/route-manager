@@ -372,7 +372,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="cantidad"
-                  value={formData.cantidad}
+                  value={formData.cantidad === 0 ? "" : formData.cantidad}
                   onChange={handleInputChange}
                   min="1"
                   max="100"
@@ -388,7 +388,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="valor_declarado"
-                  value={formData.valor_declarado}
+                  value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
                   onChange={handleInputChange}
                   min="0"
                   step={1000}
@@ -414,7 +414,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="largo"
-                  value={formData.dimensiones.largo}
+                  value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -432,7 +432,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="ancho"
-                  value={formData.dimensiones.ancho}
+                  value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -450,7 +450,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="alto"
-                  value={formData.dimensiones.alto}
+                  value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -468,7 +468,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="peso"
-                  value={formData.dimensiones.peso}
+                  value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
