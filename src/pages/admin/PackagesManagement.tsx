@@ -46,7 +46,6 @@ const PackagesManagement: React.FC = () => {
     const grupos: Record<PaquetesEstados, Paquete[]> = {
       [PaquetesEstados.Pendiente]: [],
       [PaquetesEstados.Asignado]: [],
-      [PaquetesEstados.EnRuta]: [],
       [PaquetesEstados.Entregado]: [],
       [PaquetesEstados.Fallido]: [],
     };
@@ -65,7 +64,6 @@ const PackagesManagement: React.FC = () => {
     return {
       [PaquetesEstados.Pendiente]: paquetesPorEstado[PaquetesEstados.Pendiente].length,
       [PaquetesEstados.Asignado]: paquetesPorEstado[PaquetesEstados.Asignado].length,
-      [PaquetesEstados.EnRuta]: paquetesPorEstado[PaquetesEstados.EnRuta].length,
       [PaquetesEstados.Entregado]: paquetesPorEstado[PaquetesEstados.Entregado].length,
       [PaquetesEstados.Fallido]: paquetesPorEstado[PaquetesEstados.Fallido].length,
     };
@@ -75,7 +73,6 @@ const PackagesManagement: React.FC = () => {
   const badgeColors: Record<PaquetesEstados, BadgeColor> = {
     [PaquetesEstados.Pendiente]: "warning",
     [PaquetesEstados.Asignado]: "info",
-    [PaquetesEstados.EnRuta]: "primary",
     [PaquetesEstados.Entregado]: "success",
     [PaquetesEstados.Fallido]: "error",
   };
