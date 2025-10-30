@@ -117,7 +117,7 @@ export const MapDriver = () => {
             disabled={isSimulating || !routePath.length}
             onClick={handleStartSimulation}
           >
-            Simular ruta
+            Iniciar ruta
           </Button>
         )}
       </Box>
