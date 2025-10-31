@@ -148,8 +148,11 @@ const ModalHistorial: React.FC<ModalHistorialProps> = ({
                   <TableRow key={index}>
                     <TableCell>{p.codigo_rastreo ?? "Sin código"}</TableCell>
                     <TableCell>
-                      {p.direccion_entrega ?? "Sin dirección"}
+                      {p.direccion_entrega
+                        ? `${JSON.stringify(p.direccion_entrega)}`
+                        : "Sin dirección"}
                     </TableCell>
+
                     <TableCell>{p.estado_paquete}</TableCell>
                   </TableRow>
                 ))}

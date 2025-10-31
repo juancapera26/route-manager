@@ -1,4 +1,3 @@
-// src/components/admin/routes/ModalDetallesRuta.tsx
 import React, { useState, useEffect } from "react";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
@@ -124,7 +123,8 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Teléfono:
                         </span>
                         <span className="text-xs font-medium text-gray-900 dark:text-white">
-                          {paquete.cliente?.telefono_movil || "-"}
+                          {paquete.cliente?.telefono || "-"}{" "}
+                          {/* Cambio a telefono */}
                         </span>
                       </div>
 
@@ -142,9 +142,10 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Dirección:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
-                          {paquete.direccion_entrega ||
-                            paquete.cliente?.direccion ||
-                            "-"}
+                          {/* Cambio de direccion */}
+                          {paquete.direccion_entrega
+                            ? `${paquete.direccion_entrega.calle}, ${paquete.direccion_entrega.numero}, ${paquete.direccion_entrega.ciudad}`
+                            : paquete.cliente?.direccion || "-"}
                         </p>
                       </div>
                     </div>

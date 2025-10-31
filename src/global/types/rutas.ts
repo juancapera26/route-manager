@@ -94,6 +94,7 @@ export interface Cliente {
   telefono?: string | null;
   correo?: string | null;
   tipo?: string | null;
+  direccion?: string | null;
 }
 
 export interface DireccionEntrega {
