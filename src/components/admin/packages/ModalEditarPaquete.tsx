@@ -19,12 +19,10 @@ interface ModalEditarPaqueteProps {
 interface FormErrors {
   cantidad?: string;
   valor_declarado?: string;
-  dimensiones?: {
-    largo?: string;
-    ancho?: string;
-    alto?: string;
-    peso?: string;
-  };
+  largo?: string;
+  ancho?: string;
+  alto?: string;
+  peso?: string;
 }
 
 const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
@@ -43,7 +41,11 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
     tipo_paquete: TipoPaquete.Pequeño,
     cantidad: 1,
     valor_declarado: 0,
-    dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+    // ← CAMBIO: Dimensiones como propiedades directas
+    largo: 0,
+    ancho: 0,
+    alto: 0,
+    peso: 0,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -60,7 +62,11 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
           tipo_paquete: paquete.tipo_paquete,
           cantidad: paquete.cantidad,
           valor_declarado: paquete.valor_declarado,
-          dimensiones: paquete.dimensiones,
+          // ← CAMBIO: Asignar dimensiones directamente
+          largo: paquete.largo,
+          ancho: paquete.ancho,
+          alto: paquete.alto,
+          peso: paquete.peso,
         });
       }
       setErrors({});
@@ -82,34 +88,29 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
       newErrors.valor_declarado = "El valor declarado es muy alto";
     }
 
-    const dimensionesErrors: FormErrors["dimensiones"] = {};
-    
-    if (formData.dimensiones.largo <= 0) {
-      dimensionesErrors.largo = "El largo debe ser mayor a 0";
-    } else if (formData.dimensiones.largo > 200) {
-      dimensionesErrors.largo = "Máximo 200cm";
+    // ← CAMBIO: Validaciones de dimensiones directas
+    if (formData.largo <= 0) {
+      newErrors.largo = "El largo debe ser mayor a 0";
+    } else if (formData.largo > 200) {
+      newErrors.largo = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.ancho <= 0) {
-      dimensionesErrors.ancho = "El ancho debe ser mayor a 0";
-    } else if (formData.dimensiones.ancho > 200) {
-      dimensionesErrors.ancho = "Máximo 200cm";
+    if (formData.ancho <= 0) {
+      newErrors.ancho = "El ancho debe ser mayor a 0";
+    } else if (formData.ancho > 200) {
+      newErrors.ancho = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.alto <= 0) {
-      dimensionesErrors.alto = "El alto debe ser mayor a 0";
-    } else if (formData.dimensiones.alto > 200) {
-      dimensionesErrors.alto = "Máximo 200cm";
+    if (formData.alto <= 0) {
+      newErrors.alto = "El alto debe ser mayor a 0";
+    } else if (formData.alto > 200) {
+      newErrors.alto = "Máximo 200cm";
     }
 
-    if (formData.dimensiones.peso <= 0) {
-      dimensionesErrors.peso = "El peso debe ser mayor a 0";
-    } else if (formData.dimensiones.peso > 50) {
-      dimensionesErrors.peso = "Máximo 50kg";
-    }
-
-    if (Object.keys(dimensionesErrors).length > 0) {
-      newErrors.dimensiones = dimensionesErrors;
+    if (formData.peso <= 0) {
+      newErrors.peso = "El peso debe ser mayor a 0";
+    } else if (formData.peso > 50) {
+      newErrors.peso = "Máximo 50kg";
     }
 
     setErrors(newErrors);
@@ -125,21 +126,12 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
+    // ← CAMBIO: Manejo simplificado de dimensiones
     if (["largo", "ancho", "alto", "peso"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
-        dimensiones: {
-          ...prev.dimensiones,
-          [name]: Math.max(0, Number(value)),
-        },
+        [name]: Math.max(0, Number(value)),
       }));
-      
-      if (errors.dimensiones?.[name as keyof FormErrors["dimensiones"]]) {
-        setErrors((prev) => ({
-          ...prev,
-          dimensiones: { ...prev.dimensiones, [name]: undefined },
-        }));
-      }
     } 
     else if (["cantidad", "valor_declarado"].includes(name)) {
       setFormData((prev) => ({ ...prev, [name]: Math.max(0, Number(value)) }));
@@ -168,11 +160,15 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
       return;
     }
 
+    // ← CAMBIO: Payload con dimensiones como propiedades directas
     const payload: PaqueteUpdate = {
       tipo_paquete: formData.tipo_paquete,
       cantidad: formData.cantidad,
       valor_declarado: formData.valor_declarado,
-      dimensiones: formData.dimensiones,
+      largo: formData.largo,
+      ancho: formData.ancho,
+      alto: formData.alto,
+      peso: formData.peso,
     };
 
     try {
@@ -211,6 +207,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Datos del destinatario (solo lectura) */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-yellow-300 dark:border-yellow-600">
             <div className="flex items-center gap-2 mb-4">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -281,6 +278,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
+          {/* Información del paquete */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información del paquete
@@ -344,6 +342,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
             </div>
           </div>
 
+          {/* Dimensiones del paquete */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Dimensiones del paquete
@@ -356,17 +355,15 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                   type="number"
                   name="largo"
                   placeholder="0"
-                  value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
+                  value={formData.largo === 0 ? "" : formData.largo}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
-                  className={errors.dimensiones?.largo ? "border-red-500" : ""}
+                  className={errors.largo ? "border-red-500" : ""}
                   disabled={isLoading}
                 />
-                {errors.dimensiones?.largo && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.dimensiones.largo}
-                  </p>
+                {errors.largo && (
+                  <p className="text-red-500 text-xs mt-1">{errors.largo}</p>
                 )}
               </div>
 
@@ -376,17 +373,15 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                   type="number"
                   name="ancho"
                   placeholder="0"
-                  value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
+                  value={formData.ancho === 0 ? "" : formData.ancho}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
-                  className={errors.dimensiones?.ancho ? "border-red-500" : ""}
+                  className={errors.ancho ? "border-red-500" : ""}
                   disabled={isLoading}
                 />
-                {errors.dimensiones?.ancho && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.dimensiones.ancho}
-                  </p>
+                {errors.ancho && (
+                  <p className="text-red-500 text-xs mt-1">{errors.ancho}</p>
                 )}
               </div>
 
@@ -396,17 +391,15 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                   type="number"
                   name="alto"
                   placeholder="0"
-                  value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
+                  value={formData.alto === 0 ? "" : formData.alto}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
-                  className={errors.dimensiones?.alto ? "border-red-500" : ""}
+                  className={errors.alto ? "border-red-500" : ""}
                   disabled={isLoading}
                 />
-                {errors.dimensiones?.alto && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.dimensiones.alto}
-                  </p>
+                {errors.alto && (
+                  <p className="text-red-500 text-xs mt-1">{errors.alto}</p>
                 )}
               </div>
 
@@ -416,22 +409,21 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
                   type="number"
                   name="peso"
                   placeholder="0"
-                  value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
+                  value={formData.peso === 0 ? "" : formData.peso}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
-                  className={errors.dimensiones?.peso ? "border-red-500" : ""}
+                  className={errors.peso ? "border-red-500" : ""}
                   disabled={isLoading}
                 />
-                {errors.dimensiones?.peso && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.dimensiones.peso}
-                  </p>
+                {errors.peso && (
+                  <p className="text-red-500 text-xs mt-1">{errors.peso}</p>
                 )}
               </div>
             </div>
           </div>
 
+          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"

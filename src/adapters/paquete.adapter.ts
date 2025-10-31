@@ -30,6 +30,18 @@ interface PaqueteFromAPI {
     telefono_movil: string;
   };
   
+  ruta?: {
+    id_ruta: number;
+    nombre?: string;
+    descripcion?: string;
+    estado_ruta: string;
+    conductor?: {
+      id_conductor: number;
+      nombre: string;
+      apellido: string;
+    };
+  };
+  
   barrio?: {
     id_barrio: number;
     nombre: string;
@@ -57,7 +69,7 @@ const mapTipoPaquete = (tipo: string): TipoPaquete => {
   return tipoMap[tipo] || TipoPaquete.Mediano;
 };
 
-// ✅ Adapter principal
+// ✅ Adapter corregido - sin objeto dimensiones
 export function mapApiToPaquete(apiResponse: PaqueteFromAPI): Paquete {
   return {
     id_paquete: apiResponse.id_paquete,
@@ -67,12 +79,11 @@ export function mapApiToPaquete(apiResponse: PaqueteFromAPI): Paquete {
     estado: mapEstadoPaquete(apiResponse.estado_paquete),
     tipo_paquete: mapTipoPaquete(apiResponse.tipo_paquete),
     
-    dimensiones: {
-      largo: apiResponse.largo,
-      ancho: apiResponse.ancho,
-      alto: apiResponse.alto,
-      peso: apiResponse.peso,
-    },
+    // ← CAMBIO: Dimensiones como propiedades directas
+    largo: apiResponse.largo,
+    ancho: apiResponse.ancho,
+    alto: apiResponse.alto,
+    peso: apiResponse.peso,
     
     cantidad: apiResponse.cantidad,
     valor_declarado: apiResponse.valor_declarado,
@@ -85,15 +96,8 @@ export function mapApiToPaquete(apiResponse: PaqueteFromAPI): Paquete {
     id_ruta: apiResponse.id_ruta,
     id_barrio: apiResponse.id_barrio,
     
-    cliente: apiResponse.cliente ? {
-      id_cliente: apiResponse.cliente.id_cliente,
-      nombre: apiResponse.cliente.nombre,
-      apellido: apiResponse.cliente.apellido,
-      direccion: apiResponse.cliente.direccion,
-      correo: apiResponse.cliente.correo,
-      telefono_movil: apiResponse.cliente.telefono_movil,
-    } : undefined,
-    
+    cliente: apiResponse.cliente,
+    ruta: apiResponse.ruta, // ← AGREGADO
     barrio: apiResponse.barrio,
   };
 }
