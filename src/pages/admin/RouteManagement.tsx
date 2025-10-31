@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from "react";
-
-// Componentes
 import TablaRutas from "../../components/admin/routes/TablaRutas";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
-
-// Tipos
 import { CreateRutaDto, Ruta } from "../../global/types/rutas";
-
-// Servicio
 import {
   getAllRutas,
   createRuta,
   deleteRuta,
 } from "../../global/services/routeService";
-
-// UI
 import Badge from "../../components/ui/badge/Badge";
 import Alert from "../../components/ui/alert/Alert";
-
-// Filtros
 import { useEstadoFilter } from "../../hooks/useEstadoFilter";
 import {
   opcionesFiltroRutas,
@@ -38,7 +28,6 @@ const RouteManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Estado para el modal de detalles
   const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
 
@@ -48,14 +37,12 @@ const RouteManagement: React.FC = () => {
     type: "info",
   });
 
-  // Hook del filtro
   const filtroEstado = useEstadoFilter({
     opciones: opcionesFiltroRutas,
     valorInicial: null,
     obtenerEstado: obtenerEstadoRuta,
   });
 
-  // 🟢 Cargar rutas desde backend
   useEffect(() => {
     const cargarDatos = async () => {
       setLoading(true);
@@ -78,10 +65,8 @@ const RouteManagement: React.FC = () => {
     setTimeout(() => setAlert((prev) => ({ ...prev, show: false })), 4000);
   };
 
-  // 🔵 Filtrar rutas por estado
   const rutasFiltradas = filtroEstado.filtrarPorEstado(todasLasRutas);
 
-  // 🔹 Función auxiliar para renderizar una sección
   const renderSeccion = (
     titulo: string,
     color: React.ComponentProps<typeof Badge>["color"],
@@ -115,7 +100,6 @@ const RouteManagement: React.FC = () => {
     </section>
   );
 
-  // ⚙️ Manejadores de acciones
   const handleAbrirModal = (rutaId: number, action: "details" | "assign") => {
     const ruta = todasLasRutas.find((r) => r.id_ruta === rutaId);
     if (!ruta) return;
@@ -130,9 +114,9 @@ const RouteManagement: React.FC = () => {
 
   const handleEliminarRuta = async (id_ruta: number) => {
     try {
-      const isDeleted = await deleteRuta(id_ruta); // Llamamos al servicio para eliminar la ruta
+      const isDeleted = await deleteRuta(id_ruta); 
       if (isDeleted) {
-        setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta)); // Actualizamos la lista de rutas
+        setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta)); 
         mostrarAlert("Ruta eliminada correctamente", "success");
       }
     } catch (error) {
@@ -153,18 +137,16 @@ const RouteManagement: React.FC = () => {
     mostrarAlert(`Ruta ${id_ruta} marcada como fallida`, "error");
   };
 
-  // 🟢 Crear ruta al hacer click en el botón
-  // 🟢 Crear ruta al hacer click en el botón
   const handleCrearRuta = async () => {
     const nuevaRutaData: CreateRutaDto = {
-      id_conductor: null, // Puedes asignar un valor o null dependiendo de tu lógica
-      id_vehiculo: null, // Lo mismo para id_vehiculo
+      id_conductor: null, 
+      id_vehiculo: null, 
     };
 
     setSaving(true);
     try {
-      const nuevaRuta = await createRuta(nuevaRutaData); // Llamamos al servicio para crear la ruta
-      setTodasLasRutas((prev) => [nuevaRuta, ...prev]); // Actualizamos la lista de rutas
+      const nuevaRuta = await createRuta(nuevaRutaData); 
+      setTodasLasRutas((prev) => [nuevaRuta, ...prev]); 
       mostrarAlert("Ruta creada correctamente", "success");
     } catch (error) {
       console.error("❌ Error al crear la ruta:", error);
@@ -184,14 +166,12 @@ const RouteManagement: React.FC = () => {
 
   return (
     <div className="p-6 space-y-8">
-      {/* 🟢 Encabezado con filtro y botón para agregar ruta */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Gestión de rutas
         </h1>
 
         <div className="flex items-center gap-4">
-          {/* Dropdown de filtro */}
           <EstadoFilterDropdown
             opciones={filtroEstado.opciones}
             valorSeleccionado={filtroEstado.estadoSeleccionado}
@@ -200,7 +180,6 @@ const RouteManagement: React.FC = () => {
             }
           />
 
-          {/* Botón para crear ruta */}
           <button
             onClick={handleCrearRuta}
             className="inline-flex items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
@@ -212,7 +191,6 @@ const RouteManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* 🟠 Alerta de acciones */}
       {alert.show && (
         <Alert
           variant={alert.type}
@@ -222,7 +200,6 @@ const RouteManagement: React.FC = () => {
         />
       )}
 
-      {/* 🟣 Mostrar secciones según el filtro seleccionado */}
       {filtroEstado.estadoSeleccionado === null ? (
         <div>
           {renderSeccion(

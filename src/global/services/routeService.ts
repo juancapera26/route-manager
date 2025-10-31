@@ -71,11 +71,9 @@ export const asignarConductor = async (
   data: AsignarConductorDto
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/asignar-conductor`;
-
-  // Asegúrate de convertir id_conductor a número
   const idConductor =
     typeof data.id_conductor === "string"
-      ? parseInt(data.id_conductor, 10) // Convierte id_conductor a número si es un string
+      ? parseInt(data.id_conductor, 10) 
       : data.id_conductor;
 
   const dataWithCorrectType = { ...data, id_conductor: idConductor };
@@ -84,7 +82,7 @@ export const asignarConductor = async (
 
   try {
     const response = await axios.patch<Ruta>(url, dataWithCorrectType);
-    console.log("✅ Conductor asignado:", response.data);
+    console.log(" Conductor asignado:", response.data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
