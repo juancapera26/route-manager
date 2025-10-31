@@ -1,5 +1,3 @@
-// src/global/types/rutas.ts
-
 // ----------------- Rutas -----------------
 export interface Ruta {
   id_ruta: number;
@@ -26,8 +24,8 @@ export interface Ruta {
   } | null;
 
   paquete?: {
-    cliente: any;
-    direccion_entrega: any;
+    cliente: Cliente;
+    direccion_entrega: DireccionEntrega;
     id_paquete: number;
     codigo_rastreo?: string | null;
     estado_paquete:
@@ -48,12 +46,10 @@ export interface Ruta {
 
 // ----------------- Formularios -----------------
 export interface RutaFormData {
-  zona: ZonaRuta;
-  horario: {
-    inicio: string;
-    fin: string;
-  };
   puntos_entrega: string;
+  id_conductor?: number | null; // Agregado como opcional
+  id_vehiculo?: number | null; // Agregado como opcional
+  // ... otras propiedades si es necesario
 }
 
 // ----------------- DTO para crear ruta -----------------
@@ -61,14 +57,19 @@ export interface CreateRutaDto {
   ruta_estado?: RutaEstado; // opcional, backend usa "Pendiente" por defecto
   fecha_inicio?: string; // ISO string
   fecha_fin?: string; // ISO string opcional
-  id_conductor: number;
-  id_vehiculo: number;
+  id_conductor?: number | null; // Cambiado para permitir null o no asignar valor
+  id_vehiculo?: number | null; // Cambiado para permitir null o no asignar valor
   cod_manifiesto?: string;
 }
 
 // ----------------- DTO para cambiar estado -----------------
 export interface CambiarEstadoRutaDto {
   estado_ruta: RutaEstado;
+}
+
+// ----------------- DTO para asignar conductor -----------------
+export interface AsignarConductorDto {
+  id_conductor: number;
 }
 
 // ----------------- Enums -----------------
@@ -84,4 +85,21 @@ export enum ZonaRuta {
   Sur = "Sur",
   Centro = "Centro",
   Norte = "Norte",
+}
+
+export interface Cliente {
+  id_cliente?: number;
+  nombre: string;
+  apellido?: string;
+  telefono?: string | null;
+  correo?: string | null;
+  tipo?: string | null;
+}
+
+export interface DireccionEntrega {
+  calle?: string;
+  numero?: string;
+  ciudad?: string;
+  departamento?: string;
+  complemento?: string | null;
 }

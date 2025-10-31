@@ -1,10 +1,5 @@
-// src/components/admin/drivers/TablaConductores.tsx
 import React, { useState } from "react";
-import {
-  DriveFileRenameOutline,
-  ContentPasteSearch,
-  DeleteOutline,
-} from "@mui/icons-material";
+import { Eye, Edit, Trash, UserCheck } from "lucide-react"; // Importar íconos de Lucide
 import {
   DataTable,
   ColumnDef,
@@ -18,15 +13,22 @@ import ModalDeleteDriver from "../../components/admin/drivers/ModalDeleteDriver"
 import { updateConductor } from "../../global/services/driverService";
 import useDriver from "../../hooks/admin/condutores/useDriver";
 import { ModalViewDriver } from "../../components/admin/drivers/MapScreenshotModal";
+import { asignarConductor } from "../../global/services/routeService";
+import { AsignarConductorDto } from "../../global/types/rutas";
+import { useRoutes } from "../../hooks/admin/rutas/useRoutes";
+import AssignRouteModal from "../../components/admin/drivers/ModalAsignarConductor";
 
 const DriversManagement: React.FC = () => {
   const { data: conductores, loading, refetch } = useDriver();
   const { getAccessToken } = useAuth();
+  const { rutas, refetch: refetchRutas } = useRoutes();
 
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
+  const [openAssignModal, setOpenAssignModal] = useState(false); // Se utiliza para mostrar el modal de asignación
 
   const {
     handleDeleteDriver,
@@ -46,11 +48,11 @@ const DriversManagement: React.FC = () => {
 
     try {
       await updateConductor(selectedDriver.id, updated, token);
-      refetch?.();
+      refetch?.(); // Refresca la lista de conductores
     } catch (error) {
       console.error("Error al actualizar conductor:", error);
     } finally {
-      setOpenEditModal(false);
+      setOpenEditModal(false); // Cierra el modal de edición
     }
   };
 
@@ -62,7 +64,7 @@ const DriversManagement: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!selectedDriver) return;
     await handleDeleteDriver(selectedDriver.id);
-    setOpenDeleteModal(false);
+    setOpenDeleteModal(false); // Cierra el modal de eliminación
   };
 
   const handleView = (item: Conductor) => {
@@ -70,9 +72,33 @@ const DriversManagement: React.FC = () => {
     setOpenViewModal(true);
   };
 
+  const handleAssign = (driver: Conductor) => {
+    setSelectedDriver(driver);
+    setOpenAssignModal(true); // Abre el modal de asignación
+  };
+
+  const handleSelectRoute = (routeId: number) => {
+    setSelectedRouteId(routeId); // Establece el ID de la ruta seleccionada
+  };
+
+  const handleConfirmAssign = async () => {
+    if (!selectedDriver || selectedRouteId === null) return;
+
+    const data: AsignarConductorDto = { id_conductor: selectedDriver.id };
+    try {
+      await asignarConductor(selectedRouteId, data); // Asigna el conductor a la ruta seleccionada
+      alert("✅ Conductor asignado correctamente!");
+      refetchRutas(); // Refresca las rutas después de la asignación
+      setOpenAssignModal(false); // Cierra el modal de asignación
+    } catch (error) {
+      console.error("❌ Error al asignar conductor:", error);
+      alert("Error al asignar conductor.");
+    }
+  };
+
   const columns: ColumnDef<Conductor>[] = [
     { key: "id", header: "ID", accessor: "id" },
-    { key: "nomre", header: "Nombre", accessor: "nombre" },
+    { key: "nombre", header: "Nombre", accessor: "nombre" },
     { key: "apellido", header: "Apellido", accessor: "apellido" },
     { key: "correo", header: "Correo", accessor: "correo" },
     { key: "telefono", header: "Teléfono", accessor: "telefono" },
@@ -84,7 +110,7 @@ const DriversManagement: React.FC = () => {
     {
       key: "view",
       label: "Ver",
-      icon: <ContentPasteSearch />,
+      icon: <Eye />,
       onClick: handleView,
       size: "sm",
       variant: "secondary",
@@ -92,15 +118,23 @@ const DriversManagement: React.FC = () => {
     {
       key: "edit",
       label: "Editar",
-      icon: <DriveFileRenameOutline />,
+      icon: <Edit />,
       onClick: handleEdit,
       size: "sm",
       variant: "default",
     },
     {
+      key: "assign",
+      label: "Asignar a Ruta",
+      icon: <UserCheck />,
+      onClick: handleAssign,
+      size: "sm",
+      variant: "outline",
+    },
+    {
       key: "delete",
       label: "Eliminar",
-      icon: <DeleteOutline />,
+      icon: <Trash />,
       onClick: handleDelete,
       size: "sm",
       variant: "destructive",
@@ -120,7 +154,7 @@ const DriversManagement: React.FC = () => {
         keyField="id"
       />
 
-      {/* 🟦 Modal de Edición */}
+      {/* Modal de Edición */}
       <ModalEditarConductor
         isOpen={openEditModal}
         onClose={() => setOpenEditModal(false)}
@@ -128,7 +162,7 @@ const DriversManagement: React.FC = () => {
         onSave={handleSave}
       />
 
-      {/* 🟥 Modal de Eliminación */}
+      {/* Modal de Eliminación */}
       <ModalDeleteDriver
         isOpen={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
@@ -138,12 +172,21 @@ const DriversManagement: React.FC = () => {
         error={deleteError}
       />
 
-      {/* 👁️ Modal de Vista */}
+      {/* Modal de Vista */}
       <ModalViewDriver
-        isOpen={openViewModal} // 👈 cambia 'open' por 'isOpen'
+        isOpen={openViewModal}
         onClose={() => setOpenViewModal(false)}
         conductor={selectedDriver}
-        screenshots={[]} // 👈 mientras no tengas imágenes reales
+        screenshots={[]}
+      />
+
+      {/* Modal de Asignación a Ruta */}
+      <AssignRouteModal
+        routes={rutas}
+        onAssign={handleConfirmAssign}
+        onClose={() => setOpenAssignModal(false)}
+        isOpen={openAssignModal} // Pasamos el estado para controlar la visibilidad
+        onSelectRoute={handleSelectRoute} // Función para seleccionar la ruta
       />
     </div>
   );

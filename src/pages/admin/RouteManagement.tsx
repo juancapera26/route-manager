@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 
 // Componentes
-import { ModalAgregarRuta } from "../../components/admin/routes/ModalAgregarRuta";
 import TablaRutas from "../../components/admin/routes/TablaRutas";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
 
 // Tipos
-import { Ruta, RutaEstado, RutaFormData } from "../../global/types/rutas";
+import { CreateRutaDto, Ruta } from "../../global/types/rutas";
 
 // Servicio
-import { getAllRutas } from "../../global/services/routeService";
+import {
+  getAllRutas,
+  createRuta,
+  deleteRuta,
+} from "../../global/services/routeService";
 
 // UI
 import Badge from "../../components/ui/badge/Badge";
@@ -34,9 +37,8 @@ const RouteManagement: React.FC = () => {
   const [todasLasRutas, setTodasLasRutas] = useState<Ruta[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 🔹 Estado para el modal de detalles
+  // Estado para el modal de detalles
   const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
 
@@ -123,13 +125,20 @@ const RouteManagement: React.FC = () => {
       setModalDetallesAbierto(true);
     } else if (action === "assign") {
       mostrarAlert(`Asignar ruta ${rutaId}`, "info");
-      // Aquí podrías abrir un modal de asignación si lo tienes
     }
   };
 
-  const handleEliminarRuta = (id_ruta: number) => {
-    setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta));
-    mostrarAlert("Ruta eliminada correctamente", "success");
+  const handleEliminarRuta = async (id_ruta: number) => {
+    try {
+      const isDeleted = await deleteRuta(id_ruta); // Llamamos al servicio para eliminar la ruta
+      if (isDeleted) {
+        setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta)); // Actualizamos la lista de rutas
+        mostrarAlert("Ruta eliminada correctamente", "success");
+      }
+    } catch (error) {
+      console.error("❌ Error al eliminar la ruta:", error);
+      mostrarAlert("Error al eliminar la ruta", "error");
+    }
   };
 
   const handleCancelarAsignacion = (id_ruta: number) => {
@@ -142,6 +151,27 @@ const RouteManagement: React.FC = () => {
 
   const handleMarcarFallid_ruta = (id_ruta: number) => {
     mostrarAlert(`Ruta ${id_ruta} marcada como fallida`, "error");
+  };
+
+  // 🟢 Crear ruta al hacer click en el botón
+  // 🟢 Crear ruta al hacer click en el botón
+  const handleCrearRuta = async () => {
+    const nuevaRutaData: CreateRutaDto = {
+      id_conductor: null, // Puedes asignar un valor o null dependiendo de tu lógica
+      id_vehiculo: null, // Lo mismo para id_vehiculo
+    };
+
+    setSaving(true);
+    try {
+      const nuevaRuta = await createRuta(nuevaRutaData); // Llamamos al servicio para crear la ruta
+      setTodasLasRutas((prev) => [nuevaRuta, ...prev]); // Actualizamos la lista de rutas
+      mostrarAlert("Ruta creada correctamente", "success");
+    } catch (error) {
+      console.error("❌ Error al crear la ruta:", error);
+      mostrarAlert("Error al crear la ruta", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -170,13 +200,14 @@ const RouteManagement: React.FC = () => {
             }
           />
 
-          {/* Botón verde de agregar */}
+          {/* Botón para crear ruta */}
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleCrearRuta}
             className="inline-flex items-center px-3 py-2.5 bg-success-700 hover:bg-success-800 disabled:bg-blue-400 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+            disabled={saving}
           >
             <Plus className="w-4 h-4 mr-1" />
-            {saving ? "Creando..." : "Agregar"}
+            {saving ? "Creando..." : "Agregar Ruta"}
           </button>
         </div>
       </div>
@@ -193,7 +224,7 @@ const RouteManagement: React.FC = () => {
 
       {/* 🟣 Mostrar secciones según el filtro seleccionado */}
       {filtroEstado.estadoSeleccionado === null ? (
-        <>
+        <div>
           {renderSeccion(
             "Pendientes",
             "warning",
@@ -211,46 +242,19 @@ const RouteManagement: React.FC = () => {
           )}
           {renderSeccion(
             "Fallidas",
-            "destructive" as React.ComponentProps<typeof Badge>["color"],
+            "success",
             todasLasRutas.filter((r) => r.estado_ruta === "Fallida")
           )}
-        </>
+        </div>
       ) : (
-        <>
+        <div>
           {renderSeccion(
             filtroEstado.estadoSeleccionado,
-            filtroEstado.estadoSeleccionado === "Pendiente"
-              ? "warning"
-              : filtroEstado.estadoSeleccionado === "Asignada"
-              ? "info"
-              : filtroEstado.estadoSeleccionado === "Completada"
-              ? "success"
-              : ("destructive" as React.ComponentProps<typeof Badge>["color"]),
+            "warning",
             rutasFiltradas
           )}
-        </>
+        </div>
       )}
-
-      {/* ➕ Modal para agregar nueva ruta */}
-      <ModalAgregarRuta
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={(r: RutaFormData) => {
-          // Convertimos RutaFormData a Ruta
-          const nuevaRuta: Ruta = {
-            id_ruta: Math.floor(Math.random() * 100000), // o el ID que devuelva tu backend
-            estado_ruta: RutaEstado.Pendiente,
-            fecha_inicio: r.horario.inicio,
-            fecha_creacion: new Date().toISOString(),
-            ...r,
-          };
-
-          setTodasLasRutas((prev) => [nuevaRuta, ...prev]);
-          mostrarAlert("Ruta agregada correctamente", "success");
-          setSaving(false);
-        }}
-        isLoading={saving}
-      />
     </div>
   );
 };

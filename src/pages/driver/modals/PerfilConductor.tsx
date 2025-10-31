@@ -18,7 +18,7 @@ import {
   updateFotoPerfil,
   ConductorUpdated,
 } from "../../../global/services/driverService";
-import { API_URL } from "../../../config"; // ✅ Usando config centralizado
+import { API_URL } from "../../../config"; 
 
 interface PerfilConductorProps {
   nombre: string;
@@ -79,7 +79,7 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
             : `${API_URL}/${updated.foto_perfil}`
         );
       }
-      console.log("✅ Foto de perfil actualizada");
+      console.log(" Foto de perfil actualizada");
     } catch (err) {
       console.error("❌ Error al actualizar foto:", err);
     } finally {
@@ -196,7 +196,6 @@ const PerfilConductor: React.FC<PerfilConductorProps> = ({
 
       <Divider orientation="vertical" flexItem />
 
-      {/* Columna derecha */}
       <Box sx={{ flex: 1 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 6 }}>
           <Typography

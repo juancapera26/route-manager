@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
 import Label from "../../form/Label";
-import Input from "../../form/input/InputField";
 import TextArea from "../../form/input/TextArea";
 import Alert from "../../ui/alert/Alert";
-import { RutaFormData, ZonaRuta } from "../../../global/types/rutas";
+import { RutaFormData } from "../../../global/types/rutas";
 import { Add } from "@mui/icons-material";
 
 interface ModalAgregarRutaProps {
@@ -15,11 +14,6 @@ interface ModalAgregarRutaProps {
 }
 
 interface ErroresFormulario {
-  zona?: string;
-  horario?: {
-    inicio?: string;
-    fin?: string;
-  };
   puntos_entrega?: string;
 }
 
@@ -30,8 +24,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   isLoading = false,
 }) => {
   const [formData, setFormData] = useState<RutaFormData>({
-    zona: ZonaRuta.Norte,
-    horario: { inicio: "", fin: "" },
     puntos_entrega: "",
   });
 
@@ -42,52 +34,9 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   } | null>(null);
 
   // ===================== VALIDACIONES =====================
-  const validarFechaHora = (fechaHoraStr: string): boolean => {
-    if (!fechaHoraStr) return false;
-    const fecha = new Date(fechaHoraStr);
-    const ahora = new Date();
-    return !isNaN(fecha.getTime()) && fecha > ahora;
-  };
-
-  const validarRangoTiempo = (inicio: string, fin: string): boolean => {
-    if (!inicio || !fin) return true;
-    const fechaInicio = new Date(inicio);
-    const fechaFin = new Date(fin);
-    return fechaFin > fechaInicio;
-  };
 
   const validarFormulario = (): boolean => {
     const nuevosErrores: ErroresFormulario = {};
-
-    // Validar zona
-    if (!formData.zona || !Object.values(ZonaRuta).includes(formData.zona)) {
-      nuevosErrores.zona = "La zona es requerida";
-    }
-
-    // Validar horarios
-    const erroresHorario: ErroresFormulario["horario"] = {};
-
-    if (!formData.horario.inicio.trim()) {
-      erroresHorario.inicio = "La fecha y hora de inicio son requeridas";
-    } else if (!validarFechaHora(formData.horario.inicio)) {
-      erroresHorario.inicio = "La fecha debe ser válida y futura";
-    }
-
-    if (!formData.horario.fin.trim()) {
-      erroresHorario.fin = "La fecha y hora de fin son requeridas";
-    } else if (!validarFechaHora(formData.horario.fin)) {
-      erroresHorario.fin = "La fecha debe ser válida y futura";
-    }
-
-    if (formData.horario.inicio && formData.horario.fin) {
-      if (!validarRangoTiempo(formData.horario.inicio, formData.horario.fin)) {
-        erroresHorario.fin = "La hora de fin debe ser posterior a la de inicio";
-      }
-    }
-
-    if (Object.keys(erroresHorario).length > 0) {
-      nuevosErrores.horario = erroresHorario;
-    }
 
     // Validar puntos de entrega
     if (!formData.puntos_entrega.trim()) {
@@ -103,33 +52,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   };
 
   // ===================== MANEJADORES =====================
-  const manejarCambioInput = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    // Limpiar errores al modificar
-    if (name === "zona" && errores.zona) {
-      setErrores((prev) => ({ ...prev, zona: undefined }));
-    } else if (
-      ["inicio", "fin"].includes(name) &&
-      errores.horario?.[name as keyof ErroresFormulario["horario"]]
-    ) {
-      setErrores((prev) => ({
-        ...prev,
-        horario: { ...prev.horario, [name]: undefined },
-      }));
-    }
-
-    if (name === "zona") {
-      setFormData((prev) => ({ ...prev, zona: value as ZonaRuta }));
-    } else if (["inicio", "fin"].includes(name)) {
-      setFormData((prev) => ({
-        ...prev,
-        horario: { ...prev.horario, [name]: value },
-      }));
-    }
-  };
 
   const manejarCambioTextArea = (valor: string) => {
     if (errores.puntos_entrega) {
@@ -155,8 +77,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
 
       // Reiniciar formulario
       setFormData({
-        zona: ZonaRuta.Norte,
-        horario: { inicio: "", fin: "" },
         puntos_entrega: "",
       });
       setErrores({});
@@ -180,6 +100,7 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
   };
 
   // ===================== RENDER =====================
+
   return (
     <Modal isOpen={isOpen} onClose={manejarCerrar}>
       <div className="max-w-xl mx-auto">
@@ -202,49 +123,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
         )}
 
         <form onSubmit={manejarEnvio} className="space-y-6">
-          {/* Horarios */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Horarios de la ruta
-            </h4>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Hora de inicio *</Label>
-                <Input
-                  type="datetime-local"
-                  name="inicio"
-                  value={formData.horario.inicio}
-                  onChange={manejarCambioInput}
-                  className={errores.horario?.inicio ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errores.horario?.inicio && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errores.horario.inicio}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label>Hora de fin *</Label>
-                <Input
-                  type="datetime-local"
-                  name="fin"
-                  value={formData.horario.fin}
-                  onChange={manejarCambioInput}
-                  className={errores.horario?.fin ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errores.horario?.fin && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errores.horario.fin}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Información de la ruta */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
@@ -252,30 +130,6 @@ export const ModalAgregarRuta: React.FC<ModalAgregarRutaProps> = ({
             </h4>
 
             <div className="space-y-4">
-              <div>
-                <Label>Zona *</Label>
-                <select
-                  name="zona"
-                  value={formData.zona}
-                  onChange={manejarCambioInput}
-                  className={`h-11 w-full rounded-lg border px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 transition-colors ${
-                    errores.zona
-                      ? "border-red-500 dark:border-red-500"
-                      : "border-gray-300 dark:border-gray-600"
-                  }`}
-                  disabled={isLoading}
-                >
-                  {Object.values(ZonaRuta).map((zona) => (
-                    <option key={zona} value={zona}>
-                      {zona}
-                    </option>
-                  ))}
-                </select>
-                {errores.zona && (
-                  <p className="text-red-500 text-xs mt-1">{errores.zona}</p>
-                )}
-              </div>
-
               <div>
                 <Label>Puntos de entrega *</Label>
                 <TextArea
