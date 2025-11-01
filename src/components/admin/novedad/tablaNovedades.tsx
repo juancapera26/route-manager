@@ -1,232 +1,118 @@
-// components/admin/novedad/tablaNovedades.tsx
-import { useState, useEffect } from "react";
-import { auth } from "../../../firebase/firebaseConfig"; // Ajusta la ruta según tu proyecto
-import { API_URL } from "../../../config";
+import React from "react";
+import { Image as ImageIcon, FileText } from "lucide-react";
+import { ColumnDef } from "../../ui/table/DataTable";
+import { Novedad } from "../../../global/types/novedades";
 
-interface Novedad {
-  id_novedad: number;
-  descripcion: string;
-  tipo: string;
-  fecha: string;
-  imagen: string | null;
-  usuario?: {
-    nombre: string;
-    apellido: string;
-    correo: string;
-  } | null;
+// ===================== PROPS =====================
+interface NovedadesTableProps {
+  novedades: Novedad[];
+  onVerImagen: (url: string) => void;
+  onRefetch?: () => void;
 }
 
-const NovedadesTable = () => {
-  const [novedades, setNovedades] = useState<Novedad[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [imagenModal, setImagenModal] = useState<{
-    url: string;
-    token: string;
-  } | null>(null);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const itemsPorPagina = 10;
+// ===================== COLUMNAS DE LA TABLA =====================
+export const NOVEDADES_COLUMNS: Record<string, ColumnDef<Novedad>> = {
+  id_reporte: {
+    key: "id_reporte",
+    header: "ID",
+    accessor: "id_reporte",
+    className: "font-mono text-sm",
+    sortable: true,
+  },
+  descripcion: {
+    key: "descripcion",
+    header: "DESCRIPCIÓN",
+    accessor: "descripcion",
+    className: "text-sm",
+  },
+  tipo: {
+    key: "tipo",
+    header: "TIPO",
+    accessor: "tipo",
+    className: "capitalize text-sm",
+  },
+  fecha_reporte: {
+    key: "fecha_reporte",
+    header: "FECHA",
+    accessor: (item) =>
+      new Date(item.fecha_reporte).toLocaleDateString("es-ES"),
+    sortable: true,
+  },
+};
 
-  useEffect(() => {
-    cargarNovedades();
-  }, []);
-
-  const cargarNovedades = async () => {
-    try {
-      setLoading(true);
-      const token = await auth.currentUser?.getIdToken();
-
-      if (!token) {
-        alert("No estás autenticado");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/reportes/historial`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Error al cargar novedades");
-
-      const data = await response.json();
-      setNovedades(data);
-    } catch (error) {
-      console.error("Error al cargar novedades:", error);
-      alert("Error al cargar el historial de novedades");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const abrirImagen = async (idNovedad: number) => {
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        alert("Token no disponible");
-        return;
-      }
-
-      const url = `${API_URL}/reportes/imagen/${idNovedad}`;
-
-      const response = await fetch(url, {
-        method: "HEAD",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) setImagenModal({ url, token });
-      else alert("Imagen no disponible");
-    } catch (error) {
-      console.error("Error al cargar imagen:", error);
-      alert("Error al cargar la imagen");
-    }
-  };
-
-  // Paginación
-  const indiceUltimo = paginaActual * itemsPorPagina;
-  const indicePrimero = indiceUltimo - itemsPorPagina;
-  const novedadesActuales = novedades.slice(indicePrimero, indiceUltimo);
-  const totalPaginas = Math.ceil(novedades.length / itemsPorPagina);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-lg text-gray-600">
-          Cargando historial de novedades...
-        </div>
-      </div>
-    );
-  }
-
+// ===================== COMPONENTE DE TABLA =====================
+const NovedadesTable: React.FC<NovedadesTableProps> = ({
+  novedades,
+  onVerImagen,
+}) => {
   return (
-    <div className="space-y-4">
-      {/* Tabla */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th>ID</th>
-                <th>Conductor</th>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Imagen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {novedadesActuales.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center text-gray-500">
-                    No hay novedades registradas
+    <div className="bg-[#141C2F] rounded-xl p-4 shadow-md border border-[#1F2A44]">
+      <h2 className="text-lg font-semibold text-white mb-4">
+        Gestión de Novedades
+      </h2>
+
+      <table className="min-w-full border-collapse text-sm text-gray-200">
+        <thead className="bg-[#1F2A44] text-gray-300">
+          <tr>
+            {Object.values(NOVEDADES_COLUMNS).map((col) => (
+              <th
+                key={col.key}
+                className="p-3 text-left font-semibold text-xs tracking-wide"
+              >
+                {col.header}
+              </th>
+            ))}
+            <th className="p-3 text-left font-semibold text-xs tracking-wide">
+              IMAGEN
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {novedades.length === 0 ? (
+            <tr>
+              <td
+                colSpan={Object.keys(NOVEDADES_COLUMNS).length + 1}
+                className="text-center py-10 text-gray-500 italic"
+              >
+                <div className="flex flex-col items-center justify-center">
+                  <FileText className="w-6 h-6 mb-2 text-gray-600" />
+                  No hay novedades registradas
+                </div>
+              </td>
+            </tr>
+          ) : (
+            novedades.map((item) => (
+              <tr
+                key={item.id_reporte}
+                className="border-b border-[#1F2A44] hover:bg-[#1A2238] transition-colors"
+              >
+                {Object.values(NOVEDADES_COLUMNS).map((col) => (
+                  <td key={col.key} className="p-3 text-sm">
+                    {typeof col.accessor === "function"
+                      ? col.accessor(item)
+                      : (item as any)[col.accessor]}
                   </td>
-                </tr>
-              ) : (
-                novedadesActuales.map((novedad) => (
-                  <tr key={novedad.id_novedad}>
-                    <td>{novedad.id_novedad}</td>
-                    <td>
-                      {novedad.usuario ? (
-                        <>
-                          {novedad.usuario.nombre} {novedad.usuario.apellido}
-                          <div className="text-xs text-gray-500">
-                            {novedad.usuario.correo}
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400">
-                          Usuario no disponible
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {new Date(novedad.fecha).toLocaleDateString("es-CO")}
-                    </td>
-                    <td>{novedad.tipo.replace("_", " ")}</td>
-                    <td>{novedad.descripcion}</td>
-                    <td>
-                      {novedad.imagen ? (
-                        <button
-                          onClick={() => abrirImagen(novedad.id_novedad)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                        >
-                          Ver Imagen
-                        </button>
-                      ) : (
-                        <span className="text-gray-400 text-xs">
-                          Sin imagen
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ))}
 
-      {/* Paginación */}
-      {totalPaginas > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow">
-          <div className="text-sm text-gray-700">
-            Mostrando <span className="font-medium">{indicePrimero + 1}</span> a{" "}
-            <span className="font-medium">
-              {Math.min(indiceUltimo, novedades.length)}
-            </span>{" "}
-            de <span className="font-medium">{novedades.length}</span> novedades
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
-              disabled={paginaActual === 1}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
-              Anterior
-            </button>
-            <span className="px-4 py-2 text-sm text-gray-700">
-              Página {paginaActual} de {totalPaginas}
-            </span>
-            <button
-              onClick={() =>
-                setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))
-              }
-              disabled={paginaActual === totalPaginas}
-              className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
-              Siguiente
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Imagen */}
-      {imagenModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setImagenModal(null)}
-        >
-          <div
-            className="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setImagenModal(null)}
-              className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none transition-colors"
-            >
-              ✕ Cerrar
-            </button>
-            <div className="p-4">
-              <img
-                src={`${imagenModal.url}?auth=${imagenModal.token}`}
-                alt="Imagen de novedad"
-                className="w-full h-full object-contain max-h-[80vh]"
-                onError={() => {
-                  alert("Error al cargar la imagen");
-                  setImagenModal(null);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+                <td className="p-3 text-sm text-center">
+                  {item.imagen ? (
+                    <button
+                      onClick={() => onVerImagen(item.imagen!)}
+                      className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      Ver
+                    </button>
+                  ) : (
+                    <span className="text-gray-500 italic">Sin imagen</span>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };

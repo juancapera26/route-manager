@@ -10,7 +10,8 @@ import { ModalAsignarPaquete } from "../../components/admin/packages/ModalAsigna
 import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
 import { Paquete, PaquetesEstados } from "../../global/types/paquete.types";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
+
+//orquestador
 
 const PackagesManagement: React.FC = () => {
   const {
@@ -21,7 +22,7 @@ const PackagesManagement: React.FC = () => {
     columnsForCurrentState,
     actionsForCurrentState,
     
-    // Modales
+    // Modales existentes
     modalDetalles,
     abrirDetalles,
     cerrarDetalles,
@@ -31,11 +32,18 @@ const PackagesManagement: React.FC = () => {
     cerrarEdicion,
     handleUpdateFromModal,
     
+    // ← NUEVOS: Modal de asignación
+    modalAsignacion,
+    cerrarAsignacion,
+    
+    // ← NUEVOS: Rutas disponibles
+    availableRoutes,
+    
     // Handlers CRUD
     handleCreatePaquete,
-    handleUpdatePaquete,
-    handleDeletePaquete,
-    handleTrack,
+    
+    // ← NUEVO: Handler de asignación
+    handleAssign,
   } = usePackagesManagementHook();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,9 +76,8 @@ const PackagesManagement: React.FC = () => {
       [PaquetesEstados.Entregado]: paquetesPorEstado[PaquetesEstados.Entregado].length,
       [PaquetesEstados.Fallido]: paquetesPorEstado[PaquetesEstados.Fallido].length,
       todos: total,
-      
     };
-  }, [paquetesPorEstado]);
+  }, [paquetesPorEstado, data]);
 
   // Mapa de estados a colores de badge
   const badgeColors: Record<PaquetesEstados, BadgeColor> = {
@@ -80,7 +87,7 @@ const PackagesManagement: React.FC = () => {
     [PaquetesEstados.Fallido]: "error",
   };
 
-  // ✅ HANDLER crear paquete - retorna boolean correctamente
+  // ✅ HANDLER crear paquete
   const handleCreate = async (payload: any): Promise<boolean> => {
     setSaving(true);
     try {
@@ -92,6 +99,17 @@ const PackagesManagement: React.FC = () => {
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ← NUEVO: Handler para confirmar asignación desde el modal
+  const handleConfirmarAsignacion = async (rutaId: number) => {
+    if (!modalAsignacion.paquete) return;
+    
+    try {
+      await handleAssign(modalAsignacion.paquete, rutaId);
+    } catch (error) {
+      console.error('Error al asignar paquete:', error);
     }
   };
  
@@ -210,6 +228,8 @@ const PackagesManagement: React.FC = () => {
         </section>
       )}
 
+      {/* ========== MODALES ========== */}
+
       {/* ✅ Modal para agregar paquetes */}
       <ModalAgregarPaquete
         isOpen={isModalOpen}
@@ -233,13 +253,15 @@ const PackagesManagement: React.FC = () => {
         cerrarModalDetalles={cerrarDetalles}
       />
 
-      { <ModalAsignarPaquete
-        isOpen={false}
-        action="assign"
-        rutasDisponibles={[]}
-        cerrarModal={() => {}}
-        handleConfirmarAsignacion={() => {}}
-      /> }
+      {/* ← NUEVO: Modal para asignar paquete a ruta */}
+      <ModalAsignarPaquete
+        isOpen={modalAsignacion.open}
+        onClose={cerrarAsignacion}
+        paquete={modalAsignacion.paquete}
+        rutasDisponibles={availableRoutes || []}
+        loading={modalAsignacion.loading}
+        onConfirm={handleConfirmarAsignacion}
+      />
     </div>
   );
 };

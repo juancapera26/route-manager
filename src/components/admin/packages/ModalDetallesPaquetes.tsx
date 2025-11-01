@@ -1,3 +1,4 @@
+// components/admin/packages/ModalDetallesPaquetes.tsx
 import React from 'react';
 import { Modal } from '../../ui/modal';
 import Badge from '../../ui/badge/Badge';
@@ -8,8 +9,11 @@ interface ModalDetallesProps {
   detallesPaquete: Paquete | null;
   cerrarModalDetalles: () => void;
 }
-
-export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ detallesPaquete, cerrarModalDetalles }) => {
+//modal para detalles paquete
+export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ 
+  detallesPaquete, 
+  cerrarModalDetalles 
+}) => {
   return (
     <Modal isOpen={!!detallesPaquete} onClose={cerrarModalDetalles}>
       {detallesPaquete && (
@@ -77,7 +81,7 @@ export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ detallesPa
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Ruta:</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {detallesPaquete.id_ruta || 'Sin asignar'}
+                    {detallesPaquete.ruta?.nombre || detallesPaquete.id_ruta || 'Sin asignar'}
                   </span>
                 </div>
                 {detallesPaquete.barrio && (
@@ -101,25 +105,25 @@ export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ detallesPa
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Largo:</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {detallesPaquete.dimensiones.largo} cm
+                    {detallesPaquete.largo} cm
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Ancho:</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {detallesPaquete.dimensiones.ancho} cm
+                    {detallesPaquete.ancho} cm
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Alto:</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {detallesPaquete.dimensiones.alto} cm
+                    {detallesPaquete.alto} cm
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Peso:</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {detallesPaquete.dimensiones.peso} kg
+                    {detallesPaquete.peso} kg
                   </span>
                 </div>
               </div>

@@ -5,13 +5,12 @@ import {
   PaqueteCreate,
   PaqueteUpdate,
 } from "../../global/types/paquete.types";
-import { API_URL } from "../../config"; // Ajusta la ruta según tu proyecto
-
-// Usaremos API_URL desde config.ts
+import { API_URL } from "../../config";
+//Base URL de la API
 const API_BASE = `${API_URL}/paquetes`;
 
 export const PackagesService = {
-  // CRUD básica
+  
   async getAll(): Promise<Paquete[]> {
     const res = await fetch(API_BASE);
     if (!res.ok) throw new Error("Error al obtener los paquetes");
@@ -54,15 +53,18 @@ export const PackagesService = {
     if (!res.ok) throw new Error(`Error al eliminar el paquete ${id}`);
   },
 
-  // Funciones adicionales
+
   async asignar(id: number, dto: AsignarPaqueteDTO): Promise<Paquete> {
     const res = await fetch(`${API_BASE}/${id}/asignar`, {
-      method: "PATCH",
+      method: "PUT", 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
     });
 
-    if (!res.ok) throw new Error(`Error al asignar el paquete ${id}`);
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || `Error al asignar el paquete ${id}`);
+    }
 
     const data = await res.json();
     return mapApiToPaquete(data);
@@ -70,12 +72,13 @@ export const PackagesService = {
 
   async cambiarEstado(id: number, estado: string): Promise<Paquete> {
     const res = await fetch(`${API_BASE}/${id}/estado`, {
-      method: "POST",
+      method: "PUT", 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado }),
     });
-    if (!res.ok)
+    if (!res.ok) {
       throw new Error(`Error al cambiar el estado del paquete ${id}`);
+    }
     const data = await res.json();
     return mapApiToPaquete(data);
   },
@@ -98,10 +101,72 @@ export const PackagesService = {
       body: formData,
     });
 
-    if (!res.ok)
+    if (!res.ok) {
       throw new Error(`Error al registrar la entrega del paquete ${id}`);
+    }
 
     const data = await res.json();
     return mapApiToPaquete(data);
+  },
+
+  // ← NUEVO: Obtener rutas disponibles para asignar
+  async getRutasDisponibles(): Promise<any[]> {
+    const res = await fetch(`${API_BASE}/rutas-disponibles`);
+    if (!res.ok) {
+      throw new Error("Error al obtener rutas disponibles");
+    }
+    return await res.json();
+  },
+
+  // ← NUEVO: Obtener paquetes de una ruta específica
+  async getPaquetesByRuta(id_ruta: number): Promise<Paquete[]> {
+    const res = await fetch(`${API_BASE}/ruta/${id_ruta}`);
+    if (!res.ok) {
+      throw new Error(`Error al obtener paquetes de la ruta ${id_ruta}`);
+    }
+    const data = await res.json();
+    return data.map(mapApiToPaquete);
+  },
+
+  // ← NUEVO: Cancelar asignación (volver a Pendiente)
+  async cancelarAsignacion(id: number): Promise<Paquete> {
+    const res = await fetch(`${API_BASE}/${id}/cancelar`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error al cancelar la asignación del paquete ${id}`);
+    }
+
+    const data = await res.json();
+    return mapApiToPaquete(data);
+  },
+
+  // ← NUEVO: Reasignar paquete a otra ruta
+  async reasignar(id: number, dto: AsignarPaqueteDTO): Promise<Paquete> {
+    const res = await fetch(`${API_BASE}/${id}/reasignar`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || `Error al reasignar el paquete ${id}`);
+    }
+
+    const data = await res.json();
+    return mapApiToPaquete(data);
+  },
+
+  // ← NUEVO: Obtener paquetes por estado
+  async getPaquetesByEstado(estado: string): Promise<Paquete[]> {
+    const res = await fetch(`${API_BASE}/estado/${estado}`);
+    if (!res.ok) {
+      throw new Error(`Error al obtener paquetes con estado ${estado}`);
+    }
+    const data = await res.json();
+    return data.map(mapApiToPaquete);
   },
 };

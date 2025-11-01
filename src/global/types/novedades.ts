@@ -1,15 +1,18 @@
-export interface Usuario {
-  id_usuario: number;
-  nombre: string;
-  correo: string;
-}
-
+// src/global/types/novedades.types.ts
 export interface Novedad {
-  id_novedad: number;
+  id_reporte: number;
   descripcion: string;
-  tipo: string;
-  fecha: string; 
+  fecha_reporte: string; // renombrado para coincidir con el backend
+  tipo: string; // ej. 'Logística' o 'Operativa'
   id_usuario: number;
   imagen?: string;
-  usuario: Usuario;
+  usuario?: {
+    nombre: string;
+    apellido: string;
+  };
+}
+
+export enum NovedadesTipo {
+  Logistica = "Logística",
+  Operativa = "Operativa",
 }

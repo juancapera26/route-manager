@@ -3,8 +3,20 @@ import React from "react";
 import { Paquete, PaquetesEstados } from "../../../global/types/paquete.types";
 import { ColumnDef, ActionButton } from "../../ui/table/DataTable";
 import Badge, { BadgeColor } from "../../ui/badge/Badge";
-// Importar iconos de Lucide React
-import {Eye,Edit,Trash2,ArrowRight,X,RotateCcw,Truck,Check,Download,MapPin,AlertTriangle,} from "lucide-react";
+import {
+  Eye,
+  Edit,
+  Trash2,
+  ArrowRight,
+  X,
+  RotateCcw,
+  Check,
+  MapPin,
+  AlertTriangle,
+} from "lucide-react";
+
+//tabla de paquetes
+
 // ===================== TIPOS DE COLUMNAS =====================
 export type PaquetesColumnKey =
   | "id_paquete"
@@ -37,24 +49,32 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
     sortable: true,
   },
 
-  // ✅ CORREGIDO: Ahora usa la relación correcta
   conductor_nombre: {
     key: "conductor_nombre",
     header: "Conductor",
     accessor: (item) => {
-      // TODO: Cuando tengas la relación con conductor desde ruta
-      // Por ahora solo muestra "Asignado" o "Sin asignar"
-      if (item.id_ruta) {
+      // Si tiene ruta y la ruta tiene conductor
+      if (item.ruta?.conductor) {
         return (
-          <span className="text-sm">Asignado</span> // ← Temporal
+          <span className="text-sm">
+            {item.ruta.conductor.nombre} {item.ruta.conductor.apellido}
+          </span>
         );
       }
+      // Si tiene ruta pero sin conductor
+      if (item.id_ruta) {
+        return (
+          <span className="text-gray-500 text-xs italic">
+            Ruta sin conductor
+          </span>
+        );
+      }
+      // Sin ruta asignada
       return <span className="text-gray-400 italic">Sin asignar</span>;
     },
     sortable: false,
   },
 
-  // ✅ CORREGIDO: Ahora usa id_ruta (singular)
   ruta_asignada: {
     key: "ruta_asignada",
     header: "Ruta",
@@ -62,25 +82,46 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
       if (!item.id_ruta) {
         return <span className="text-gray-400 italic">Sin asignar</span>;
       }
-      return (
-        <span className="text-sm font-mono">
-          Ruta #{item.id_ruta}
-        </span>
-      );
+      
+      // Si incluye la relación ruta
+      if (item.ruta) {
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">
+              {item.ruta.nombre || `Ruta #${item.id_ruta}`}
+            </span>
+            {item.ruta.descripcion && (
+              <span className="text-xs text-gray-500">
+                {item.ruta.descripcion}
+              </span>
+            )}
+          </div>
+        );
+      }
+      
+      return <span className="text-sm font-mono">Ruta #{item.id_ruta}</span>;
     },
     className: "text-sm",
   },
 
-  // ✅ CORREGIDO: Ahora usa la relación cliente
   destinatario: {
     key: "destinatario",
     header: "Destinatario",
     accessor: (item) => {
-      // Si el backend incluye la relación cliente
       if (item.cliente) {
-        return `${item.cliente.nombre} ${item.cliente.apellido}`;
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">
+              {item.cliente.nombre} {item.cliente.apellido}
+            </span>
+            {item.cliente.telefono_movil && (
+              <span className="text-xs text-gray-500">
+                {item.cliente.telefono_movil}
+              </span>
+            )}
+          </div>
+        );
       }
-      // Si no, muestra "Desconocido" (esto no debería pasar)
       return <span className="text-gray-400 italic">Desconocido</span>;
     },
     sortable: true,
@@ -89,20 +130,47 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
   fecha_registro: {
     key: "fecha_registro",
     header: "Registro",
-    accessor: (item) =>
-      new Date(item.fecha_registro).toLocaleDateString("es-ES"),
+    accessor: (item) => {
+      const date = new Date(item.fecha_registro);
+      return (
+        <div className="flex flex-col">
+          <span className="text-sm">
+            {date.toLocaleDateString("es-ES")}
+          </span>
+          <span className="text-xs text-gray-500">
+            {date.toLocaleTimeString("es-ES", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </div>
+      );
+    },
     sortable: true,
   },
 
   fecha_entrega: {
     key: "fecha_entrega",
     header: "Entrega",
-    accessor: (item) =>
-      item.fecha_entrega ? (
-        new Date(item.fecha_entrega).toLocaleDateString("es-ES")
-      ) : (
-        <span className="text-gray-400 italic">Pendiente</span>
-      ),
+    accessor: (item) => {
+      if (item.fecha_entrega) {
+        const date = new Date(item.fecha_entrega);
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm">
+              {date.toLocaleDateString("es-ES")}
+            </span>
+            <span className="text-xs text-gray-500">
+              {date.toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+        );
+      }
+      return <span className="text-gray-400 italic">Pendiente</span>;
+    },
     sortable: true,
   },
 
@@ -131,8 +199,8 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
   },
 };
 
-// ===================== COLUMNAS POR ESTADO SIMPLIFICADAS =====================
-const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
+// ===================== COLUMNAS POR ESTADO =====================
+export const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
   [PaquetesEstados.Pendiente]: [
     "id_paquete",
     "destinatario",
@@ -142,6 +210,7 @@ const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
   [PaquetesEstados.Asignado]: [
     "id_paquete",
     "ruta_asignada",
+    "conductor_nombre",
     "destinatario",
     "fecha_registro",
     "estado",
@@ -149,6 +218,7 @@ const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
   [PaquetesEstados.Entregado]: [
     "id_paquete",
     "ruta_asignada",
+    "conductor_nombre",
     "destinatario",
     "fecha_registro",
     "fecha_entrega",
@@ -165,11 +235,7 @@ const COLUMNS_BY_ESTADO: Record<PaquetesEstados, PaquetesColumnKey[]> = {
 // ===================== ACCIONES POR ESTADO =====================
 export const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
   [PaquetesEstados.Pendiente]: ["view", "edit", "delete", "assign"],
-  [PaquetesEstados.Asignado]: [
-    "view",
-    "cancel_assignment",
-    "mark_fallido",
-  ],
+  [PaquetesEstados.Asignado]: ["view", "cancel_assignment", "mark_fallido"],
   [PaquetesEstados.Entregado]: ["view", "track"],
   [PaquetesEstados.Fallido]: ["view", "edit", "delete", "reassign"],
 };
@@ -188,6 +254,7 @@ export const createPaqueteAction = (
       variant: "outline",
       onClick: callbacks.onView,
     },
+
     edit: {
       key: "edit",
       label: "",
@@ -197,9 +264,8 @@ export const createPaqueteAction = (
       onClick: callbacks.onEdit,
       visible: (item) =>
         [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
-      disabled: (item) =>
-        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
     },
+
     delete: {
       key: "delete",
       label: "",
@@ -207,34 +273,20 @@ export const createPaqueteAction = (
       icon: <Trash2 className="w-4 h-4" />,
       variant: "destructive",
       onClick: callbacks.onDelete,
-      visible: (item) => {
-        const shouldShow = [
-          PaquetesEstados.Pendiente,
-          PaquetesEstados.Fallido,
-        ].includes(item.estado);
-        return shouldShow;
-      },
-      disabled: (item) =>
-        ![PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
+      visible: (item) =>
+        [PaquetesEstados.Pendiente, PaquetesEstados.Fallido].includes(item.estado),
     },
+
     assign: {
       key: "assign",
       label: "",
-      tooltip: "Asignar paquete",
+      tooltip: "Asignar a ruta",
       icon: <ArrowRight className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onAssign,
       visible: (item) => item.estado === PaquetesEstados.Pendiente,
     },
-    reassign: {
-      key: "reassign",
-      label: "",
-      tooltip: "Reasignar paquete",
-      icon: <RotateCcw className="w-4 h-4" />,
-      variant: "default",
-      onClick: callbacks.onReassign,
-      visible: (item) => item.estado === PaquetesEstados.Fallido,
-    },
+
     cancel_assignment: {
       key: "cancel_assignment",
       label: "",
@@ -244,6 +296,17 @@ export const createPaqueteAction = (
       onClick: callbacks.onCancelAssignment,
       visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
+
+    reassign: {
+      key: "reassign",
+      label: "",
+      tooltip: "Reasignar a otra ruta",
+      icon: <RotateCcw className="w-4 h-4" />,
+      variant: "default",
+      onClick: callbacks.onReassign,
+      visible: (item) => item.estado === PaquetesEstados.Fallido,
+    },
+
     mark_entregado: {
       key: "mark_entregado",
       label: "",
@@ -251,7 +314,9 @@ export const createPaqueteAction = (
       icon: <Check className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onMarkEntregado,
+      visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
+
     mark_fallido: {
       key: "mark_fallido",
       label: "",
@@ -259,7 +324,9 @@ export const createPaqueteAction = (
       icon: <AlertTriangle className="w-4 h-4" />,
       variant: "outline",
       onClick: callbacks.onMarkFallido,
+      visible: (item) => item.estado === PaquetesEstados.Asignado,
     },
+
     track: {
       key: "track",
       label: "",
@@ -267,6 +334,7 @@ export const createPaqueteAction = (
       icon: <MapPin className="w-4 h-4" />,
       variant: "default",
       onClick: callbacks.onTrack,
+      visible: (item) => item.estado === PaquetesEstados.Entregado,
     },
   };
 
@@ -281,9 +349,24 @@ export interface PaquetesActionCallbacks {
   onAssign: (item: Paquete) => void;
   onCancelAssignment: (item: Paquete) => void;
   onReassign: (item: Paquete) => void;
-  onMarkEnRuta: (item: Paquete) => void;
   onMarkEntregado: (item: Paquete) => void;
   onMarkFallido: (item: Paquete) => void;
   onDownloadLabel: (item: Paquete) => void;
   onTrack: (item: Paquete) => void;
 }
+
+// ===================== HELPERS =====================
+export const getColumnsForEstado = (
+  estado: PaquetesEstados
+): ColumnDef<Paquete>[] => {
+  const keys: PaquetesColumnKey[] = COLUMNS_BY_ESTADO[estado];
+  return keys.map((k: PaquetesColumnKey) => PAQUETES_COLUMNS[k]);
+};
+
+export const getActionsForEstado = (
+  estado: PaquetesEstados,
+  callbacks: PaquetesActionCallbacks
+): ActionButton<Paquete>[] => {
+  const keys: PaquetesActionKey[] = ACTIONS_BY_ESTADO[estado];
+  return keys.map((k: PaquetesActionKey) => createPaqueteAction(k, callbacks));
+};

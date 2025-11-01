@@ -8,6 +8,8 @@ import { Plus } from "lucide-react";
 import { usePackages } from "../../../hooks/admin/usePackages";
 import { toast } from "sonner";
 
+//modal para agregar paquete
+
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
   onClose: () => void;
