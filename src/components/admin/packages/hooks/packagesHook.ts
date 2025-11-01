@@ -25,6 +25,8 @@ import {
 } from "../../../../global/config/filterConfigs";
 import { toast } from "sonner";
 
+//Interprete de react y backend
+
 export function usePackagesManagementHook() {
   const navigate = useNavigate();
 

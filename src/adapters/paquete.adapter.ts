@@ -1,6 +1,6 @@
 // adapters/paquete.adapter.ts
 import { Paquete, TipoPaquete, PaquetesEstados } from "../global/types/paquete.types";
-
+//Adapta el backend a los del front
 interface PaqueteFromAPI {
   id_paquete: number;
   codigo_rastreo?: string | null;

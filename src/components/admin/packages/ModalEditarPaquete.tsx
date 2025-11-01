@@ -8,6 +8,8 @@ import { Paquete, TipoPaquete, PaqueteUpdate } from "../../../global/types/paque
 import { Edit } from "lucide-react";
 import { toast } from "sonner";
 
+//modal para editar paquete
+
 interface ModalEditarPaqueteProps {
   isOpen: boolean;
   onClose: () => void;

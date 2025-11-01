@@ -7,6 +7,8 @@ import Button from '../../ui/button/Button';
 import { MapPin, Clock, Package, User, Truck, AlertCircle } from 'lucide-react';
 import { Paquete } from '../../../global/types/paquete.types';
 
+//modal para asignar paquete
+
 // ← Tipo para las rutas disponibles (ajusta según tu backend)
 interface RutaDisponible {
   id_ruta: number;

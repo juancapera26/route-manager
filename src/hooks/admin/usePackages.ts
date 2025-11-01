@@ -8,6 +8,8 @@ import {
   AsignarPaqueteDTO 
 } from "../../global/types/paquete.types";
 
+//hook para paquetes
+
 // Hook para manejar paquetes y llamados del servicio
 export function usePackages() {
   const [packages, setPackages] = useState<Paquete[]>([]);

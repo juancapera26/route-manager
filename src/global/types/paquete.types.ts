@@ -1,5 +1,7 @@
 // global/types/paquete.types.ts
 
+//tipos de paquetes
+
 export enum PaquetesEstados {
   Pendiente = "Pendiente",
   Asignado = "Asignado",

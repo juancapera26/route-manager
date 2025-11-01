@@ -9,7 +9,7 @@ interface ModalDetallesProps {
   detallesPaquete: Paquete | null;
   cerrarModalDetalles: () => void;
 }
-
+//modal para detalles paquete
 export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({ 
   detallesPaquete, 
   cerrarModalDetalles 

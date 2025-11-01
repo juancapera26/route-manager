@@ -6,7 +6,7 @@ import {
   PaqueteUpdate,
 } from "../../global/types/paquete.types";
 import { API_URL } from "../../config";
-
+//Base URL de la API
 const API_BASE = `${API_URL}/paquetes`;
 
 export const PackagesService = {

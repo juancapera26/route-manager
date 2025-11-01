@@ -11,6 +11,8 @@ import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
 import { Paquete, PaquetesEstados } from "../../global/types/paquete.types";
 import { Plus } from "lucide-react";
 
+//orquestador
+
 const PackagesManagement: React.FC = () => {
   const {
     data,

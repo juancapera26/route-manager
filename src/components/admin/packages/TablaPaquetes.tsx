@@ -15,6 +15,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+//tabla de paquetes
+
 // ===================== TIPOS DE COLUMNAS =====================
 export type PaquetesColumnKey =
   | "id_paquete"
