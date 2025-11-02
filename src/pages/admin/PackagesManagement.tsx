@@ -32,17 +32,17 @@ const PackagesManagement: React.FC = () => {
     cerrarEdicion,
     handleUpdateFromModal,
     
-    // ← NUEVOS: Modal de asignación
+    // Modal de asignación
     modalAsignacion,
     cerrarAsignacion,
     
-    // ← NUEVOS: Rutas disponibles
+    // Rutas disponibles
     availableRoutes,
     
     // Handlers CRUD
     handleCreatePaquete,
     
-    // ← NUEVO: Handler de asignación
+    // ✅ Handler de asignación (ahora recibe paqueteId y dto)
     handleAssign,
   } = usePackagesManagementHook();
 
@@ -102,14 +102,20 @@ const PackagesManagement: React.FC = () => {
     }
   };
 
-  // ← NUEVO: Handler para confirmar asignación desde el modal
-  const handleConfirmarAsignacion = async (rutaId: number) => {
-    if (!modalAsignacion.paquete) return;
+  // ✅ ACTUALIZADO: Handler para confirmar asignación desde el modal
+  // Ahora recibe paqueteId y codManifiesto (string)
+  const handleConfirmarAsignacion = async (paqueteId: number, codManifiesto: string) => {
+    console.log('🎯 === PACKAGE MANAGEMENT ===');
+    console.log('📦 Paquete ID:', paqueteId);
+    console.log('📋 Código Manifiesto:', codManifiesto);
+    console.log('🔍 Tipo de codManifiesto:', typeof codManifiesto);
+    console.log('=============================');
     
     try {
-      await handleAssign(modalAsignacion.paquete, rutaId);
+      // ✅ Llamamos al handler con el DTO correcto
+      await handleAssign(paqueteId, { cod_manifiesto: codManifiesto });
     } catch (error) {
-      console.error('Error al asignar paquete:', error);
+      console.error('❌ Error en handleConfirmarAsignacion:', error);
     }
   };
  
@@ -253,7 +259,7 @@ const PackagesManagement: React.FC = () => {
         cerrarModalDetalles={cerrarDetalles}
       />
 
-      {/* ← NUEVO: Modal para asignar paquete a ruta */}
+      {/* ✅ ACTUALIZADO: Modal para asignar paquete a ruta */}
       <ModalAsignarPaquete
         isOpen={modalAsignacion.open}
         onClose={cerrarAsignacion}

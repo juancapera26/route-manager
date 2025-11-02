@@ -114,11 +114,6 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
             <span className="text-sm font-medium">
               {item.cliente.nombre} {item.cliente.apellido}
             </span>
-            {item.cliente.telefono_movil && (
-              <span className="text-xs text-gray-500">
-                {item.cliente.telefono_movil}
-              </span>
-            )}
           </div>
         );
       }
@@ -136,12 +131,6 @@ export const PAQUETES_COLUMNS: Record<PaquetesColumnKey, ColumnDef<Paquete>> = {
         <div className="flex flex-col">
           <span className="text-sm">
             {date.toLocaleDateString("es-ES")}
-          </span>
-          <span className="text-xs text-gray-500">
-            {date.toLocaleTimeString("es-ES", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
           </span>
         </div>
       );

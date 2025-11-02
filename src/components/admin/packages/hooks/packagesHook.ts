@@ -42,15 +42,15 @@ export function usePackagesManagementHook() {
     packages: data,
     loading,
     error,
-    availableRoutes, // ← NUEVO
+    availableRoutes,
     fetchPackages: refetch,
     createPackage: createPaquete,
     updatePackage: updatePaquete,
     deletePackage: deletePaquete,
-    assignPackageToRoute, // ← NUEVO
-    reassignPackage, // ← NUEVO
-    cancelAssignment, // ← NUEVO
-    fetchAvailableRoutes, // ← NUEVO
+    assignPackageToRoute,
+    reassignPackage,
+    cancelAssignment,
+    fetchAvailableRoutes,
   } = usePackages();
 
   const clearError = useCallback(() => {}, []);
@@ -175,14 +175,10 @@ export function usePackagesManagementHook() {
 
   const abrirReasignacion = useCallback(
     async (paquete: Paquete) => {
-      // Validar que esté Asignado o En Ruta
-      if (
-        ![PaquetesEstados.Asignado].includes(
-          paquete.estado
-        )
-      ) {
+      // ✅ Array con solo Asignado
+      if (![PaquetesEstados.Asignado].includes(paquete.estado)) {
         showAlert(
-          "Solo se pueden reasignar paquetes Asignados o En Ruta",
+          "Solo se pueden reasignar paquetes en estado Asignado",
           "warning"
         );
         return;
@@ -276,19 +272,26 @@ export function usePackagesManagementHook() {
   // ========== NUEVOS HANDLERS DE ASIGNACIÓN ==========
 
   // 🔹 Handler para asignar paquete a ruta
+  // ✅ ACTUALIZADO: Ahora recibe cod_manifiesto en lugar de id_ruta
   const handleAssign = useCallback(
-    async (paquete: Paquete, id_ruta: number) => {
+    async (paqueteId: number, dto: { cod_manifiesto: string }) => {
       setModalAsignacion((prev) => ({ ...prev, loading: true }));
+
+      console.log('🎯 === PACKAGES HOOK - ASIGNAR ===');
+      console.log('📦 Paquete ID:', paqueteId);
+      console.log('📋 Código Manifiesto:', dto.cod_manifiesto);
+      console.log('==================================');
       
       try {
-        await assignPackageToRoute(paquete.id_paquete, { id_ruta });
+        await assignPackageToRoute(paqueteId, dto);
         toast.success(
-          `Paquete #${paquete.id_paquete} asignado correctamente a la ruta`
+          `Paquete #${paqueteId} asignado correctamente a la ruta ${dto.cod_manifiesto}`
         );
         cerrarAsignacion();
         await refetch();
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Error al asignar paquete";
+        console.error('❌ Error en handleAssign:', errorMsg);
         toast.error(errorMsg);
       } finally {
         setModalAsignacion((prev) => ({ ...prev, loading: false }));
@@ -319,19 +322,26 @@ export function usePackagesManagementHook() {
   );
 
   // 🔹 Handler para reasignar paquete
+  // ✅ ACTUALIZADO: Ahora recibe cod_manifiesto en lugar de id_ruta
   const handleReassign = useCallback(
-    async (paquete: Paquete, id_ruta: number) => {
+    async (paqueteId: number, dto: { cod_manifiesto: string }) => {
       setModalReasignacion((prev) => ({ ...prev, loading: true }));
       
+      console.log('🔄 === PACKAGES HOOK - REASIGNAR ===');
+      console.log('📦 Paquete ID:', paqueteId);
+      console.log('📋 Código Manifiesto:', dto.cod_manifiesto);
+      console.log('====================================');
+      
       try {
-        await reassignPackage(paquete.id_paquete, { id_ruta });
+        await reassignPackage(paqueteId, dto);
         toast.success(
-          `Paquete #${paquete.id_paquete} reasignado correctamente`
+          `Paquete #${paqueteId} reasignado correctamente a ${dto.cod_manifiesto}`
         );
         cerrarReasignacion();
         await refetch();
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Error al reasignar paquete";
+        console.error('❌ Error en handleReassign:', errorMsg);
         toast.error(errorMsg);
       } finally {
         setModalReasignacion((prev) => ({ ...prev, loading: false }));
@@ -341,8 +351,6 @@ export function usePackagesManagementHook() {
   );
 
   // ========== HANDLERS DE CAMBIO DE ESTADO ==========
-
-  
 
   const handleMarkEntregado = useCallback(
     async (paquete: Paquete) => {
@@ -378,9 +386,9 @@ export function usePackagesManagementHook() {
       onTrack: (p: Paquete) => handleTrack(p.id_paquete),
       onDownloadLabel: () =>
         showAlert("Descarga de etiqueta no implementada", "info"),
-      onAssign: abrirAsignacion, // ← ACTUALIZADO
-      onCancelAssignment: handleCancelAssignment, // ← ACTUALIZADO
-      onReassign: abrirReasignacion, // ← ACTUALIZADO
+      onAssign: abrirAsignacion,
+      onCancelAssignment: handleCancelAssignment,
+      onReassign: abrirReasignacion,
       onMarkEntregado: handleMarkEntregado,
       onMarkFallido: handleMarkFallido,
     }),
@@ -390,9 +398,9 @@ export function usePackagesManagementHook() {
       handleDeleteWithConfirmation,
       handleTrack,
       showAlert,
-      abrirAsignacion, // ← ACTUALIZADO
-      handleCancelAssignment, // ← ACTUALIZADO
-      abrirReasignacion, // ← ACTUALIZADO
+      abrirAsignacion,
+      handleCancelAssignment,
+      abrirReasignacion,
       handleMarkEntregado,
       handleMarkFallido,
     ]
@@ -416,8 +424,8 @@ export function usePackagesManagementHook() {
   ];
 
   const ACTIONS_BY_ESTADO: Record<PaquetesEstados, PaquetesActionKey[]> = {
-    [PaquetesEstados.Pendiente]: ["view", "edit", "delete", "assign"], // ← AGREGADO "assign"
-    [PaquetesEstados.Asignado]: ["view", "cancel_assignment", "reassign"], // ← ACTUALIZADO
+    [PaquetesEstados.Pendiente]: ["view", "edit", "delete", "assign"],
+    [PaquetesEstados.Asignado]: ["view", "cancel_assignment", "reassign"],
     [PaquetesEstados.Entregado]: ["view", "track"],
     [PaquetesEstados.Fallido]: ["view", "edit", "delete"],
   };
@@ -460,7 +468,7 @@ export function usePackagesManagementHook() {
     cerrarEdicion,
     handleUpdateFromModal,
 
-    // ← NUEVOS: Modales de asignación
+    // Modales de asignación
     modalAsignacion,
     abrirAsignacion,
     cerrarAsignacion,
@@ -468,7 +476,7 @@ export function usePackagesManagementHook() {
     abrirReasignacion,
     cerrarReasignacion,
 
-    // ← NUEVOS: Rutas disponibles
+    // Rutas disponibles
     availableRoutes,
 
     // Handlers CRUD
@@ -477,7 +485,7 @@ export function usePackagesManagementHook() {
     handleDeletePaquete,
     handleTrack,
 
-    // ← NUEVOS: Handlers de asignación
+    // ✅ Handlers de asignación actualizados
     handleAssign,
     handleCancelAssignment,
     handleReassign,

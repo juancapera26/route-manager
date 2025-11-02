@@ -1,28 +1,27 @@
+// hooks/presentation/useNoveltyLogic.ts
 import { useState } from "react";
+import { Novelty } from "../../../../global/types/novedades";
 
-export const useNovedadesPresentacion = () => {
-  // Estado para controlar si el modal está abierto o cerrado
-  const [modalVisible, setModalVisible] = useState(false);
+export const useNoveltyLogic = () => {
+  const [selectedNovelty, setSelectedNovelty] = useState<Novelty | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  // Estado para almacenar la imagen seleccionada
-  const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
-
-  // Función para abrir el modal con una imagen específica
-  const abrirModal = (imagenUrl: string) => {
-    setImagenSeleccionada(imagenUrl);
-    setModalVisible(true);
+  // Ver imagen
+  const handleViewImage = (novelty: Novelty) => {
+    setSelectedNovelty(novelty);
+    setIsImageModalOpen(true);
   };
 
-  // Función para cerrar el modal
-  const cerrarModal = () => {
-    setModalVisible(false);
-    setImagenSeleccionada(null);
+  // Cerrar modal de imagen
+  const handleCloseImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedNovelty(null);
   };
 
   return {
-    modalVisible,
-    imagenSeleccionada,
-    abrirModal,
-    cerrarModal,
+    selectedNovelty,
+    isImageModalOpen,
+    handleViewImage,
+    handleCloseImageModal,
   };
 };
