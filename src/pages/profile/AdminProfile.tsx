@@ -3,6 +3,7 @@ import Alert from "../../components/ui/alert/Alert";
 import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
 import Badge from "../../components/ui/badge/Badge";
+import { Camera } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { updateFotoPerfil } from "../../global/services/driverService";
 import { API_URL } from "../../config";
@@ -111,43 +112,43 @@ const PerfilAdmin = () => {
   const rolTexto = "Administrador";
 
   return (
-    <div className="p-8 space-y-10 max-w-4xl mx-auto">
+    <div className="p-8 max-w-7xl mx-auto">
       {/* Sección principal del perfil */}
-      <section className="flex flex-col md:flex-row items-center gap-6">
-        {/* Avatar con botón para cambiar foto */}
-        <div className="relative flex-shrink-0 w-32 h-32">
-          <img
-            src={previewFoto || "/default-avatar.png"}
-            alt="Foto de perfil"
-            className="w-32 h-32 rounded-full border-4 border-primary-500 object-cover"
-          />
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+        <section className="flex flex-col lg:flex-row gap-12">
+          {/* Columna izquierda: Avatar, Rol y Botón */}
+          <div className="flex flex-col items-center gap-4 lg:w-80">
+            {/* Avatar con botón para cambiar foto */}
+            <div className="relative w-48 h-48 group">
+              <img
+                src={previewFoto || "/default-avatar.png"}
+                alt="Foto de perfil"
+                className="w-48 h-48 rounded-2xl object-cover shadow-xl ring-4 ring-primary-100 dark:ring-primary-900"
+              />
 
-          <input
-            type="file"
-            accept="image/*"
-            id="upload-avatar"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={loadingFoto}
-          />
+              <input
+                type="file"
+                accept="image/*"
+                id="upload-avatar"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={loadingFoto}
+              />
 
-          <label
-            htmlFor="upload-avatar"
-            className="absolute bottom-0 right-0 w-8 h-8 bg-white border border-primary-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition"
-          >
-            {loadingFoto ? "..." : "📷"}
-          </label>
-        </div>
+              <label
+                htmlFor="upload-avatar"
+                className="absolute bottom-3 right-3 w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center cursor-pointer hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl group-hover:ring-2 ring-primary-300"
+              >
+                {loadingFoto ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Camera className="w-5 h-5 text-gray-600 dark:text-gray-100 drop-shadow-md" />
+                )}
+              </label>
+            </div>
 
-        {/* Información del usuario */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {nombre} {apellido}
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{correo}</p>
-
-            <div className="flex flex-wrap gap-2 mt-3">
+            {/* Rol */}
+            <div className="flex flex-wrap gap-2 justify-center">
               <Badge variant="light" color="primary">
                 {rolTexto}
               </Badge>
@@ -158,29 +159,64 @@ const PerfilAdmin = () => {
               )}
             </div>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 dark:text-gray-300">
-              <p>
-                <strong>Empresa:</strong> {empresa || "Sin empresa"}
-              </p>
-              <p>
-                <strong>Tipo de documento:</strong> {tipoDocumento || "Sin documento"}
-              </p>
-              <p>
-                <strong>Numero Documento:</strong> {documento || "Sin documento"}
-              </p>
-              <p>
-                <strong>Teléfono:</strong> {telefono || "No registrado"}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex gap-3 flex-wrap">
-            <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+            {/* Botón Editar Perfil */}
+            <Button
+              variant="primary"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full"
+            >
               Editar Perfil
             </Button>
           </div>
-        </div>
-      </section>
+
+          {/* Columna derecha: Información del usuario */}
+          <div className="flex-1 flex flex-col gap-8">
+            {/* Nombre y correo */}
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                {nombre} {apellido}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400">{correo}</p>
+            </div>
+
+            {/* Información adicional */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">
+                  Empresa
+                </p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide ">
+                  {empresa || "Sin empresa"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">
+                  Teléfono
+                </p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {telefono || "No registrado"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-gray-800 dark:text-gray-100e">
+                  Tipo de documento
+                </p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {tipoDocumento || "Sin documento"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">
+                  Número de documento
+                </p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  {documento || "Sin documento"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Modal para editar perfil */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
