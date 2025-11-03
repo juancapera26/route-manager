@@ -15,6 +15,8 @@ const PerfilAdmin = () => {
     role,
     telefono,
     empresa,
+    tipoDocumento,
+    documento,
     foto,
     estado,
     logout,
@@ -28,6 +30,8 @@ const PerfilAdmin = () => {
     role: string | null;
     telefono: string | null;
     empresa: string | null;
+    tipoDocumento: string | null;
+    documento: string | null;
     foto: string | null;
     idUsuario: number | null;
     authLoading: boolean;
@@ -168,6 +172,12 @@ const PerfilAdmin = () => {
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 dark:text-gray-300">
               <p>
                 <strong>Empresa:</strong> {empresa || "Sin empresa"}
+              </p>
+              <p>
+                <strong>Tipo de documento:</strong> {tipoDocumento || "Sin empresa"}
+              </p>
+              <p>
+                <strong>Numero Documento:</strong> {documento || "Sin empresa"}
               </p>
               <p>
                 <strong>Teléfono:</strong> {telefono || "No registrado"}
