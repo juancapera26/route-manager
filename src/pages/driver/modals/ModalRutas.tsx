@@ -33,6 +33,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
 }) => {
   const [codigo, setCodigo] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
+  const [codigoManifiesto, setCodigoManifiesto] = useState("");
+  const [vehiculo, setVehiculo] = useState("");
   const [mostrarLetras, setMostrarLetras] = useState(false);
   const [activeStep, setActiveStep] = useState<Steps>(Steps.Formulario);
   const [mensajeError, setMensajeError] = useState("");
@@ -77,15 +79,31 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
 
       const data: {
         codigo: string;
+        estado_ruta: string;
         paquetes: Paquete[];
+        vehiculo: string; // <- agregamos vehículo
       } = await response.json();
+
+      // Validación de estado de la ruta
+      if (data.estado_ruta === "Completada") {
+        setMensajeError("Esta ruta ya está completada.");
+        return;
+      }
+
+      if (data.estado_ruta === "Pendiente") {
+        setMensajeError("Esta ruta todavía no se encuentra disponible.");
+        return;
+      }
 
       if (!data.paquetes || data.paquetes.length === 0) {
         setMensajeError("No se encontraron paquetes para este manifiesto.");
         return;
       }
 
+      // Guardamos paquetes y datos extra
       setPaquetes(data.paquetes);
+      setCodigoManifiesto(data.codigo);
+      setVehiculo(data.vehiculo);
       setActiveStep(Steps.Expandida);
     } catch (err) {
       setMensajeError(err instanceof Error ? err.message : "Error desconocido");
@@ -117,6 +135,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         letras={letras}
         onNextStep={() => setActiveStep(Steps.Expandida)}
         onPrevStep={() => setActiveStep(Steps.Minimizada)}
+        codigoManifiesto={codigoManifiesto} // <- código del manifiesto
+        vehiculo={vehiculo} // <- vehículo
       />
     ),
     [Steps.Expandida]: (
@@ -130,6 +150,7 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
           localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
           window.dispatchEvent(new Event("paquetesRutaUpdated"));
         }}
+        codigoManifiesto={codigoManifiesto} 
       />
     ),
   };
@@ -177,6 +198,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
                 setPaquetes([]);
                 setMostrarLetras(false);
                 setMensajeError("");
+                setCodigoManifiesto("");
+                setVehiculo("");
                 setActiveStep(Steps.Formulario);
 
                 localStorage.removeItem("paquetesRuta");
