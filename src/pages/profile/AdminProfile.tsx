@@ -119,11 +119,11 @@ const PerfilAdmin = () => {
           {/* Columna izquierda: Avatar, Rol y Botón */}
           <div className="flex flex-col items-center gap-4 lg:w-80">
             {/* Avatar con botón para cambiar foto */}
-            <div className="relative w-48 h-48 group">
+            <div className="relative w-32 h-32 mx-auto">
               <img
                 src={previewFoto || "/default-avatar.png"}
                 alt="Foto de perfil"
-                className="w-48 h-48 rounded-2xl object-cover shadow-xl ring-4 ring-primary-100 dark:ring-primary-900"
+                className="w-32 h-32 rounded-full object-cover"
               />
 
               <input
@@ -137,7 +137,7 @@ const PerfilAdmin = () => {
 
               <label
                 htmlFor="upload-avatar"
-                className="absolute bottom-3 right-3 w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center cursor-pointer hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl group-hover:ring-2 ring-primary-300"
+                className="absolute bottom-0 right-0 w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-lg hover:from-primary-500 hover:to-primary-700 hover:shadow-xl"
               >
                 {loadingFoto ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -198,7 +198,7 @@ const PerfilAdmin = () => {
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-gray-800 dark:text-gray-100e">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">
                   Tipo de documento
                 </p>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
