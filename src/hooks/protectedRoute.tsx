@@ -8,19 +8,16 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-  // Cambiamos 'loading' por 'authLoading' para que coincida con lo que devuelve el hook
   const { isAuthenticated, role, authLoading } = useAuth(); 
 
   // La condición ahora usa authLoading
   if (authLoading || (isAuthenticated && role === null)) {
     return <CustomLoader />;
   }
-
   // Si no está autenticado, redirige a login
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace />;
   }
-
   // Si el rol no está permitido, redirige
   if (!allowedRoles.includes(role || "")) {
     return <Navigate to="/" replace />;

@@ -33,15 +33,13 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
 }) => {
   const [codigo, setCodigo] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [mostrarLetras, setMostrarLetras] = useState(false);
   const [activeStep, setActiveStep] = useState<Steps>(Steps.Formulario);
   const [mensajeError, setMensajeError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const paqueteActual = paquetes.length > 0 ? paquetes[currentIndex] : null;
-  const {  getAccessToken } = useAuth();
+  const { getAccessToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,11 +111,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         onNext={() => setActiveStep(Steps.Colapsada)}
       />
     ),
-    [Steps.Colapsada]: paqueteActual && (
+    [Steps.Colapsada]: (
       <InicioRuta
-        paqueteActual={paqueteActual}
-        currentIndex={currentIndex}
-        setCurrentIndex={setCurrentIndex}
         mostrarLetras={mostrarLetras}
         letras={letras}
         onNextStep={() => setActiveStep(Steps.Expandida)}
@@ -131,7 +126,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         letras={letras}
         onIniciarRuta={() => {
           setMostrarLetras(true);
-          setCurrentIndex(0);
           setActiveStep(Steps.Colapsada);
           localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
           window.dispatchEvent(new Event("paquetesRutaUpdated"));
@@ -181,7 +175,6 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
               if (confirmar) {
                 setCodigo("");
                 setPaquetes([]);
-                setCurrentIndex(0);
                 setMostrarLetras(false);
                 setMensajeError("");
                 setActiveStep(Steps.Formulario);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -16,9 +16,6 @@ import {
 import { Paquete } from "../../../../hooks/useManifiestos";
 
 interface InicioRutaProps {
-  paqueteActual?: Paquete;
-  currentIndex: number;
-  setCurrentIndex: (i: number) => void;
   mostrarLetras: boolean;
   letras: string;
   onNextStep: () => void;
@@ -26,14 +23,51 @@ interface InicioRutaProps {
 }
 
 const InicioRuta: React.FC<InicioRutaProps> = ({
-  paqueteActual,
-  currentIndex,
-  setCurrentIndex,
   mostrarLetras,
   letras,
   onNextStep,
   onPrevStep,
 }) => {
+  const [paquetes, setPaquetes] = useState<Paquete[]>([]);
+  const [paqueteActual, setPaqueteActual] = useState<Paquete | null>(null);
+
+  // Cargar los paquetes ordenados desde localStorage
+  useEffect(() => {
+    const storedPaquetes = localStorage.getItem("paquetesRuta");
+    if (storedPaquetes) {
+      const paquetesParsed: Paquete[] = JSON.parse(storedPaquetes);
+      setPaquetes(paquetesParsed);
+      setPaqueteActual(paquetesParsed[0] || null); // Establecer el primer paquete como el actual
+    }
+  }, []); // Solo cargar una vez al montar el componente
+
+  // Guardar paquetes en localStorage cada vez que se actualiza el paquete
+  useEffect(() => {
+    if (paquetes.length > 0) {
+      localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
+    }
+  }, [paquetes]);
+
+  // Función para avanzar al siguiente paquete
+  const avanzarAlSiguiente = () => {
+    if (paqueteActual) {
+      const indexActual = paquetes.indexOf(paqueteActual);
+      if (indexActual < paquetes.length - 1) {
+        setPaqueteActual(paquetes[indexActual + 1]); // Avanzar al siguiente paquete
+      }
+    }
+  };
+
+  // Función para retroceder al paquete anterior
+  const retrocederAlAnterior = () => {
+    if (paqueteActual) {
+      const indexActual = paquetes.indexOf(paqueteActual);
+      if (indexActual > 0) {
+        setPaqueteActual(paquetes[indexActual - 1]); // Retroceder al paquete anterior
+      }
+    }
+  };
+
   return (
     <Paper
       elevation={4}
@@ -58,7 +92,11 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           Camioneta placa: ASD234
         </Typography>
         <Typography variant="caption" color="text.secondary" display="block">
-          {currentIndex + 1}/30
+          {paquetes.length > 0
+            ? `${paquetes.indexOf(paqueteActual as Paquete) + 1}/${
+                paquetes.length
+              }` // Asegurándonos que no sea null
+            : "0/0"}
         </Typography>
       </Box>
 
@@ -77,8 +115,8 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           {/* Flecha izquierda */}
           <IconButton
             size="small"
-            disabled={currentIndex === 0}
-            onClick={() => setCurrentIndex(currentIndex - 1)}
+            disabled={paquetes.indexOf(paqueteActual) === 0}
+            onClick={retrocederAlAnterior}
           >
             <ArrowBackIcon fontSize="small" />
           </IconButton>
@@ -95,13 +133,17 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
 
           {/* Letra */}
           <Typography fontWeight="bold" color="primary">
-            {mostrarLetras ? letras[currentIndex] : ""}
+            {mostrarLetras
+              ? letras[paquetes.indexOf(paqueteActual as Paquete)]
+              : ""}{" "}
+            {/* Asegurándonos que no sea null */}
           </Typography>
 
           {/* Flecha derecha */}
           <IconButton
             size="small"
-            onClick={() => setCurrentIndex(currentIndex + 1)}
+            disabled={paquetes.indexOf(paqueteActual) === paquetes.length - 1}
+            onClick={avanzarAlSiguiente}
           >
             <ArrowForwardIcon fontSize="small" />
           </IconButton>
