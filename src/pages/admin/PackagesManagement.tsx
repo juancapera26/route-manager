@@ -8,7 +8,11 @@ import ModalEditarPaquete from "../../components/admin/packages/ModalEditarPaque
 import { ModalDetallesPaquetes } from "../../components/admin/packages/ModalDetallesPaquetes";
 import { ModalAsignarPaquete } from "../../components/admin/packages/ModalAsignarPaquete";
 import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
-import { Paquete, PaquetesEstados } from "../../global/types/paquete.types";
+import {
+  Paquete,
+  PaqueteCreate,
+  PaquetesEstados,
+} from "../../global/types/paquete.types";
 import { Plus } from "lucide-react";
 
 //orquestador
@@ -92,7 +96,7 @@ const PackagesManagement: React.FC = () => {
   };
 
   // ✅ HANDLER crear paquete
-  const handleCreate = async (payload: any): Promise<boolean> => {
+  const handleCreate = async (payload: PaqueteCreate): Promise<boolean> => {
     setSaving(true);
     try {
       const success = await handleCreatePaquete(payload);

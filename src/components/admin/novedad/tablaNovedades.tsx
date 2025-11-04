@@ -46,23 +46,23 @@ const NovedadesTable: React.FC<NovedadesTableProps> = ({
   onVerImagen,
 }) => {
   return (
-    <div className="bg-[#141C2F] rounded-xl p-4 shadow-md border border-[#1F2A44]">
-      <h2 className="text-lg font-semibold text-white mb-4">
+    <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
         Gestión de Novedades
       </h2>
 
-      <table className="min-w-full border-collapse text-sm text-gray-200">
-        <thead className="bg-[#1F2A44] text-gray-300">
+      <table className="min-w-full border-collapse text-sm text-gray-800 dark:text-gray-200">
+        <thead className="bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300">
           <tr>
             {Object.values(NOVEDADES_COLUMNS).map((col) => (
               <th
                 key={col.key}
-                className="p-3 text-left font-semibold text-xs tracking-wide"
+                className="p-3 text-left font-semibold text-xs tracking-wide border-b border-gray-200 dark:border-gray-600"
               >
                 {col.header}
               </th>
             ))}
-            <th className="p-3 text-left font-semibold text-xs tracking-wide">
+            <th className="p-3 text-left font-semibold text-xs tracking-wide border-b border-gray-200 dark:border-gray-600">
               IMAGEN
             </th>
           </tr>
@@ -73,10 +73,10 @@ const NovedadesTable: React.FC<NovedadesTableProps> = ({
             <tr>
               <td
                 colSpan={Object.keys(NOVEDADES_COLUMNS).length + 1}
-                className="text-center py-10 text-gray-500 italic"
+                className="text-center py-10 text-gray-500 italic dark:text-gray-400"
               >
                 <div className="flex flex-col items-center justify-center">
-                  <FileText className="w-6 h-6 mb-2 text-gray-600" />
+                  <FileText className="w-6 h-6 mb-2 text-gray-600 dark:text-gray-400" />
                   No hay novedades registradas
                 </div>
               </td>
@@ -85,10 +85,13 @@ const NovedadesTable: React.FC<NovedadesTableProps> = ({
             novedades.map((item) => (
               <tr
                 key={item.id_reporte}
-                className="border-b border-[#1F2A44] hover:bg-[#1A2238] transition-colors"
+                className="border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {Object.values(NOVEDADES_COLUMNS).map((col) => (
-                  <td key={col.key} className="p-3 text-sm">
+                  <td
+                    key={`${item.id_reporte}-${col.key}`}
+                    className="p-3 text-sm"
+                  >
                     {typeof col.accessor === "function"
                       ? col.accessor(item)
                       : (item as any)[col.accessor]}
