@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import "../../App.css";
 
@@ -19,19 +19,37 @@ import {
   Cell,
 } from "recharts";
 
+import { PackagesService } from "../../global/services/packageService";
+import { getAllRutas } from "../../global/services/routeService";
+import useDriver from "../../hooks/admin/condutores/useDriver";
+
 // ========================================
-// DATOS MOCK INTEGRADOS
+// TIPOS
 // ========================================
 
-// Generar últimos 7 días dinámicamente
-function generarUltimos7Dias() {
-  const hoy = new Date();
-  return Array.from({ length: 7 }).map((_, i) => {
-    const fecha = new Date(hoy);
-    fecha.setDate(hoy.getDate() - (6 - i));
-    return fecha.toISOString().split("T")[0]; // YYYY-MM-DD
-  });
+enum PaquetesEstados {
+  Pendiente = "Pendiente",
+  Asignado = "Asignado",
+  Entregado = "Entregado",
+  Fallido = "Fallido",
 }
+
+enum EstadoRuta {
+  Pendiente = "Pendiente",
+  Activa = "Activa",
+  Completada = "Completada",
+  Cancelada = "Fallida",
+}
+
+enum EstadoConductor {
+  Disponible = "Disponible",
+  NoDisponible = "No_disponible",
+}
+
+
+// ========================================
+// DATOS MOCK (SOLO PARA CARDS 4, 5 Y 6)
+// ========================================
 
 // Generar últimos 2 meses dinámicamente
 function generarUltimos2Meses() {
@@ -44,34 +62,7 @@ function generarUltimos2Meses() {
   });
 }
 
-const ultimos7Dias = generarUltimos7Dias();
 const ultimos2Meses = generarUltimos2Meses();
-
-// --- Paquetes ---
-const paquetesPorSemana = ultimos7Dias.map((fecha) => {
-  const activos = Math.floor(40 + Math.random() * 20); // 40-60
-  const inactivos = Math.floor(5 + Math.random() * 10); // 5-15
-  return { fecha, activos, inactivos, total: activos + inactivos };
-});
-
-// --- Rutas ---
-const rutasPorSemana = ultimos7Dias.map((fecha) => {
-  const activas = Math.floor(10 + Math.random() * 8); // 10-18
-  const inactivas = Math.floor(1 + Math.random() * 4); // 1-5
-  return { fecha, activas, inactivas, total: activas + inactivas };
-});
-
-// --- Conductores ---
-const conductoresPorSemana = ultimos7Dias.map((fecha) => {
-  const disponibles = Math.floor(8 + Math.random() * 5); // 8-12
-  const noDisponibles = Math.floor(1 + Math.random() * 3); // 1-4
-  return {
-    fecha,
-    disponibles,
-    noDisponibles,
-    total: disponibles + noDisponibles,
-  };
-});
 
 // --- Entregas promedio por mes ---
 const tiemposEntregaMensuales = ultimos2Meses.map((mes) => ({
@@ -145,13 +136,6 @@ const etiquetasEstados = {
 // FUNCIONES AUXILIARES
 // ========================================
 
-// Función para formatear fecha en español
-const formatearDia = (fechaIso: string) => {
-  const fecha = new Date(fechaIso);
-  const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  return `${dias[fecha.getDay()]} ${fecha.getDate()}`;
-};
-
 // Función para formatear mes en español
 const formatearMes = (fechaMes: string) => {
   const [año, mes] = fechaMes.split("-");
@@ -215,64 +199,75 @@ const TooltipDonaSimple = ({ active, payload }: any) => {
 // ========================================
 
 const Admin: React.FC = () => {
-  // Totales calculados con useMemo para rendimiento
-  const totalesPaquetes = useMemo(() => {
-    const totalActivos = paquetesPorSemana.reduce(
-      (suma, r) => suma + r.activos,
-      0
-    );
-    const totalInactivos = paquetesPorSemana.reduce(
-      (suma, r) => suma + r.inactivos,
-      0
-    );
-    const total = totalActivos + totalInactivos;
-    return { total, totalActivos, totalInactivos };
+  // Estados para datos reales
+  const [paquetes, setPaquetes] = useState<any[]>([]);
+  const [rutas, setRutas] = useState<any[]>([]);
+  const [loadingPaquetes, setLoadingPaquetes] = useState(true);
+  const [loadingRutas, setLoadingRutas] = useState(true);
+
+  
+
+  // Hook de conductores
+  const { data: conductores, loading: loadingConductores } = useDriver();
+
+  console.table(conductores.map(c => ({ nombre: c.nombre, estado: c.estado })));
+  console.log('Conductores:', conductores);
+
+  // Fetch paquetes
+  useEffect(() => {
+    const fetchPaquetes = async () => {
+      try {
+        const data = await PackagesService.getAll();
+        setPaquetes(data);
+      } catch (error) {
+        console.error("Error al cargar paquetes:", error);
+      } finally {
+        setLoadingPaquetes(false);
+      }
+    };
+    fetchPaquetes();
   }, []);
 
-  const totalesRutas = useMemo(() => {
-    const total = rutasPorSemana.reduce(
-      (suma, r) => suma + (r.total ?? r.activas + r.inactivas),
-      0
-    );
-    const activas = rutasPorSemana.reduce((suma, r) => suma + r.activas, 0);
-    const inactivas = rutasPorSemana.reduce((suma, r) => suma + r.inactivas, 0);
-    return { total, activas, inactivas };
+  // Fetch rutas
+  useEffect(() => {
+    const fetchRutas = async () => {
+      try {
+        const data = await getAllRutas();
+        setRutas(data);
+      } catch (error) {
+        console.error("Error al cargar rutas:", error);
+      } finally {
+        setLoadingRutas(false);
+      }
+    };
+    fetchRutas();
   }, []);
 
-  const totalesConductores = useMemo(() => {
-    const total = conductoresPorSemana.reduce(
-      (suma, c) => suma + (c.total ?? c.disponibles + c.noDisponibles),
-      0
-    );
-    const disponibles = conductoresPorSemana.reduce(
-      (suma, c) => suma + c.disponibles,
-      0
-    );
-    const noDisponibles = conductoresPorSemana.reduce(
-      (suma, c) => suma + c.noDisponibles,
-      0
-    );
-    return { total, disponibles, noDisponibles };
-  }, []);
+  // FILTRADO DE DATOS REALES - TOTAL DE TODOS (no solo por estado)
+  const totalPaquetes = paquetes.length;
+  const paquetesEntregados = paquetes.filter(p => p.estado === PaquetesEstados.Entregado).length;
+  const paquetesFallidos = paquetes.filter(p => p.estado === PaquetesEstados.Fallido).length;
 
-  // Datos para gráficas semanales
-  const datosPaquetesGrafica = paquetesPorSemana.map((d) => ({
-    nombre: formatearDia(d.fecha),
-    Activos: d.activos,
-    Inactivos: d.inactivos,
-  }));
+  const totalRutas = rutas.length;
+  const rutasCompletadas = rutas.filter(r => r.estado_ruta === EstadoRuta.Completada).length;
+  const rutasCanceladas = rutas.filter(r => r.estado_ruta === EstadoRuta.Cancelada).length;
 
-  const datosRutasGrafica = rutasPorSemana.map((d) => ({
-    nombre: formatearDia(d.fecha),
-    Activas: d.activas,
-    Inactivas: d.inactivas,
-  }));
+  const totalConductores = conductores?.length || 0;
+  const conductoresDisponibles = conductores?.filter(c => c.estado === EstadoConductor.Disponible).length || 0;
+  const conductoresNoDisponibles = conductores?.filter(c => c.estado === EstadoConductor.NoDisponible).length || 0;
 
-  const datosConductoresGrafica = conductoresPorSemana.map((d) => ({
-    nombre: formatearDia(d.fecha),
-    Disponibles: d.disponibles,
-    "No Disponibles": d.noDisponibles,
-  }));
+  // Datos para las 3 primeras gráficas
+  const datosPaquetesGrafica = [
+    { nombre: "Total", Entregados: paquetesEntregados, Fallidos: paquetesFallidos }
+  ];
+
+  const datosRutasGrafica = [
+    { nombre: "Total", Completadas: rutasCompletadas, Canceladas: rutasCanceladas }
+  ];
+
+  const datosConductoresGrafica = [
+    { nombre: "Total", Disponibles: conductoresDisponibles, "No Disponibles": conductoresNoDisponibles }
+  ];
 
   const datosTiemposEntregaGrafica = tiemposEntregaMensuales.map((m) => ({
     nombre: formatearMes(m.mes),
@@ -347,6 +342,7 @@ const Admin: React.FC = () => {
         ),
       };
     });
+
   }, []);
 
   return (
@@ -357,30 +353,29 @@ const Admin: React.FC = () => {
           <span className="typewriter-word second">Administrador</span>
         </h1>
         <p className="text-sm text-gray-500 mt-2">
-          Resumen operativo de la última semana -{" "}
-          {new Date().toLocaleDateString("es-ES")}
+          Resumen operativo - {new Date().toLocaleDateString("es-ES")}
         </p>
       </div>
 
-      {/* Métricas principales: tres cards horizontales */}
+      {/* Métricas principales: tres cards horizontales CON DATOS REALES */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <ComponentCard
-          title="Paquetes (última semana)"
-          desc={`Total gestionados: ${totalesPaquetes.total}`}
+          title="Paquetes"
+          desc={`Total: ${totalPaquetes}`}
         >
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                {totalesPaquetes.total}
+                {totalPaquetes}
               </p>
               <div className="space-y-1">
                 <p className="text-sm text-success-600 dark:text-success-400 flex items-center">
                   <span className="w-2 h-2 bg-success-500 rounded-full mr-2"></span>
-                  Activos: {totalesPaquetes.totalActivos}
+                  Entregados: {paquetesEntregados}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                  Inactivos: {totalesPaquetes.totalInactivos}
+                <p className="text-sm text-error-600 dark:text-error-400 flex items-center">
+                  <span className="w-2 h-2 bg-error-500 rounded-full mr-2"></span>
+                  Fallidos: {paquetesFallidos}
                 </p>
               </div>
             </div>
@@ -390,102 +385,13 @@ const Admin: React.FC = () => {
                   <XAxis dataKey="nombre" tick={{ fontSize: 8 }} />
                   <Tooltip content={<TooltipPersonalizado />} />
                   <Bar
-                    dataKey="Activos"
+                    dataKey="Entregados"
                     stackId="a"
                     fill="#12B76A"
                     radius={[0, 0, 2, 2]}
                   />
                   <Bar
-                    dataKey="Inactivos"
-                    stackId="a"
-                    fill="#667085"
-                    radius={[2, 2, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </ComponentCard>
-
-        <ComponentCard
-          title="Rutas (última semana)"
-          desc={`Total rutas programadas: ${totalesRutas.total}`}
-        >
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                {totalesRutas.total}
-              </p>
-              <div className="space-y-1">
-                <p className="text-sm text-brand-600 dark:text-brand-400 flex items-center">
-                  <span className="w-2 h-2 bg-brand-500 rounded-full mr-2"></span>
-                  Activas: {totalesRutas.activas}
-                </p>
-                <p className="text-sm text-orange-500 dark:text-orange-400 flex items-center">
-                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                  Inactivas: {totalesRutas.inactivas}
-                </p>
-              </div>
-            </div>
-            <div className="w-44 h-28">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={datosRutasGrafica}>
-                  <XAxis dataKey="nombre" tick={{ fontSize: 8 }} />
-                  <Tooltip content={<TooltipPersonalizado />} />
-                  <Bar
-                    dataKey="Activas"
-                    stackId="a"
-                    fill="#465FFF"
-                    radius={[0, 0, 2, 2]}
-                  />
-                  <Bar
-                    dataKey="Inactivas"
-                    stackId="a"
-                    fill="#FD853A"
-                    radius={[2, 2, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </ComponentCard>
-
-        <ComponentCard
-          title="Conductores (última semana)"
-          desc={`Personal registrado (suma por días): ${totalesConductores.total}`}
-        >
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                {totalesConductores.total}
-              </p>
-              <div className="space-y-1">
-                <p className="text-sm text-blue-light-600 dark:text-blue-light-400 flex items-center">
-                  <span className="w-2 h-2 bg-blue-light-500 rounded-full mr-2"></span>
-                  Disponibles: {totalesConductores.disponibles}
-                </p>
-                <p className="text-sm text-error-500 dark:text-error-400 flex items-center">
-                  <span className="w-2 h-2 bg-error-500 rounded-full mr-2"></span>
-                  No disponibles: {totalesConductores.noDisponibles}
-                </p>
-              </div>
-            </div>
-            <div className="w-44 h-28">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={datosConductoresGrafica}
-                  margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                >
-                  <XAxis dataKey="nombre" tick={{ fontSize: 8 }} />
-                  <Tooltip content={<TooltipPersonalizado />} />
-                  <Bar
-                    dataKey="Disponibles"
-                    stackId="a"
-                    fill="#36BFFA"
-                    radius={[0, 0, 2, 2]}
-                  />
-                  <Bar
-                    dataKey="No Disponibles"
+                    dataKey="Fallidos"
                     stackId="a"
                     fill="#F04438"
                     radius={[2, 2, 0, 0]}
@@ -495,6 +401,89 @@ const Admin: React.FC = () => {
             </div>
           </div>
         </ComponentCard>
+
+        <ComponentCard
+          title="Rutas"
+          desc={`Total: ${totalRutas}`}
+        >
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                {totalRutas}
+              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-success-600 dark:text-success-400 flex items-center">
+                  <span className="w-2 h-2 bg-success-500 rounded-full mr-2"></span>
+                  Completadas: {rutasCompletadas}
+                </p>
+                <p className="text-sm text-error-600 dark:text-error-400 flex items-center">
+                  <span className="w-2 h-2 bg-error-500 rounded-full mr-2"></span>
+                  Canceladas: {rutasCanceladas}
+                </p>
+              </div>
+            </div>
+            <div className="w-44 h-28">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={datosRutasGrafica}>
+                  <XAxis dataKey="nombre" tick={{ fontSize: 8 }} />
+                  <Tooltip content={<TooltipPersonalizado />} />
+                  <Bar
+                    dataKey="Completadas"
+                    stackId="a"
+                    fill="#12B76A"
+                    radius={[0, 0, 2, 2]}
+                  />
+                  <Bar
+                    dataKey="Canceladas"
+                    stackId="a"
+                    fill="#F04438"
+                    radius={[2, 2, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ComponentCard>
+
+<ComponentCard title="Conductores" desc={`Total: ${totalConductores}`}>
+  <div className="flex items-end justify-between gap-4">
+    <div>
+      <p className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        {totalConductores}
+      </p>
+      <div className="space-y-1">
+        <p className="text-sm text-blue-light-600 dark:text-blue-light-400 flex items-center">
+          <span className="w-2 h-2 bg-blue-light-500 rounded-full mr-2"></span>
+          Disponibles: {conductoresDisponibles}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+          <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+          No disponibles: {conductoresNoDisponibles}
+        </p>
+      </div>
+    </div>
+
+    <div className="w-44 h-28">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={[
+            {
+              nombre: "Total",
+              Disponibles: conductoresDisponibles,
+              "No disponibles": conductoresNoDisponibles,
+            },
+          ]}
+          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+        >
+          <XAxis dataKey="nombre" tick={{ fontSize: 8 }} />
+          <Tooltip content={<TooltipPersonalizado />} />
+          <Bar dataKey="Disponibles" stackId="a" fill="#36BFFA" radius={[0, 0, 2, 2]} />
+          <Bar dataKey="No disponibles" stackId="a" fill="#667085" radius={[2, 2, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</ComponentCard>
       </div>
 
       {/* Segunda fila: Card 4 y Card 5 */}
