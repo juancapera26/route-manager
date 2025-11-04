@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Box,
   Typography,
@@ -16,62 +16,24 @@ import {
 import { Paquete } from "../../../../hooks/useManifiestos";
 
 interface InicioRutaProps {
+  paqueteActual?: Paquete;
+  currentIndex: number;
+  setCurrentIndex: (i: number) => void;
   mostrarLetras: boolean;
   letras: string;
   onNextStep: () => void;
   onPrevStep: () => void;
-  codigoManifiesto: string;
-  vehiculo: string;
 }
 
 const InicioRuta: React.FC<InicioRutaProps> = ({
+  paqueteActual,
+  currentIndex,
+  setCurrentIndex,
   mostrarLetras,
   letras,
   onNextStep,
   onPrevStep,
-  codigoManifiesto,
-  vehiculo,
 }) => {
-  const [paquetes, setPaquetes] = useState<Paquete[]>([]);
-  const [paqueteActual, setPaqueteActual] = useState<Paquete | null>(null);
-
-  // Cargar los paquetes ordenados desde localStorage
-  useEffect(() => {
-    const storedPaquetes = localStorage.getItem("paquetesRuta");
-    if (storedPaquetes) {
-      const paquetesParsed: Paquete[] = JSON.parse(storedPaquetes);
-      setPaquetes(paquetesParsed);
-      setPaqueteActual(paquetesParsed[0] || null); // Establecer el primer paquete como el actual
-    }
-  }, []); // Solo cargar una vez al montar el componente
-
-  // Guardar paquetes en localStorage cada vez que se actualiza el paquete
-  useEffect(() => {
-    if (paquetes.length > 0) {
-      localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
-    }
-  }, [paquetes]);
-
-  // Función para avanzar al siguiente paquete
-  const avanzarAlSiguiente = () => {
-    if (paqueteActual) {
-      const indexActual = paquetes.indexOf(paqueteActual);
-      if (indexActual < paquetes.length - 1) {
-        setPaqueteActual(paquetes[indexActual + 1]); // Avanzar al siguiente paquete
-      }
-    }
-  };
-
-  // Función para retroceder al paquete anterior
-  const retrocederAlAnterior = () => {
-    if (paqueteActual) {
-      const indexActual = paquetes.indexOf(paqueteActual);
-      if (indexActual > 0) {
-        setPaqueteActual(paquetes[indexActual - 1]); // Retroceder al paquete anterior
-      }
-    }
-  };
-
   return (
     <Paper
       elevation={4}
@@ -90,17 +52,13 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           Zona
         </Typography>
         <Typography variant="body1" fontWeight="700">
-          Código manifiesto: {codigoManifiesto}{" "}
+          #15967
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {vehiculo}{" "}
+          Camioneta placa: ASD234
         </Typography>
         <Typography variant="caption" color="text.secondary" display="block">
-          {paquetes.length > 0
-            ? `${paquetes.indexOf(paqueteActual as Paquete) + 1}/${
-                paquetes.length
-              }` // Asegurándonos que no sea null
-            : "0/0"}
+          {currentIndex + 1}/30
         </Typography>
       </Box>
 
@@ -119,8 +77,8 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           {/* Flecha izquierda */}
           <IconButton
             size="small"
-            disabled={paquetes.indexOf(paqueteActual) === 0}
-            onClick={retrocederAlAnterior}
+            disabled={currentIndex === 0}
+            onClick={() => setCurrentIndex(currentIndex - 1)}
           >
             <ArrowBackIcon fontSize="small" />
           </IconButton>
@@ -128,7 +86,7 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           {/* Info paquete */}
           <Box sx={{ flex: 1 }}>
             <Typography fontWeight="600" fontSize="0.9rem">
-              Código paquete {paqueteActual.codigo_rastreo}
+              📦 Código paquete {paqueteActual.codigo_rastreo}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Dirección {paqueteActual.direccion}
@@ -137,17 +95,13 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
 
           {/* Letra */}
           <Typography fontWeight="bold" color="primary">
-            {mostrarLetras
-              ? letras[paquetes.indexOf(paqueteActual as Paquete)]
-              : ""}{" "}
-            {/* Asegurándonos que no sea null */}
+            {mostrarLetras ? letras[currentIndex] : ""}
           </Typography>
 
           {/* Flecha derecha */}
           <IconButton
             size="small"
-            disabled={paquetes.indexOf(paqueteActual) === paquetes.length - 1}
-            onClick={avanzarAlSiguiente}
+            onClick={() => setCurrentIndex(currentIndex + 1)}
           >
             <ArrowForwardIcon fontSize="small" />
           </IconButton>

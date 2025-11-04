@@ -7,7 +7,6 @@ import { Paquete, TipoPaquete } from "../../../global/types/paquete.types";
 import { Plus } from "lucide-react";
 import { usePackages } from "../../../hooks/admin/usePackages";
 import { toast } from "sonner";
-import axios from "axios";
 
 //modal para agregar paquete
 
@@ -57,6 +56,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   onSuccess,
   isLoading = false,
 }) => {
+
   const { createPackage } = usePackages();
 
   const [formData, setFormData] = useState({
@@ -72,44 +72,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [latLng, setLatLng] = useState({ lat: 0, lng: 0 }); // Para almacenar las coordenadas
-
-  // Función para geocodificar la dirección
-    const geocodeAddress = async (address: string) => {
-      // Tipos para la respuesta de la API de Google Maps Geocoding
-      type GeocodeLocation = { lat: number; lng: number };
-      type GeocodeResult = { geometry: { location: GeocodeLocation } };
-      type GeocodeResponse = { results: GeocodeResult[]; status?: string };
-  
-      try {
-        // Definir la URL y clave de Google Maps API
-        const response = await axios.get<GeocodeResponse>(
-          `https://maps.googleapis.com/maps/api/geocode/json`,
-          {
-            params: {
-              address: address,
-              key: "AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY", // Usa tu clave correcta de Google Maps
-            },
-          }
-        );
-        console.log("Respuesta de geocodificación:", response.data);
-  
-        // Extraemos los resultados de la respuesta
-        const result = response.data.results?.[0];
-        if (result && result.geometry?.location) {
-          const { lat, lng } = result.geometry.location;
-          setLatLng({ lat, lng }); // Actualizamos las coordenadas
-          return { lat, lng };
-        } else {
-          toast.error("No se pudo obtener las coordenadas.");
-          return null;
-        }
-      } catch (error) {
-        toast.error("Error al geocodificar la dirección.");
-        console.error(error);
-        return null;
-      }
-    };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -241,19 +203,11 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
       toast.error("Por favor corrige los errores en el formulario");
       return;
     }
 
-    // Primero obtenemos las coordenadas
-    const coordinates = await geocodeAddress(formData.direccion);
-    if (!coordinates) return; // Si no se pudo obtener coordenadas, no enviamos el formulario
-
-    console.log("Coordenadas obtenidas:", coordinates);
-
-    // Ahora que tenemos las coordenadas, armamos el payload
     const payload = {
       destinatario: {
         nombre: formData.nombre.trim(),
@@ -266,8 +220,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       cantidad: formData.cantidad,
       valor_declarado: formData.valor_declarado,
       dimensiones: formData.dimensiones,
-      lat: coordinates.lat, // Usa las coordenadas directamente aquí
-      lng: coordinates.lng, // Usa las coordenadas directamente aquí
     };
 
     try {
@@ -442,11 +394,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   type="number"
                   name="valor_declarado"
                   placeholder="0"
-                  value={
-                    formData.valor_declarado === 0
-                      ? ""
-                      : formData.valor_declarado
-                  }
+                  value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
                   onChange={handleInputChange}
                   min="0"
                   step={1000}
@@ -473,11 +421,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   type="number"
                   name="largo"
                   placeholder="0"
-                  value={
-                    formData.dimensiones.largo === 0
-                      ? ""
-                      : formData.dimensiones.largo
-                  }
+                  value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -496,11 +440,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   type="number"
                   name="ancho"
                   placeholder="0"
-                  value={
-                    formData.dimensiones.ancho === 0
-                      ? ""
-                      : formData.dimensiones.ancho
-                  }
+                  value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -519,11 +459,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   type="number"
                   name="alto"
                   placeholder="0"
-                  value={
-                    formData.dimensiones.alto === 0
-                      ? ""
-                      : formData.dimensiones.alto
-                  }
+                  value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
@@ -542,11 +478,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   type="number"
                   name="peso"
                   placeholder="0"
-                  value={
-                    formData.dimensiones.peso === 0
-                      ? ""
-                      : formData.dimensiones.peso
-                  }
+                  value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}

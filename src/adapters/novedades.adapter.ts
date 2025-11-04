@@ -1,5 +1,5 @@
 // src/adapters/novedadesAdapter.ts
-import { Novedad } from "../global/types/novedades";
+/*import { Novedad } from "../global/types/novedades";
 
 export const adaptNovedades = (data: any[]): Novedad[] => {
   return data.map((item) => ({
@@ -16,4 +16,4 @@ export const adaptNovedades = (data: any[]): Novedad[] => {
         }
       : undefined,
   }));
-};
+};*/

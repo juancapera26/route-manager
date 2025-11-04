@@ -44,10 +44,8 @@ const ResetPasswordFormHook = () => {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setMessage("Error changing password: " + error.message);
-      }
+    } catch (error: any) {
+      setMessage("Error changing password: " + error.message);
     }
     setLoading(false);
   };

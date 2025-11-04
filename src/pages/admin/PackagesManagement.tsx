@@ -8,11 +8,7 @@ import ModalEditarPaquete from "../../components/admin/packages/ModalEditarPaque
 import { ModalDetallesPaquetes } from "../../components/admin/packages/ModalDetallesPaquetes";
 import { ModalAsignarPaquete } from "../../components/admin/packages/ModalAsignarPaquete";
 import Badge, { BadgeColor } from "../../components/ui/badge/Badge";
-import {
-  Paquete,
-  PaqueteCreate,
-  PaquetesEstados,
-} from "../../global/types/paquete.types";
+import { Paquete, PaquetesEstados } from "../../global/types/paquete.types";
 import { Plus } from "lucide-react";
 
 //orquestador
@@ -25,28 +21,28 @@ const PackagesManagement: React.FC = () => {
     filtroEstado,
     columnsForCurrentState,
     actionsForCurrentState,
-
+    
     // Modales existentes
     modalDetalles,
     abrirDetalles,
     cerrarDetalles,
-
+    
     modalEdicion,
     abrirEdicion,
     cerrarEdicion,
     handleUpdateFromModal,
-
-    // ← NUEVOS: Modal de asignación
+    
+    // Modal de asignación
     modalAsignacion,
     cerrarAsignacion,
-
-    // ← NUEVOS: Rutas disponibles
+    
+    // Rutas disponibles
     availableRoutes,
-
+    
     // Handlers CRUD
     handleCreatePaquete,
-
-    // ← NUEVO: Handler de asignación
+    
+    // ✅ Handler de asignación (ahora recibe paqueteId y dto)
     handleAssign,
   } = usePackagesManagementHook();
 
@@ -75,14 +71,10 @@ const PackagesManagement: React.FC = () => {
   const contadores = useMemo(() => {
     const total = data.length;
     return {
-      [PaquetesEstados.Pendiente]:
-        paquetesPorEstado[PaquetesEstados.Pendiente].length,
-      [PaquetesEstados.Asignado]:
-        paquetesPorEstado[PaquetesEstados.Asignado].length,
-      [PaquetesEstados.Entregado]:
-        paquetesPorEstado[PaquetesEstados.Entregado].length,
-      [PaquetesEstados.Fallido]:
-        paquetesPorEstado[PaquetesEstados.Fallido].length,
+      [PaquetesEstados.Pendiente]: paquetesPorEstado[PaquetesEstados.Pendiente].length,
+      [PaquetesEstados.Asignado]: paquetesPorEstado[PaquetesEstados.Asignado].length,
+      [PaquetesEstados.Entregado]: paquetesPorEstado[PaquetesEstados.Entregado].length,
+      [PaquetesEstados.Fallido]: paquetesPorEstado[PaquetesEstados.Fallido].length,
       todos: total,
     };
   }, [paquetesPorEstado, data]);
@@ -96,7 +88,7 @@ const PackagesManagement: React.FC = () => {
   };
 
   // ✅ HANDLER crear paquete
-  const handleCreate = async (payload: PaqueteCreate): Promise<boolean> => {
+  const handleCreate = async (payload: any): Promise<boolean> => {
     setSaving(true);
     try {
       const success = await handleCreatePaquete(payload);
@@ -110,16 +102,23 @@ const PackagesManagement: React.FC = () => {
     }
   };
 
-  // ← NUEVO: Handler para confirmar asignación desde el modal
-  const handleConfirmarAsignacion = async (
-    paqueteId: number,
-    rutaId: number
-  ) => {
-    const paquete = data.find((p) => p.id_paquete === paqueteId);
-    if (!paquete) return;
-    await handleAssign(paquete, rutaId);
+  // ✅ ACTUALIZADO: Handler para confirmar asignación desde el modal
+  // Ahora recibe paqueteId y codManifiesto (string)
+  const handleConfirmarAsignacion = async (paqueteId: number, codManifiesto: string) => {
+    console.log('🎯 === PACKAGE MANAGEMENT ===');
+    console.log('📦 Paquete ID:', paqueteId);
+    console.log('📋 Código Manifiesto:', codManifiesto);
+    console.log('🔍 Tipo de codManifiesto:', typeof codManifiesto);
+    console.log('=============================');
+    
+    try {
+      // ✅ Llamamos al handler con el DTO correcto
+      await handleAssign(paqueteId, { cod_manifiesto: codManifiesto });
+    } catch (error) {
+      console.error('❌ Error en handleConfirmarAsignacion:', error);
+    }
   };
-
+ 
   return (
     <div className="p-6 space-y-8">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -146,7 +145,7 @@ const PackagesManagement: React.FC = () => {
                       </button>
                     </div>
                   )}
-
+                  
                   <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
                     <div className="flex items-center gap-3">
                       <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
@@ -156,7 +155,7 @@ const PackagesManagement: React.FC = () => {
                         {paquetesPorEstado[estado]?.length || 0}
                       </Badge>
                     </div>
-
+                    
                     {/* Filtro solo en la primera sección */}
                     {estado === PaquetesEstados.Pendiente && (
                       <div>
@@ -171,7 +170,7 @@ const PackagesManagement: React.FC = () => {
                   </div>
                 </div>
               </div>
-
+              
               <DataTable
                 data={paquetesPorEstado[estado] || []}
                 columns={columnsForCurrentState}
@@ -198,7 +197,7 @@ const PackagesManagement: React.FC = () => {
                   {saving ? "Creando..." : "Crear Paquete"}
                 </button>
               </div>
-
+              
               <div className="order-2 sm:order-1 flex flex-col sm:flex-row sm:gap-4 gap-4">
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
@@ -206,18 +205,12 @@ const PackagesManagement: React.FC = () => {
                   </h2>
                   <Badge
                     variant="light"
-                    color={
-                      filtroEstado.estadoSeleccionado
-                        ? badgeColors[
-                            filtroEstado.estadoSeleccionado as PaquetesEstados
-                          ]
-                        : "info"
-                    }
+                    color={filtroEstado.estadoSeleccionado ? badgeColors[filtroEstado.estadoSeleccionado as PaquetesEstados] : "info"}
                   >
                     {datosFiltrados.length}
                   </Badge>
                 </div>
-
+                
                 <div>
                   <EstadoFilterDropdown
                     opciones={filtroEstado.opciones}
@@ -229,7 +222,7 @@ const PackagesManagement: React.FC = () => {
               </div>
             </div>
           </div>
-
+          
           <DataTable
             data={datosFiltrados}
             columns={columnsForCurrentState}
@@ -266,7 +259,7 @@ const PackagesManagement: React.FC = () => {
         cerrarModalDetalles={cerrarDetalles}
       />
 
-      {/* ← NUEVO: Modal para asignar paquete a ruta */}
+      {/* ✅ ACTUALIZADO: Modal para asignar paquete a ruta */}
       <ModalAsignarPaquete
         isOpen={modalAsignacion.open}
         onClose={cerrarAsignacion}

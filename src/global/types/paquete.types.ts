@@ -127,6 +127,7 @@ export interface PaqueteUpdate {
 }
 
 export interface AsignarPaqueteDTO {
-  id_ruta: number;
+  id_ruta?: number;
+  cod_manifiesto: string;
   id_conductor?: number;
 }

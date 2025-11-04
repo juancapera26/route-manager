@@ -7,12 +7,11 @@ import Button from '../../ui/button/Button';
 import { MapPin, Clock, Package, User, Truck, AlertCircle } from 'lucide-react';
 import { Paquete } from '../../../global/types/paquete.types';
 
-//modal para asignar paquete
-
-// ← Tipo para las rutas disponibles (ajusta según tu backend)
+// ✅ Tipo para las rutas disponibles
 interface RutaDisponible {
   id_ruta: number;
   nombre?: string;
+  cod_manifiesto: string; // ← Ahora obligatorio (no opcional)
   descripcion?: string;
   estado_ruta: string;
   fecha_inicio?: string;
@@ -27,7 +26,7 @@ interface RutaDisponible {
     modelo?: string;
   };
   _count?: {
-    paquetes: number;
+    paquete: number;  // ← Cambiado de 'paquetes' a 'paquete' (singular)
   };
 }
 
@@ -37,7 +36,8 @@ interface ModalAsignarPaqueteProps {
   paquete: Paquete | null;
   rutasDisponibles: RutaDisponible[];
   loading: boolean;
-  onConfirm: (paqueteId: number, rutaId: number) => Promise<void>;
+  // ✅ Cambiamos la firma: ahora recibe cod_manifiesto en lugar de rutaId
+  onConfirm: (paqueteId: number, codManifiesto: string) => Promise<void>;
 }
 
 export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
@@ -48,25 +48,38 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
   loading,
   onConfirm,
 }) => {
-  const [selectedRutaId, setSelectedRutaId] = useState<number | null>(null);
+  console.log('🎨 Modal renderizado');
+  console.log('📦 Paquete:', paquete);
+  console.log('🛣️ Rutas disponibles:', rutasDisponibles);
+  console.log('📊 Cantidad de rutas:', rutasDisponibles?.length);
+  console.log('⏳ Cargando:', loading);
+
+  // ✅ Ahora guardamos el cod_manifiesto en lugar del id_ruta
+  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirm = async () => {
-    if (!paquete || !selectedRutaId) return;
+    if (!paquete || !selectedCodManifiesto) return;
 
     setIsSubmitting(true);
     try {
-      await onConfirm(paquete.id_paquete, selectedRutaId);
-      setSelectedRutaId(null);
+      console.log('🎯 === MODAL CONFIRMACIÓN ===');
+      console.log('📦 Paquete ID:', paquete.id_paquete);
+      console.log('📋 Código Manifiesto:', selectedCodManifiesto);
+      console.log('========================');
+      
+      // ✅ Enviamos el cod_manifiesto
+      await onConfirm(paquete.id_paquete, selectedCodManifiesto);
+      setSelectedCodManifiesto(null);
     } catch (error) {
-      console.error('Error al asignar:', error);
+      console.error('❌ Error al asignar:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setSelectedRutaId(null);
+    setSelectedCodManifiesto(null);
     onClose();
   };
 
@@ -79,7 +92,7 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Asignar Paquete a Ruta
+              Asigna el Paquete #{paquete.id_paquete} a la Ruta
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Selecciona una ruta disponible para asignar el paquete
@@ -88,36 +101,6 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
           <Badge variant="light" color="info">
             {rutasDisponibles.length} rutas disponibles
           </Badge>
-        </div>
-
-        {/* Información del Paquete */}
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg">
-          <div className="flex items-center mb-2">
-            <Package className="w-5 h-5 text-blue-500 dark:text-blue-400 mr-2" />
-            <h4 className="font-semibold text-gray-900 dark:text-white">
-              Paquete #{paquete.id_paquete}
-            </h4>
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-gray-600 dark:text-gray-400">Destinatario:</span>
-              <span className="ml-2 font-medium text-gray-900 dark:text-white">
-                {paquete.cliente?.nombre} {paquete.cliente?.apellido}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-600 dark:text-gray-400">Tracking:</span>
-              <span className="ml-2 font-mono font-medium text-gray-900 dark:text-white">
-                {paquete.codigo_rastreo}
-              </span>
-            </div>
-            <div className="col-span-2">
-              <span className="text-gray-600 dark:text-gray-400">Dirección:</span>
-              <span className="ml-2 text-gray-900 dark:text-white">
-                {paquete.direccion_entrega}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Loading state */}
@@ -191,10 +174,10 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
                 <TableBody>
                   {rutasDisponibles.map((ruta, index) => (
                     <TableRow
-                      key={ruta.id_ruta}
-                      onClick={() => setSelectedRutaId(ruta.id_ruta)}
+                      key={ruta.cod_manifiesto} // ✅ Usamos cod_manifiesto como key único
+                      onClick={() => setSelectedCodManifiesto(ruta.cod_manifiesto)}
                       className={`border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors cursor-pointer ${
-                        selectedRutaId === ruta.id_ruta
+                        selectedCodManifiesto === ruta.cod_manifiesto
                           ? 'bg-blue-100 dark:bg-blue-500/20'
                           : index % 2 === 0
                           ? 'bg-white dark:bg-gray-800'
@@ -205,8 +188,9 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
                         <input
                           type="radio"
                           name="ruta"
-                          checked={selectedRutaId === ruta.id_ruta}
-                          onChange={() => setSelectedRutaId(ruta.id_ruta)}
+                          value={ruta.cod_manifiesto} // ✅ Valor es cod_manifiesto
+                          checked={selectedCodManifiesto === ruta.cod_manifiesto}
+                          onChange={() => setSelectedCodManifiesto(ruta.cod_manifiesto)}
                           className="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer"
                         />
                       </TableCell>
@@ -217,10 +201,13 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              Ruta #{ruta.id_ruta}
+                              {/* ✅ Destacamos el código de manifiesto */}
+                              <span className="font-mono bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded">
+                                {ruta.cod_manifiesto}
+                              </span>
                             </div>
                             {ruta.descripcion && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 {ruta.descripcion}
                               </div>
                             )}
@@ -264,7 +251,7 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
                       </TableCell>
                       <TableCell className="px-4 py-3 text-center">
                         <span className="inline-flex items-center justify-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300">
-                          {ruta._count?.paquetes ?? 0}
+                          {ruta._count?.paquete ?? 0}
                         </span>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-center">
@@ -296,7 +283,7 @@ export const ModalAsignarPaquete: React.FC<ModalAsignarPaqueteProps> = ({
           <Button
             variant="primary"
             onClick={handleConfirm}
-            disabled={!selectedRutaId || isSubmitting}
+            disabled={!selectedCodManifiesto || isSubmitting}
             className="min-w-[120px]"
           >
             {isSubmitting ? (
