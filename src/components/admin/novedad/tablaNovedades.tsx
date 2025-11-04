@@ -25,10 +25,6 @@ export const NOVELTY_COLUMNS: Record<string, ColumnDef<Novelty>> = {
     header: "TIPO",
     accessor: (item) => {
       const colorMap: Record<string, string> = {
-        INCIDENTE: "bg-red-500/20 text-red-400 border border-red-500/30",
-        RETRASO: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-        DAÑO: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
-        OTRO: "bg-gray-500/20 text-gray-400 border border-gray-500/30",
         Operativa: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
         Logística: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
       };

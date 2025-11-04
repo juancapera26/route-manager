@@ -4,6 +4,8 @@ import { noveltyService } from '../../global/services/novedadesService';
 import { Novelty } from '../../global/types/novedades';
 import { toast } from 'sonner';
 
+// Interprete de novedades
+
 export const useNovelty = () => {
   const [novelties, setNovelties] = useState<Novelty[]>([]);
   const [isLoading, setIsLoading] = useState(true);

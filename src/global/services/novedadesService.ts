@@ -3,6 +3,8 @@ import { Novelty } from '../types/novedades';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+// Logica de presentacion
+
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({

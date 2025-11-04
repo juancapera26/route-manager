@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Novelty } from "../../../../global/types/novedades";
 
+// Hook de novedades
+
 export const useNoveltyLogic = () => {
   const [selectedNovelty, setSelectedNovelty] = useState<Novelty | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);

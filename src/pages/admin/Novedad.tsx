@@ -6,6 +6,8 @@ import NoveltyTable from "../../components/admin/novedad/tablaNovedades";
 import ModalVerImagen from "../../components/admin/novedad/ModalImagenNovedades";
 import { FileText } from "lucide-react";
 
+// Gestión de novedades
+
 export const NoveltyManagement: React.FC = () => {
   const { novelties, isLoading, deleteNovelty } = useNovelty();
 

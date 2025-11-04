@@ -1,4 +1,7 @@
 // src/global/types/novedades.types.ts
+
+// Tipos de novedades
+
 export interface Novelty {
   id_novedad: number;
   descripcion: string;
