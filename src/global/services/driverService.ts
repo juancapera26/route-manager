@@ -1,5 +1,5 @@
 import axios from "axios";
-import { UpdateConductorDto } from "../types/conductores";
+import { Conductor, UpdateConductorDto } from "../types/conductores";
 import { API_URL } from "../../config";
 
 export interface ConductorUpdated {
@@ -10,6 +10,17 @@ export interface ConductorUpdated {
   telefono?: string;
   foto_perfil?: string;
 }
+
+// Obtener conductores en ruta
+export const getConductoresEnRuta = async (
+  token: string
+): Promise<Conductor[]> => {
+  const url = `${API_URL}/conductores/en-ruta`;
+  const response = await axios.get<Conductor[]>(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
 
 // Actualizar datos generales
 export const updateConductor = async (

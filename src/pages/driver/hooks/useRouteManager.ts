@@ -1,25 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { Paquete } from "../../../hooks/useManifiestos";
+import {
+  getAllRutas,
+  cambiarEstadoRuta,
+} from "../../../global/services/routeService";
 import { DeliveryFormData } from "../../../global/types/deliveries";
+import { RutaEstado, Ruta } from "../../../global/types/rutas";
+import { Paquete } from "../../../hooks/useManifiestos";
 import { createPaqueteIcon } from "../utils/mapIcons";
 import { ordenarPaquetesPorDistancia } from "../utils/paquetesUtils";
-import { cambiarEstadoRuta } from "../../../global/services/routeService";
-import { RutaEstado } from "../../../global/types/rutas";
 
 export const useRouteManager = (
   mapRef: React.MutableRefObject<google.maps.Map | null>,
-  // Eliminamos `location` como dependencia directa
-  _location?: google.maps.LatLngLiteral | null,
+  location?: google.maps.LatLngLiteral | null,
   rutaId?: number
 ) => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
-
-  // ✅ Ubicación fija de inicio
-  const location1: google.maps.LatLngLiteral = {
-    lat: 4.721193,
-    lng: -74.069999,
-  };
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedPaquete, setSelectedPaquete] = useState<Paquete | null>(null);
@@ -27,7 +23,28 @@ export const useRouteManager = (
   const [paqueteIcon, setPaqueteIcon] = useState<google.maps.Icon | null>(null);
   const [routePath, setRoutePath] = useState<google.maps.LatLng[]>([]);
   const [currentDestino, setCurrentDestino] = useState<Paquete | null>(null);
+  const [activeRutaId, setActiveRutaId] = useState<number | undefined>(rutaId);
 
+  // buscar ruta activa
+  useEffect(() => {
+    if (activeRutaId) return;
+
+    const fetchRutaActiva = async () => {
+      try {
+        const rutas: Ruta[] = await getAllRutas();
+        const rutaActiva = rutas.find(
+          (r) => r.estado_ruta === RutaEstado.Asignada
+        );
+        if (rutaActiva) setActiveRutaId(rutaActiva.id_ruta);
+      } catch (error) {
+        console.error("Error obteniendo ruta activa:", error);
+      }
+    };
+
+    fetchRutaActiva();
+  }, [activeRutaId]);
+
+  // Calcular distancia
   const calcularDistancia = (
     a: google.maps.LatLngLiteral,
     b: google.maps.LatLngLiteral
@@ -37,14 +54,13 @@ export const useRouteManager = (
     const φ2 = (b.lat * Math.PI) / 180;
     const Δφ = ((b.lat - a.lat) * Math.PI) / 180;
     const Δλ = ((b.lng - a.lng) * Math.PI) / 180;
-
     const x =
       Math.sin(Δφ / 2) ** 2 +
       Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-
     return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   };
 
+  // Cargar icono de paquete
   useEffect(() => {
     if (typeof window !== "undefined" && window.google) {
       setPaqueteIcon(createPaqueteIcon());
@@ -54,7 +70,7 @@ export const useRouteManager = (
   // Manejar actualización de paquetes
   useEffect(() => {
     const handler = async () => {
-      if (!mapRef.current || !paqueteIcon) return;
+      if (!location || !mapRef.current || !paqueteIcon) return;
 
       const stored = localStorage.getItem("paquetesRuta");
       if (!stored) {
@@ -64,15 +80,14 @@ export const useRouteManager = (
         return;
       }
 
-      // ✅ Usa location1 como referencia de distancia
       const paquetes = ordenarPaquetesPorDistancia(
         JSON.parse(stored),
-        location1
+        location
       );
       setSortedPaquetes(paquetes);
+      localStorage.setItem("paquetesRuta", JSON.stringify(paquetes));
 
       markersRef.current.forEach((m) => m.setMap(null));
-
       markersRef.current = paquetes.map((p) => {
         const marker = new google.maps.Marker({
           position: { lat: p.lat!, lng: p.lng! },
@@ -90,9 +105,8 @@ export const useRouteManager = (
 
     window.addEventListener("paquetesRutaUpdated", handler);
     return () => window.removeEventListener("paquetesRutaUpdated", handler);
-  }, [paqueteIcon]);
+  }, [location, paqueteIcon]);
 
-  // Limpiar ruta
   const clearRoute = () => {
     if (polylineRef.current) {
       polylineRef.current.setMap(null);
@@ -101,14 +115,12 @@ export const useRouteManager = (
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
     setRoutePath([]);
-
-    if (mapRef.current) {
-      mapRef.current.setCenter(location1);
+    if (location && mapRef.current) {
+      mapRef.current.setCenter(location);
       mapRef.current.setZoom(14);
     }
   };
 
-  // Dibujar ruta
   const drawRoute = async (
     origin: google.maps.LatLngLiteral,
     destination: Paquete
@@ -127,7 +139,6 @@ export const useRouteManager = (
         },
         travelMode: "DRIVE",
       };
-
       const res = await fetch(
         "https://routes.googleapis.com/directions/v2:computeRoutes",
         {
@@ -140,7 +151,6 @@ export const useRouteManager = (
           body: JSON.stringify(requestBody),
         }
       );
-
       if (!res.ok) return [];
       const data = await res.json();
       const encoded = data.routes?.[0]?.polyline?.encodedPolyline;
@@ -171,62 +181,58 @@ export const useRouteManager = (
 
   // Recalcular ruta automáticamente
   useEffect(() => {
-    if (!sortedPaquetes.length) return;
-
+    if (!location || !sortedPaquetes.length) return;
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
-
     for (const p of sortedPaquetes) {
       if (!p.lat || !p.lng) continue;
-      const distancia = calcularDistancia(location1, {
-        lat: p.lat,
-        lng: p.lng,
-      });
+      const distancia = calcularDistancia(location, { lat: p.lat, lng: p.lng });
       if (distancia < menorDistancia) {
         menorDistancia = distancia;
         masCercano = p;
       }
     }
-
     if (masCercano && masCercano !== currentDestino) {
       setCurrentDestino(masCercano);
-      drawRoute(location1, masCercano);
+      drawRoute(location, masCercano);
     }
-  }, [sortedPaquetes]);
+  }, [location?.lat, location?.lng, sortedPaquetes]);
 
-  //  Manejar siguiente destino y marcar ruta completa
   const handleNextDestination = async (
-    currentLocation: google.maps.LatLngLiteral = location1
+    currentLocation?: google.maps.LatLngLiteral
   ): Promise<{
     newPath: google.maps.LatLng[] | null;
     nextDestino: Paquete | null;
   }> => {
-    if (!currentDestino || !sortedPaquetes.length)
+    if (!currentDestino || !sortedPaquetes.length || !currentLocation)
       return { newPath: null, nextDestino: null };
 
-    const nuevos = sortedPaquetes.filter((p) => p !== currentDestino);
+    const nuevos = sortedPaquetes.filter(
+      (p) => p.id_paquete !== currentDestino.id_paquete
+    );
     setSortedPaquetes(nuevos);
+    localStorage.setItem("paquetesRuta", JSON.stringify(nuevos));
 
     if (!nuevos.length) {
       setCurrentDestino(null);
       clearRoute();
-
-      if (rutaId) {
+      if (activeRutaId) {
         try {
-          await cambiarEstadoRuta(rutaId, {
+          await cambiarEstadoRuta(activeRutaId, {
             estado_ruta: RutaEstado.Completada,
           });
-          console.log("Ruta marcada como completada");
+          console.log("Ruta marcada como completada:", activeRutaId);
         } catch (error) {
-          console.error("Error al actualizar el estado de la ruta:", error);
+          console.error("Error al actualizar estado de ruta:", error);
         }
+      } else {
+        console.warn("No se puede cambiar el estado: rutaId no definido");
       }
       return { newPath: null, nextDestino: null };
     }
 
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
-
     for (const p of nuevos) {
       const distancia = calcularDistancia(currentLocation, {
         lat: p.lat!,
@@ -237,12 +243,10 @@ export const useRouteManager = (
         masCercano = p;
       }
     }
-
     if (!masCercano) return { newPath: null, nextDestino: null };
 
     setCurrentDestino(masCercano);
     const newPath = await drawRoute(currentLocation, masCercano);
-
     return {
       newPath: newPath.length ? newPath : null,
       nextDestino: masCercano,
