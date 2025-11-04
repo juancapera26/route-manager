@@ -20,6 +20,8 @@ interface InicioRutaProps {
   letras: string;
   onNextStep: () => void;
   onPrevStep: () => void;
+  codigoManifiesto: string;
+  vehiculo: string;
 }
 
 const InicioRuta: React.FC<InicioRutaProps> = ({
@@ -27,6 +29,8 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
   letras,
   onNextStep,
   onPrevStep,
+  codigoManifiesto,
+  vehiculo,
 }) => {
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
   const [paqueteActual, setPaqueteActual] = useState<Paquete | null>(null);
@@ -86,10 +90,10 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           Zona
         </Typography>
         <Typography variant="body1" fontWeight="700">
-          #15967
+          Código manifiesto: {codigoManifiesto}{" "}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          Camioneta placa: ASD234
+          {vehiculo}{" "}
         </Typography>
         <Typography variant="caption" color="text.secondary" display="block">
           {paquetes.length > 0
@@ -124,7 +128,7 @@ const InicioRuta: React.FC<InicioRutaProps> = ({
           {/* Info paquete */}
           <Box sx={{ flex: 1 }}>
             <Typography fontWeight="600" fontSize="0.9rem">
-              📦 Código paquete {paqueteActual.codigo_rastreo}
+              Código paquete {paqueteActual.codigo_rastreo}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Dirección {paqueteActual.direccion}

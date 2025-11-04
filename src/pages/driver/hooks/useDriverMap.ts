@@ -38,5 +38,6 @@ export const useDriverMap = (location?: google.maps.LatLngLiteral) => {
     }
   }, [location, carIcon]);
 
-  return { mapRef, userMarkerRef };
+  // ✅ Agrega carIcon al return
+  return { mapRef, userMarkerRef, carIcon };
 };

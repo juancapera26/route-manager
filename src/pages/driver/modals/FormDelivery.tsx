@@ -93,7 +93,7 @@ export default function FormDelivery({
     const success = await handleFinalSubmit();
     if (success) {
       handleClose();
-      setSnackbarMsg(" Paquete registrado como entregado");
+      setSnackbarMsg(" ruta completada con éxito.");
       setSnackbarType("success");
       setOpenSnackbar(true);
       if (onSubmitSuccess) onSubmitSuccess();

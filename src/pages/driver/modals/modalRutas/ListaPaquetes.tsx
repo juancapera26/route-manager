@@ -6,7 +6,8 @@ interface ListaPaquetesProps {
   paquetes: Paquete[];
   mostrarLetras: boolean;
   letras: string;
-  onIniciarRuta: () => void; // ✅ callback único
+  onIniciarRuta: () => void;
+  codigoManifiesto: string;
 }
 
 const ListaPaquetes: React.FC<ListaPaquetesProps> = ({
@@ -14,6 +15,7 @@ const ListaPaquetes: React.FC<ListaPaquetesProps> = ({
   mostrarLetras,
   letras,
   onIniciarRuta,
+  codigoManifiesto,
 }) => (
   <Paper
     elevation={4}
@@ -31,7 +33,7 @@ const ListaPaquetes: React.FC<ListaPaquetesProps> = ({
         Zona
       </Typography>
       <Typography variant="subtitle2" sx={{ color: "gray" }}>
-        #15967
+        #{codigoManifiesto}
       </Typography>
     </Box>
 

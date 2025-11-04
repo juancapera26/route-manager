@@ -46,20 +46,24 @@ export const cambiarEstadoRuta = async (
   data: CambiarEstadoRutaDto
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/estado`;
-  console.log("🚀 Enviando PATCH a:", url, "con data:", data);
+
+  // 🔹 Adaptamos el campo al formato que espera el backend
+  const payload = { nuevoEstado: data.estado_ruta };
+
+  console.log("🚀 Enviando PATCH a:", url, "con data:", payload);
 
   try {
-    const response = await axios.patch<Ruta>(url, data);
+    const response = await axios.patch<Ruta>(url, payload);
     console.log("✅ Respuesta del backend:", response.data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error(
-        ` Error al cambiar estado de la ruta ${id}:`,
+        `❌ Error al cambiar estado de la ruta ${id}:`,
         error.message
       );
     } else {
-      console.error(` Error desconocido al cambiar estado de la ruta ${id}`);
+      console.error(`❌ Error desconocido al cambiar estado de la ruta ${id}`);
     }
     throw error;
   }
@@ -73,7 +77,7 @@ export const asignarConductor = async (
   const url = `${API_URL}/rutas/${id}/asignar-conductor`;
   const idConductor =
     typeof data.id_conductor === "string"
-      ? parseInt(data.id_conductor, 10) 
+      ? parseInt(data.id_conductor, 10)
       : data.id_conductor;
 
   const dataWithCorrectType = { ...data, id_conductor: idConductor };
