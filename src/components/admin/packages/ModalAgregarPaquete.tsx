@@ -75,36 +75,41 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   const [latLng, setLatLng] = useState({ lat: 0, lng: 0 }); // Para almacenar las coordenadas
 
   // Función para geocodificar la dirección
-  const geocodeAddress = async (address: string) => {
-    try {
-      // Definir la URL y clave de Google Maps API
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        {
-          params: {
-            address: address,
-            key: "AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY", // Usa tu clave correcta de Google Maps
-          },
+    const geocodeAddress = async (address: string) => {
+      // Tipos para la respuesta de la API de Google Maps Geocoding
+      type GeocodeLocation = { lat: number; lng: number };
+      type GeocodeResult = { geometry: { location: GeocodeLocation } };
+      type GeocodeResponse = { results: GeocodeResult[]; status?: string };
+  
+      try {
+        // Definir la URL y clave de Google Maps API
+        const response = await axios.get<GeocodeResponse>(
+          `https://maps.googleapis.com/maps/api/geocode/json`,
+          {
+            params: {
+              address: address,
+              key: "AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY", // Usa tu clave correcta de Google Maps
+            },
+          }
+        );
+        console.log("Respuesta de geocodificación:", response.data);
+  
+        // Extraemos los resultados de la respuesta
+        const result = response.data.results?.[0];
+        if (result && result.geometry?.location) {
+          const { lat, lng } = result.geometry.location;
+          setLatLng({ lat, lng }); // Actualizamos las coordenadas
+          return { lat, lng };
+        } else {
+          toast.error("No se pudo obtener las coordenadas.");
+          return null;
         }
-      );
-      console.log("Respuesta de geocodificación:", response.data);
-
-      // Extraemos los resultados de la respuesta
-      const result = response.data.results[0];
-      if (result) {
-        const { lat, lng } = result.geometry.location;
-        setLatLng({ lat, lng }); // Actualizamos las coordenadas
-        return { lat, lng };
-      } else {
-        toast.error("No se pudo obtener las coordenadas.");
+      } catch (error) {
+        toast.error("Error al geocodificar la dirección.");
+        console.error(error);
         return null;
       }
-    } catch (error) {
-      toast.error("Error al geocodificar la dirección.");
-      console.error(error);
-      return null;
-    }
-  };
+    };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
