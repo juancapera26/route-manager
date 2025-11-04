@@ -87,9 +87,9 @@ const DriversManagement: React.FC = () => {
     const data: AsignarConductorDto = { id_conductor: selectedDriver.id };
     try {
       await asignarConductor(selectedRouteId, data); // Asigna el conductor a la ruta seleccionada
-      alert("✅ Conductor asignado correctamente!");
-      refetchRutas(); // Refresca las rutas después de la asignación
-      setOpenAssignModal(false); // Cierra el modal de asignación
+      alert(" Conductor asignado correctamente!");
+      refetchRutas(); 
+      setOpenAssignModal(false); 
     } catch (error) {
       console.error("❌ Error al asignar conductor:", error);
       alert("Error al asignar conductor.");
