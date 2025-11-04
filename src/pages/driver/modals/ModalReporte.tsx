@@ -17,8 +17,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { getAuth } from "firebase/auth"; // ⬅️ Import Firebase Auth
-import { API_URL } from "../../../config"; // Ajusta la ruta según tu proyecto
+import { getAuth } from "firebase/auth"; 
+import { API_URL } from "../../../config"; 
 
 const PALABRAS_PROHIBIDAS: string[] = [
   "groseria1",
@@ -71,7 +71,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
       formData.append("tipo", tipo);
       if (archivo) formData.append("archivo", archivo);
 
-      // 🔑 Obtener token de Firebase
+      //  Obtener token de Firebase
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) throw new Error("Usuario no autenticado");

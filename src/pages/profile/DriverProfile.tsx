@@ -26,8 +26,8 @@ const DriverProfile: React.FC = () => {
           empresa={empresa?.toString() || ""}
           rol={roleName || ""}
           enLinea={true}
-          foto={foto} // Aquí pasamos 'foto'
-          onEditar={() => setEditando(true)} // 👈 aquí manejamos la edición
+          foto={foto} 
+          onEditar={() => setEditando(true)} 
         />
       )}
     </div>

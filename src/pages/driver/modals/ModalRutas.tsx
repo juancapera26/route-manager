@@ -81,7 +81,7 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         codigo: string;
         estado_ruta: string;
         paquetes: Paquete[];
-        vehiculo: string; // <- agregamos vehículo
+        vehiculo: string; 
       } = await response.json();
 
       // Validación de estado de la ruta
@@ -135,8 +135,8 @@ const ModalRutas: React.FC<ModalRutasProps> = ({
         letras={letras}
         onNextStep={() => setActiveStep(Steps.Expandida)}
         onPrevStep={() => setActiveStep(Steps.Minimizada)}
-        codigoManifiesto={codigoManifiesto} // <- código del manifiesto
-        vehiculo={vehiculo} // <- vehículo
+        codigoManifiesto={codigoManifiesto} 
+        vehiculo={vehiculo}
       />
     ),
     [Steps.Expandida]: (

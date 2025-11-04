@@ -46,7 +46,6 @@ export const cambiarEstadoRuta = async (
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/estado`;
 
-  // 🔹 Adaptamos el campo al formato que espera el backend
   const payload = { nuevoEstado: data.estado_ruta };
 
   console.log("🚀 Enviando PATCH a:", url, "con data:", payload);
@@ -100,7 +99,7 @@ export const asignarConductor = async (
   }
 };
 
-// ✅ NUEVA FUNCIÓN: Asignar vehículo a una ruta
+// Asignar vehículo a una ruta
 export const asignarVehiculo = async (
   idRuta: number,
   idVehiculo: number
@@ -126,7 +125,6 @@ export const asignarVehiculo = async (
     throw error;
   }
 };
-// ---------------------------------------------------------------
 
 // Eliminar ruta
 export const deleteRuta = async (id: number): Promise<boolean> => {

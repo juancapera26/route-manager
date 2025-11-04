@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { auth } from "../firebase/firebaseConfig";
-import { API_URL } from "../config"; // <-- Importamos la URL dinámica
+import { API_URL } from "../config"; 
 
 // Tipos para el registro
 export interface RegisterData {
@@ -108,7 +108,6 @@ const useAuth = () => {
     navigate("/signin");
   }, [navigate]);
 
-  // Timer de inactividad
   const resetIdleTimer = useCallback(() => {
     if (!user) return;
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);

@@ -66,9 +66,9 @@ const PerfilAdmin = () => {
             : `${API_URL}/${updated.foto_perfil}?t=${Date.now()}`
         );
       }
-      console.log("✅ Foto de perfil actualizada en UI");
+      console.log(" Foto de perfil actualizada en UI");
     } catch (err) {
-      console.error("❌ Error al actualizar foto:", err);
+      console.error(" Error al actualizar foto:", err);
     } finally {
       setLoadingFoto(false);
     }

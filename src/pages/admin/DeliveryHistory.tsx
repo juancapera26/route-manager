@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from "react";
-
-// Componentes
 import TablaRutas from "../../components/admin/routes/TablaRutas";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
-
-// Tipos
 import { Ruta, RutaEstado } from "../../global/types/rutas";
-
-// Servicio
 import { getAllRutas } from "../../global/services/routeService";
-
-// UI
 import Badge from "../../components/ui/badge/Badge";
 import Alert from "../../components/ui/alert/Alert";
 
@@ -30,11 +22,9 @@ const DeliveryHistory: React.FC = () => {
     type: "info",
   });
 
-  // 🔹 Modal de detalles
   const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
 
-  // 🟢 Cargar rutas completadas
   useEffect(() => {
     const cargarRutas = async () => {
       setLoading(true);

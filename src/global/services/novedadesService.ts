@@ -30,12 +30,12 @@ export const noveltyService = {
         headers: getAuthHeaders(),
       });
       const data = await handleResponse(response);
-      console.log('✅ Data received:', data);
-      console.log('👤 Primera novedad completa:', data[0]);
+      console.log(' Data received:', data);
+      console.log(' Primera novedad completa:', data[0]);
       if (data[0]?.imagen) {
         console.log('🖼️ Imagen encontrada:', data[0].imagen);
       } else {
-        console.log('⚠️ Primera novedad sin imagen');
+        console.log(' Primera novedad sin imagen');
       }
       return data;
     } catch (error) {

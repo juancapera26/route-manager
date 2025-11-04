@@ -234,7 +234,6 @@ const PackagesManagement: React.FC = () => {
         </section>
       )}
 
-      {/* ========== MODALES ========== */}
 
       {/* ✅ Modal para agregar paquetes */}
       <ModalAgregarPaquete

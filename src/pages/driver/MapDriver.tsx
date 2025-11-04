@@ -19,7 +19,6 @@ export const MapDriver = () => {
     updateLocation
   );
 
-  // Pasamos `location` a `useRouteManager`
   const {
     handleNextDestination,
     openForm,
@@ -29,7 +28,7 @@ export const MapDriver = () => {
     routePath,
     currentDestino,
     setSelectedPaquete,
-  } = useRouteManager(mapRef, location); // Cambiado a usar `location`
+  } = useRouteManager(mapRef, location); 
 
   const hasStartedRef = useRef(false);
   const [autoMode, setAutoMode] = useState(false);

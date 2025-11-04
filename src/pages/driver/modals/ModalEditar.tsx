@@ -34,7 +34,7 @@ const ModalEditar: React.FC<ModalEditarProps> = ({ onVolver }) => {
       return;
     }
 
-    // Validaciones paso a paso
+    // Validaciones
     if (!formData.telefono) {
       toast.error("El teléfono no puede estar vacío");
       return;
@@ -67,7 +67,7 @@ const ModalEditar: React.FC<ModalEditarProps> = ({ onVolver }) => {
         telefono: updatedUser.telefono || formData.telefono,
       });
 
-      toast.success("Conductor actualizado correctamentegggggg");
+      toast.success("Conductor actualizado correctamente");
     } catch (err) {
       console.error("Error al actualizar:", err);
       toast.error("Error al actualizar conductor");
@@ -119,7 +119,6 @@ const ModalEditar: React.FC<ModalEditarProps> = ({ onVolver }) => {
         />
       </Box>
 
-      {/* Botones */}
       <Box mt={4} display="flex" justifyContent="space-between">
         <Button variant="outlined" onClick={onVolver}>
           Regresar

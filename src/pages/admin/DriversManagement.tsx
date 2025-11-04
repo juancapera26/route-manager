@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, Edit, Trash, UserCheck } from "lucide-react"; // Importar íconos de Lucide
+import { Eye, Edit, Trash, UserCheck } from "lucide-react"; 
 import {
   DataTable,
   ColumnDef,
@@ -28,7 +28,7 @@ const DriversManagement: React.FC = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
-  const [openAssignModal, setOpenAssignModal] = useState(false); // Se utiliza para mostrar el modal de asignación
+  const [openAssignModal, setOpenAssignModal] = useState(false); 
 
   const {
     handleDeleteDriver,
@@ -48,11 +48,11 @@ const DriversManagement: React.FC = () => {
 
     try {
       await updateConductor(selectedDriver.id, updated, token);
-      refetch?.(); // Refresca la lista de conductores
+      refetch?.();
     } catch (error) {
       console.error("Error al actualizar conductor:", error);
     } finally {
-      setOpenEditModal(false); // Cierra el modal de edición
+      setOpenEditModal(false); 
     }
   };
 
@@ -64,7 +64,7 @@ const DriversManagement: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!selectedDriver) return;
     await handleDeleteDriver(selectedDriver.id);
-    setOpenDeleteModal(false); // Cierra el modal de eliminación
+    setOpenDeleteModal(false); 
   };
 
   const handleView = (item: Conductor) => {
@@ -74,11 +74,11 @@ const DriversManagement: React.FC = () => {
 
   const handleAssign = (driver: Conductor) => {
     setSelectedDriver(driver);
-    setOpenAssignModal(true); // Abre el modal de asignación
+    setOpenAssignModal(true); 
   };
 
   const handleSelectRoute = (routeId: number) => {
-    setSelectedRouteId(routeId); // Establece el ID de la ruta seleccionada
+    setSelectedRouteId(routeId); 
   };
 
   const handleConfirmAssign = async () => {
@@ -89,7 +89,7 @@ const DriversManagement: React.FC = () => {
       await asignarConductor(selectedRouteId, data); // Asigna el conductor a la ruta seleccionada
       alert("✅ Conductor asignado correctamente!");
       refetchRutas(); // Refresca las rutas después de la asignación
-      setOpenAssignModal(false); // Cierra el modal de asignación
+      setOpenAssignModal(false); 
     } catch (error) {
       console.error("❌ Error al asignar conductor:", error);
       alert("Error al asignar conductor.");
