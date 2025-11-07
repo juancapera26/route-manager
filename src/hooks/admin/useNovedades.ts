@@ -1,40 +1,86 @@
-import { useEffect, useState } from "react";
-import { novedadService } from "../../global/services/novedadesService";
-import { Novedad } from "../../global/types/novedades";
-import { adaptNovedades } from "../../adapters/novedades.adapter";
+// hooks/data/useNovelty.ts
+import { useState, useEffect, useCallback } from 'react';
+import { noveltyService } from '../../global/services/novedadesService';
+import { Novelty } from '../../global/types/novedades';
+import { toast } from 'sonner';
 
-export const useNovedades = () => {
-  const [novedades, setNovedades] = useState<Novedad[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+// Interprete de novedades
 
-  const fetchNovedades = async () => {
+export const useNovelty = () => {
+  const [novelties, setNovelties] = useState<Novelty[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [isDeletingNovelty, setIsDeletingNovelty] = useState(false);
+
+  // Cargar novedades
+  const fetchNovelties = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const data = await novedadService.getAll();
-      console.log("Novedades desde el backend:", data);
-
-      // ✅ Adaptamos los datos del backend al formato del front
-      const adaptadas = adaptNovedades(data);
-      setNovedades(adaptadas);
-
-      setError(null);
+      const data = await noveltyService.getAllNovelties();
+      setNovelties(data);
     } catch (err) {
-      console.error(err);
-      setError("Error al obtener las novedades");
+      setError(err as Error);
+      toast.error('Error al cargar las novedades');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Cargar al montar el componente
+  useEffect(() => {
+    fetchNovelties();
+  }, [fetchNovelties]);
+
+  // Obtener una novedad por ID
+  const useNoveltyById = (id: number | null) => {
+    const [novelty, setNovelty] = useState<Novelty | null>(null);
+    const [isLoadingNovelty, setIsLoadingNovelty] = useState(false);
+
+    useEffect(() => {
+      if (!id) return;
+
+      const fetchNovelty = async () => {
+        setIsLoadingNovelty(true);
+        try {
+          const data = await noveltyService.getNoveltyById(id);
+          setNovelty(data);
+        } catch (err) {
+          toast.error('Error al cargar la novedad');
+        } finally {
+          setIsLoadingNovelty(false);
+        }
+      };
+
+      fetchNovelty();
+    }, [id]);
+
+    return { data: novelty, isLoading: isLoadingNovelty };
+  };
+
+  // Eliminar novedad
+  const deleteNovelty = async (id: number) => {
+    setIsDeletingNovelty(true);
+    try {
+      await noveltyService.deleteNovelty(id);
+      toast.success('Novedad eliminada correctamente');
+      // Recargar la lista
+      await fetchNovelties();
+    } catch (err) {
+      toast.error('Error al eliminar la novedad');
+      console.error(err);
+    } finally {
+      setIsDeletingNovelty(false);
     }
   };
 
-  useEffect(() => {
-    fetchNovedades();
-  }, []);
-
   return {
-    novedades,
-    loading,
+    novelties,
+    isLoading,
     error,
-    refetch: fetchNovedades,
+    refetch: fetchNovelties,
+    useNoveltyById,
+    deleteNovelty,
+    isDeletingNovelty,
   };
 };

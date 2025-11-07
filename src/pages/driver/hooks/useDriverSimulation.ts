@@ -11,15 +11,15 @@ export const useDriverSimulation = (
   updateLocation?: (pos: LatLng) => void
 ) => {
   const [isSimulating, setIsSimulating] = useState(false);
-  const stopFlag = useRef(false); // 🔹 permite detener la simulación manualmente
+  const stopFlag = useRef(false); // permite detener la simulación manualmente
 
-  // 🚫 Detener la simulación
+  // Detener la simulación
   const stopSimulation = () => {
     stopFlag.current = true;
     setIsSimulating(false);
   };
 
-  // 🚗 Iniciar simulación
+  // Iniciar simulación
   const startSimulation = async (
     path: google.maps.LatLng[],
     onArrive?: () => Promise<void>

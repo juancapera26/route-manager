@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import useAuth from "../../useAuth";
 import { Conductor } from "../../../global/types/conductores";
-import { API_URL } from "../../../config"; // Ajusta la ruta según tu proyecto
+import { API_URL } from "../../../config"; 
 
 export default function useDriver() {
   const [data, setData] = useState<Conductor[]>([]);
@@ -19,7 +19,7 @@ export default function useDriver() {
         return;
       }
 
-      // 👇 Usamos API_URL desde config.ts
+      // Usamos API_URL desde config.ts
       const res = await axios.get<Conductor[]>(`${API_URL}/conductores`, {
         headers: { Authorization: `Bearer ${token}` },
       });

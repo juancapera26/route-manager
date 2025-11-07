@@ -1,11 +1,11 @@
 //usePackages.ts
 import { useEffect, useState } from "react";
 import { PackagesService } from "../../global/services/packageService";
-import { 
-  Paquete, 
-  PaqueteCreate, 
+import {
+  Paquete,
+  PaqueteCreate,
   PaqueteUpdate,
-  AsignarPaqueteDTO 
+  AsignarPaqueteDTO,
 } from "../../global/types/paquete.types";
 
 //hook para paquetes
@@ -81,21 +81,31 @@ export function usePackages() {
     }
   };
 
-
+  // ✅ ASIGNAR PAQUETE A RUTA
   const assignPackageToRoute = async (
-    id: number, 
+    id: number,
     dto: AsignarPaqueteDTO
   ): Promise<Paquete> => {
+    console.log("📦 === USE PACKAGES - ASSIGN ===");
+    console.log("📦 Paquete ID:", id);
+    console.log("📄 DTO completo:", dto);
+    console.log("📋 cod_manifiesto:", dto.cod_manifiesto);
+    console.log("🔢 id_ruta:", dto.id_ruta);
+    console.log("================================");
+
     try {
       setLoading(true);
       const updated = await PackagesService.asignar(id, dto);
-      
+
+      console.log("✅ Paquete asignado exitosamente:", updated);
+
       setPackages((prev) =>
         prev.map((p) => (p.id_paquete === id ? updated : p))
       );
-      
+
       return updated;
     } catch (err) {
+      console.error("❌ Error en assignPackageToRoute:", err);
       setError((err as Error).message);
       throw err;
     } finally {
@@ -103,20 +113,31 @@ export function usePackages() {
     }
   };
 
+  //  REASIGNAR PAQUETE A OTRA RUTA
   const reassignPackage = async (
-    id: number, 
+    id: number,
     dto: AsignarPaqueteDTO
   ): Promise<Paquete> => {
+    console.log("🔄 === USE PACKAGES - REASSIGN ===");
+    console.log("📦 Paquete ID:", id);
+    console.log("📄 DTO completo:", dto);
+    console.log("📋 cod_manifiesto:", dto.cod_manifiesto);
+    console.log("🔢 id_ruta:", dto.id_ruta);
+    console.log("==================================");
+
     try {
       setLoading(true);
       const updated = await PackagesService.reasignar(id, dto);
-      
+
+      console.log(" Paquete reasignado exitosamente:", updated);
+
       setPackages((prev) =>
         prev.map((p) => (p.id_paquete === id ? updated : p))
       );
-      
+
       return updated;
     } catch (err) {
+      console.error("❌ Error en reassignPackage:", err);
       setError((err as Error).message);
       throw err;
     } finally {
@@ -124,17 +145,25 @@ export function usePackages() {
     }
   };
 
+  //  CANCELAR ASIGNACIÓN DE PAQUETE
   const cancelAssignment = async (id: number): Promise<Paquete> => {
+    console.log("🚫 === USE PACKAGES - CANCEL ASSIGNMENT ===");
+    console.log("📦 Paquete ID:", id);
+    console.log("===========================================");
+
     try {
       setLoading(true);
       const updated = await PackagesService.cancelarAsignacion(id);
-      
+
+      console.log(" Asignación cancelada exitosamente:", updated);
+
       setPackages((prev) =>
         prev.map((p) => (p.id_paquete === id ? updated : p))
       );
-      
+
       return updated;
     } catch (err) {
+      console.error("❌ Error en cancelAssignment:", err);
       setError((err as Error).message);
       throw err;
     } finally {
@@ -142,13 +171,21 @@ export function usePackages() {
     }
   };
 
+  // ✅ OBTENER RUTAS DISPONIBLES
   const fetchAvailableRoutes = async () => {
+    console.log("🛣️ === USE PACKAGES - FETCH AVAILABLE ROUTES ===");
+
     try {
       setLoading(true);
       const routes = await PackagesService.getRutasDisponibles();
+
+      console.log("✅ Rutas disponibles obtenidas:", routes.length, "rutas");
+      console.log("📋 Rutas:", routes);
+
       setAvailableRoutes(routes);
       return routes;
     } catch (err) {
+      console.error("❌ Error en fetchAvailableRoutes:", err);
       setError((err as Error).message);
       throw err;
     } finally {
@@ -156,12 +193,21 @@ export function usePackages() {
     }
   };
 
+  // ✅ OBTENER PAQUETES POR RUTA
   const fetchPackagesByRoute = async (id_ruta: number): Promise<Paquete[]> => {
+    console.log("🛣️ === USE PACKAGES - FETCH BY ROUTE ===");
+    console.log("🔢 ID Ruta:", id_ruta);
+    console.log("========================================");
+
     try {
       setLoading(true);
       const data = await PackagesService.getPaquetesByRuta(id_ruta);
+
+      console.log("✅ Paquetes obtenidos:", data.length, "paquetes");
+
       return data;
     } catch (err) {
+      console.error("❌ Error en fetchPackagesByRoute:", err);
       setError((err as Error).message);
       throw err;
     } finally {
@@ -169,25 +215,33 @@ export function usePackages() {
     }
   };
 
+  // ✅ OBTENER PAQUETES POR ESTADO
   const fetchPackagesByStatus = async (estado: string): Promise<Paquete[]> => {
+    console.log("📊 === USE PACKAGES - FETCH BY STATUS ===");
+    console.log("📝 Estado:", estado);
+    console.log("=========================================");
+
     try {
       setLoading(true);
       const data = await PackagesService.getPaquetesByEstado(estado);
+
+      console.log("✅ Paquetes obtenidos:", data.length, "paquetes");
+
       return data;
     } catch (err) {
+      console.error("❌ Error en fetchPackagesByStatus:", err);
       setError((err as Error).message);
       throw err;
     } finally {
       setLoading(false);
     }
   };
-
 
   return {
     packages,
     loading,
     error,
-    availableRoutes, 
+    availableRoutes,
 
     fetchPackages,
     createPackage,

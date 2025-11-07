@@ -10,13 +10,13 @@ export interface Paquete {
   ancho: number;
   alto: number;
   peso: number;
-  estado_paquete: string; // Prisma enum: paquete_estado_paquete
-  tipo_paquete: string; // Prisma enum: paquete_tipo_paquete
+  estado_paquete: string; 
+  tipo_paquete: string; 
   lat?: number | null;
   lng?: number | null;
   valor_declarado: number;
   cantidad: number;
-  fecha_registro: string; // Date → string al venir del backend
+  fecha_registro: string; 
   fecha_entrega: string | null;
   id_cliente: number;
   id_ruta?: number | null;

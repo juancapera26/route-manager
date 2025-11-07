@@ -27,3 +27,11 @@ export interface Conductor {
   empresa?: Empresa;
   nombre_empresa?: string;
 }
+export interface ConductorUpdated {
+  id: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  telefono?: string;
+  foto_perfil?: string;
+}

@@ -1,4 +1,3 @@
-// src/components/admin/vehicles/ModalAsignarVehiculo.tsx
 import React, { useState, useEffect } from "react";
 import { Modal } from "../../ui/modal";
 import Badge, { BadgeColor } from "../../ui/badge/Badge";
@@ -7,6 +6,7 @@ import { Ruta, RutaEstado } from "../../../global/types/rutas";
 import { getAllRutas } from "../../../global/services/routeService";
 import { Truck, Package, Calendar, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { API_URL } from "../../../config";
 
 interface ModalAsignarVehiculoProps {
   isOpen: boolean;
@@ -52,14 +52,18 @@ export const ModalAsignarVehiculo: React.FC<ModalAsignarVehiculoProps> = ({
 
     setAsignando(true);
     try {
-      // 🔹 AQUÍ IMPLEMENTARÁS LA LLAMADA AL BACKEND
-      // Por ahora, simulamos la asignación
-      
-      // const response = await fetch(`http://localhost:8080/rutas/${ruta.id_ruta}/asignar-vehiculo`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ id_vehiculo: vehiculo.id_vehiculo })
-      // });
+      const response = await fetch(`${API_URL}/rutas/${ruta.id_ruta}/asignar-vehiculo`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_vehiculo: parseInt(vehiculo.id_vehiculo) })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al asignar vehículo');
+      }
+
+      const resultado = await response.json();
 
       toast.success(
         `Vehículo ${vehiculo.placa} asignado a la ruta ${ruta.cod_manifiesto || ruta.id_ruta}`
@@ -76,7 +80,7 @@ export const ModalAsignarVehiculo: React.FC<ModalAsignarVehiculoProps> = ({
       }
     } catch (error) {
       console.error("Error al asignar vehículo:", error);
-      toast.error("Error al asignar el vehículo a la ruta");
+      toast.error(error instanceof Error ? error.message : "Error al asignar el vehículo a la ruta");
     } finally {
       setAsignando(false);
     }

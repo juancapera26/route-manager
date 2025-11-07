@@ -32,8 +32,8 @@ import AppLayout_home from "./pages/driver/layout_conductor/AppLayout_home";
 import DriverProfile from "./pages/profile/DriverProfile";
 
 import { MapDriver } from "./pages/driver/MapDriver";
+import { NoveltyManagement } from "./pages/admin/Novedad";
 
-import NovedadesPage from "./pages/admin/Novedad";
 
 function App() {
   return (
@@ -62,7 +62,7 @@ function App() {
               element={<VehiclesManagement />}
             />
             <Route path="delivery-history" element={<DeliveryHistory />} />
-            <Route path="novedades" element={<NovedadesPage />} />
+            <Route path="novedades" element={<NoveltyManagement />} />
           </Route>
         </Route>
 

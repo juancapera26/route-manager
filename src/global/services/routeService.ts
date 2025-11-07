@@ -1,4 +1,3 @@
-// src/global/services/routeService.ts
 import axios from "axios";
 import {
   Ruta,
@@ -47,7 +46,6 @@ export const cambiarEstadoRuta = async (
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/estado`;
 
-  // 🔹 Adaptamos el campo al formato que espera el backend
   const payload = { nuevoEstado: data.estado_ruta };
 
   console.log("🚀 Enviando PATCH a:", url, "con data:", payload);
@@ -96,6 +94,33 @@ export const asignarConductor = async (
       );
     } else {
       console.error(` Error desconocido al asignar conductor a la ruta ${id}`);
+    }
+    throw error;
+  }
+};
+
+// Asignar vehículo a una ruta
+export const asignarVehiculo = async (
+  idRuta: number,
+  idVehiculo: number
+): Promise<any> => {
+  const url = `${API_URL}/rutas/${idRuta}/asignar-vehiculo`;
+  console.log("🚀 Enviando PATCH a:", url, "con id_vehiculo:", idVehiculo);
+
+  try {
+    const response = await axios.patch(url, { id_vehiculo: idVehiculo });
+    console.log("✅ Vehículo asignado:", response.data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(
+        `❌ Error al asignar vehículo a la ruta ${idRuta}:`,
+        error.message
+      );
+    } else {
+      console.error(
+        `❌ Error desconocido al asignar vehículo a la ruta ${idRuta}`
+      );
     }
     throw error;
   }

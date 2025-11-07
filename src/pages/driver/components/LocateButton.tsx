@@ -6,26 +6,26 @@ interface Props {
   getUserLocation: () => void;
   location: google.maps.LatLngLiteral | null; // Cambiar center a location
   userMarkerRef: React.MutableRefObject<google.maps.Marker | null>;
-  onFollow?: () => void; // Prop opcional
+  onFollow?: () => void; 
 }
 
 export const LocateButton: React.FC<Props> = ({
   googleMap,
   getUserLocation,
-  location, // Ahora location
+  location, 
   userMarkerRef,
-  onFollow, // Recibida
+  onFollow,
 }) => {
   const handleClick = () => {
     getUserLocation();
     if (location && googleMap) {
-      googleMap.panTo(location); // Usamos location
+      googleMap.panTo(location);
       googleMap.setZoom(15);
       if (userMarkerRef.current) {
-        userMarkerRef.current.setPosition(location); // Usamos location
+        userMarkerRef.current.setPosition(location);
       }
     }
-    if (onFollow) onFollow(); // Llama al callback si se pasa
+    if (onFollow) onFollow();
   };
 
   return (

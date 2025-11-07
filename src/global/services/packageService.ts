@@ -1,3 +1,5 @@
+// src/global/services/packageService.ts
+
 import { mapApiToPaquete } from "../../adapters/paquete.adapter";
 import {
   Paquete,
@@ -6,7 +8,7 @@ import {
   PaqueteUpdate,
 } from "../../global/types/paquete.types";
 import { API_URL } from "../../config";
-//Base URL de la API
+
 const API_BASE = `${API_URL}/paquetes`;
 
 export const PackagesService = {
@@ -53,21 +55,51 @@ export const PackagesService = {
     if (!res.ok) throw new Error(`Error al eliminar el paquete ${id}`);
   },
 
-
   async asignar(id: number, dto: AsignarPaqueteDTO): Promise<Paquete> {
-    const res = await fetch(`${API_BASE}/${id}/asignar`, {
-      method: "PUT", 
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto),
-    });
+    const url = `${API_BASE}/${id}/asignar`;
+    
+    // ← LOGS CRÍTICOS
+    console.log('🎯 === FRONTEND ASIGNAR ===');
+    console.log('📦 Paquete ID:', id);
+    console.log('🌐 URL completa:', url);
+    console.log('🌐 API_BASE:', API_BASE);
+    console.log('📄 DTO a enviar:', dto);
+    console.log('📄 DTO stringificado:', JSON.stringify(dto));
+    console.log('🔑 id_ruta:', dto.id_ruta);
+    console.log('===========================');
+    
+    try {
+      const res = await fetch(url, {
+        method: "PUT", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+      });
 
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new Error(error.message || `Error al asignar el paquete ${id}`);
+      console.log('📡 Response status:', res.status);
+      console.log('📡 Response URL:', res.url);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Error response:', errorText);
+        
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch (e) {
+          error = { message: errorText };
+        }
+        
+        throw new Error(error.message || `Error al asignar el paquete ${id}`);
+      }
+
+      const data = await res.json();
+      console.log('✅ Respuesta exitosa:', data);
+      
+      return mapApiToPaquete(data);
+    } catch (error) {
+      console.error('💥 Error capturado:', error);
+      throw error;
     }
-
-    const data = await res.json();
-    return mapApiToPaquete(data);
   },
 
   async cambiarEstado(id: number, estado: string): Promise<Paquete> {
@@ -109,7 +141,6 @@ export const PackagesService = {
     return mapApiToPaquete(data);
   },
 
-  // ← NUEVO: Obtener rutas disponibles para asignar
   async getRutasDisponibles(): Promise<any[]> {
     const res = await fetch(`${API_BASE}/rutas-disponibles`);
     if (!res.ok) {
@@ -118,7 +149,6 @@ export const PackagesService = {
     return await res.json();
   },
 
-  // ← NUEVO: Obtener paquetes de una ruta específica
   async getPaquetesByRuta(id_ruta: number): Promise<Paquete[]> {
     const res = await fetch(`${API_BASE}/ruta/${id_ruta}`);
     if (!res.ok) {
@@ -128,7 +158,6 @@ export const PackagesService = {
     return data.map(mapApiToPaquete);
   },
 
-  // ← NUEVO: Cancelar asignación (volver a Pendiente)
   async cancelarAsignacion(id: number): Promise<Paquete> {
     const res = await fetch(`${API_BASE}/${id}/cancelar`, {
       method: "PUT",
@@ -143,7 +172,6 @@ export const PackagesService = {
     return mapApiToPaquete(data);
   },
 
-  // ← NUEVO: Reasignar paquete a otra ruta
   async reasignar(id: number, dto: AsignarPaqueteDTO): Promise<Paquete> {
     const res = await fetch(`${API_BASE}/${id}/reasignar`, {
       method: "PUT",
@@ -160,7 +188,6 @@ export const PackagesService = {
     return mapApiToPaquete(data);
   },
 
-  // ← NUEVO: Obtener paquetes por estado
   async getPaquetesByEstado(estado: string): Promise<Paquete[]> {
     const res = await fetch(`${API_BASE}/estado/${estado}`);
     if (!res.ok) {
