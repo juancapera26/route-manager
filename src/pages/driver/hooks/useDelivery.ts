@@ -30,6 +30,7 @@ export function useDelivery({
     address: "",
     phone: "",
     deliveryNotes: "",
+    deliveryStatus: "Entregado",
   });
 
   const [deliveryPhoto, setDeliveryPhoto] = useState<File | null>(null);
@@ -84,7 +85,7 @@ export function useDelivery({
 
       await PackagesService.registrarEntrega(
         id_paquete,
-        "Entregado",
+        formData.deliveryStatus, // 👈 ahora envía COMPLETADO o FALLIDO
         formData.deliveryNotes,
         deliveryPhoto || undefined
       );
@@ -92,7 +93,11 @@ export function useDelivery({
       setLoading(false);
       onSubmitSuccess?.();
       onClose?.();
-      setFormData((prev) => ({ ...prev, deliveryNotes: "" }));
+      setFormData((prev) => ({
+        ...prev,
+        deliveryNotes: "",
+        deliveryStatus: "Entregado",
+      }));
       setDeliveryPhoto(null);
 
       return { ok: true };
@@ -104,9 +109,9 @@ export function useDelivery({
       return { ok: false, error: message };
     }
   };
-
   return {
     formData,
+    setFormData,
     deliveryPhoto,
     showConfirmModal,
     loading,

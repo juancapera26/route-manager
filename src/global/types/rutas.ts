@@ -78,7 +78,7 @@ export enum RutaEstado {
   Asignada = "Asignada",
   En_ruta = "En_ruta",
   Completada = "Completada",
-  Fallida = "Fallida",
+  Fallida = "Fallido",
 }
 
 export enum ZonaRuta {

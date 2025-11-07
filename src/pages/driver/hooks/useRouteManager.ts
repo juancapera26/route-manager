@@ -216,12 +216,27 @@ export const useRouteManager = (
     if (!nuevos.length) {
       setCurrentDestino(null);
       clearRoute();
+
+      // Comprobamos los estados de todos los paquetes antes de cambiar el estado de la ruta
+      const todosEntregados = nuevos.every(
+        (p) => p.estado_paquete === "Entregado"
+      );
+      const algunFallido = nuevos.some((p) => p.estado_paquete === "Fallido");
+
+      // Actualizamos el estado de la ruta
       if (activeRutaId) {
         try {
-          await cambiarEstadoRuta(activeRutaId, {
-            estado_ruta: RutaEstado.Completada,
-          });
-          console.log("Ruta marcada como completada:", activeRutaId);
+          let estadoRuta: RutaEstado = RutaEstado.Completada;
+
+          // Si algún paquete está fallido, marcamos la ruta como 'Fallida'
+          if (algunFallido) {
+            estadoRuta = RutaEstado.Fallida;
+          } else if (todosEntregados) {
+            estadoRuta = RutaEstado.Completada;
+          }
+
+          await cambiarEstadoRuta(activeRutaId, { estado_ruta: estadoRuta });
+          console.log("Ruta marcada como", estadoRuta);
         } catch (error) {
           console.error("Error al actualizar estado de ruta:", error);
         }
@@ -263,6 +278,7 @@ export const useRouteManager = (
     address: p.direccion || "",
     phone: "",
     deliveryNotes: "",
+    deliveryStatus: "Entregado",
   });
 
   return {

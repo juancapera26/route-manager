@@ -9,6 +9,7 @@ export interface DeliveryFormData {
   address: string;
   phone: string;
   deliveryNotes: string;
+  deliveryStatus: "Entregado" | "Fallido";
 }
 
 export interface DeliveryFormDatapa {
