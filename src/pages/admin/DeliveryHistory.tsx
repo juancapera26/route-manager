@@ -30,10 +30,15 @@ const DeliveryHistory: React.FC = () => {
       setLoading(true);
       try {
         const allRutas = await getAllRutas();
-        const completadas = allRutas.filter(
-          (r) => r.estado_ruta === RutaEstado.Completada
+
+        // Filtramos rutas Completadas y Fallidas
+        const rutasFiltradas = allRutas.filter(
+          (r) =>
+            r.estado_ruta === RutaEstado.Completada ||
+            r.estado_ruta === RutaEstado.Fallida
         );
-        setRutas(completadas);
+
+        setRutas(rutasFiltradas);
       } catch (error) {
         console.error("Error al cargar rutas:", error);
         mostrarAlert("Error al cargar historial", "error");
@@ -72,36 +77,70 @@ const DeliveryHistory: React.FC = () => {
     );
   }
 
+  // Separar rutas por estado
+  const rutasCompletadas = rutas.filter(
+    (r) => r.estado_ruta === RutaEstado.Completada
+  );
+  const rutasFallidas = rutas.filter(
+    (r) => r.estado_ruta === RutaEstado.Fallida
+  );
+
   return (
     <div className="p-6 space-y-8">
-      <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Historial de Entregas Completadas
-        </h1>
-        <Badge variant="light" color="success">
-          {rutas.length}
-        </Badge>
-      </div>
-
       {alert.show && (
         <Alert
           variant={alert.type}
           message={alert.message}
           className="mb-6"
-          title={""}
+          title=""
         />
       )}
 
-      <TablaRutas
-        rutas={rutas}
-        estado="Completada"
-        onAbrirModal={handleAbrirModal}
-        onEliminarRuta={handleEliminarRuta}
-        onCancelarAsignacion={() => {}}
-        onCompletarRuta={() => {}}
-        onMarcarFallida={() => {}}
-      />
+      {/* Sección Rutas Completadas */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Entregas Completadas
+          </h2>
+          <Badge variant="light" color="success">
+            {rutasCompletadas.length}
+          </Badge>
+        </div>
 
+        <TablaRutas
+          rutas={rutasCompletadas}
+          estado="Completada"
+          onAbrirModal={handleAbrirModal}
+          onEliminarRuta={handleEliminarRuta}
+          onCancelarAsignacion={() => {}}
+          onCompletarRuta={() => {}}
+          onMarcarFallida={() => {}}
+        />
+      </section>
+
+      {/* Sección Rutas Fallidas */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Entregas Fallidas
+          </h2>
+          <Badge variant="light" color="error">
+            {rutasFallidas.length}
+          </Badge>
+        </div>
+
+        <TablaRutas
+          rutas={rutasFallidas}
+          estado="Fallida"
+          onAbrirModal={handleAbrirModal}
+          onEliminarRuta={handleEliminarRuta}
+          onCancelarAsignacion={() => {}}
+          onCompletarRuta={() => {}}
+          onMarcarFallida={() => {}}
+        />
+      </section>
+
+      {/* Modal Detalles */}
       <ModalDetallesRuta
         isOpen={modalDetallesAbierto}
         onClose={() => setModalDetallesAbierto(false)}
