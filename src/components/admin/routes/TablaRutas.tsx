@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Ruta } from "../../../global/types/rutas";
+import { Conductor } from "../../../global/types/conductores";
 
 interface TablaRutasProps {
   rutas: Ruta[];
@@ -26,6 +27,7 @@ interface TablaRutasProps {
   onCompletarRuta: (rutaId: number) => void;
   onMarcarFallida: (rutaId: number) => void;
   onEditarRuta?: (rutaId: number) => void;
+  onVerMapa?: (ruta: Ruta, conductor: Conductor | null) => void;
 }
 
 const TablaRutas: React.FC<TablaRutasProps> = ({
@@ -37,6 +39,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
   onCompletarRuta,
   onMarcarFallida,
   onEditarRuta,
+  onVerMapa,
 }) => {
   if (rutas.length === 0) {
     return (
@@ -63,7 +66,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
           <TableHeader>
             <TableRow className="border-b border-gray-200 dark:border-gray-700">
               {[
-                "Código Manifiesto", // 👈 cambiado
+                "Código Manifiesto",
                 "Conductor",
                 "Vehículo",
                 "Paquetes",
@@ -92,29 +95,24 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                     : "bg-gray-50/30 dark:bg-gray-800/50"
                 }`}
               >
-                {/* 👇 Mostrar el código de manifiesto en lugar del ID */}
                 <TableCell className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                   {ruta.cod_manifiesto ?? "Sin código"}
                 </TableCell>
 
-                {/* Conductor */}
                 <TableCell className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                   {ruta.usuario
                     ? `${ruta.usuario.nombre} ${ruta.usuario.apellido}`
                     : "Sin asignar"}
                 </TableCell>
 
-                {/* Vehículo */}
                 <TableCell className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
                   {ruta.vehiculo?.placa ?? "Sin vehículo"}
                 </TableCell>
 
-                {/* Paquetes */}
                 <TableCell className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
                   {ruta.paquete?.length ?? 0}
                 </TableCell>
 
-                {/* Fechas */}
                 <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
                   {formatFecha(ruta.fecha_inicio)}
                 </TableCell>
@@ -122,9 +120,9 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                   {ruta.fecha_fin ? formatFecha(ruta.fecha_fin) : "En curso"}
                 </TableCell>
 
-                {/* Acciones */}
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-center gap-2">
+                    {/* Ver detalles */}
                     <button
                       onClick={() => onAbrirModal(ruta.id_ruta, "details")}
                       className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -151,7 +149,29 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                       </svg>
                     </button>
 
-                    {/* Acciones según estado */}
+                    {/* Ver mapa */}
+                    {/* Ver mapa solo en rutas asignadas */}
+                    {ruta.estado_ruta === "Asignada" && onVerMapa && (
+                      <button
+                        onClick={() => {
+                          const conductor: Conductor | null = ruta.usuario
+                            ? {
+                                id: ruta.usuario.id_usuario, // mapear id_usuario → id
+                                nombre: ruta.usuario.nombre,
+                                apellido: ruta.usuario.apellido,
+                                correo: ruta.usuario.correo,
+                              }
+                            : null;
+                          onVerMapa(ruta, conductor);
+                        }}
+                        className="p-2 text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-lg"
+                        title="Ver mapa"
+                      >
+                        📍
+                      </button>
+                    )}
+
+                    {/* Acciones Pendiente */}
                     {ruta.estado_ruta === "Pendiente" && (
                       <>
                         <button
@@ -180,6 +200,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                       </>
                     )}
 
+                    {/* Acciones Asignada */}
                     {ruta.estado_ruta === "Asignada" && (
                       <>
                         <button

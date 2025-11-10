@@ -15,6 +15,11 @@ import {
   Alert,
   Slide,
   SlideProps,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Package,
@@ -49,6 +54,7 @@ export default function FormDelivery({
   id_paquete,
 }: Props) {
   const {
+    setFormData,
     formData,
     deliveryPhoto,
     errors,
@@ -61,9 +67,9 @@ export default function FormDelivery({
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState("");
-  const [snackbarType, setSnackbarType] = useState<"success" | "warning">(
-    "success"
-  );
+  const [snackbarType, setSnackbarType] = useState<
+    "success" | "warning" | "error"
+  >("success");
 
   const handleClose = () => {
     clearPhoto();
@@ -93,11 +99,25 @@ export default function FormDelivery({
     const success = await handleFinalSubmit();
     if (success) {
       handleClose();
-      setSnackbarMsg(" Paquete registrado como entregado");
-      setSnackbarType("success");
+
+      // Cambiar el mensaje dependiendo del estado de la entrega
+      if (formData.deliveryStatus === "Entregado") {
+        setSnackbarMsg("Paquete registrado como entregado.");
+        setSnackbarType("success");
+      } else if (formData.deliveryStatus === "Fallido") {
+        setSnackbarMsg("La entrega ha Fallado.");
+        setSnackbarType("error");
+      }
+
       setOpenSnackbar(true);
+
       if (onSubmitSuccess) onSubmitSuccess();
     }
+  };
+
+  const handleStatusChange = (e: SelectChangeEvent) => {
+    const value = e.target.value as "Entregado" | "Fallido";
+    setFormData((prev) => ({ ...prev, deliveryStatus: value }));
   };
 
   return (
@@ -376,6 +396,22 @@ export default function FormDelivery({
                       flexDirection: "column",
                     }}
                   >
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                      <InputLabel id="estado-label">
+                        Resultado de la entrega
+                      </InputLabel>
+                      <Select
+                        labelId="estado-label"
+                        name="deliveryStatus"
+                        value={formData.deliveryStatus} // Aquí ya no es necesario un valor por defecto como "pendiente"
+                        label="Resultado de la entrega"
+                        onChange={handleStatusChange}
+                      >
+                        <MenuItem value="Entregado">Entregado</MenuItem>
+                        <MenuItem value="Fallido">Fallido</MenuItem>
+                      </Select>
+                    </FormControl>
+
                     <Typography
                       variant="body2"
                       fontWeight="600"

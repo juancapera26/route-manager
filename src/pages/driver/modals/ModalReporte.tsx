@@ -17,8 +17,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { getAuth } from "firebase/auth"; 
-import { API_URL } from "../../../config"; 
+import { getAuth } from "firebase/auth";
+import { API_URL } from "../../../config";
 
 const PALABRAS_PROHIBIDAS: string[] = [
   "groseria1",
@@ -165,7 +165,7 @@ const ModalReporte: React.FC<ModalReporteProps> = ({ isOpen, onClose }) => {
                   setTipo(e.target.value as "Logística" | "Operativa")
                 }
               >
-                <MenuItem value="Logística">Logística</MenuItem>
+                <MenuItem value="Logistica">Logistica</MenuItem>
                 <MenuItem value="Operativa">Operativa</MenuItem>
               </Select>
             </FormControl>

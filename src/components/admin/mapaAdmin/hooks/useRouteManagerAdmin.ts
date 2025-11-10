@@ -2,15 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   getAllRutas,
   cambiarEstadoRuta,
-} from "../../../global/services/routeService";
-import { DeliveryFormData } from "../../../global/types/deliveries";
-import { RutaEstado, Ruta } from "../../../global/types/rutas";
-import { Paquete } from "../../../hooks/useManifiestos";
-import { createPaqueteIcon } from "../utils/mapIcons";
-import { ordenarPaquetesPorDistancia } from "../utils/paquetesUtils";
-import { createUbicacion } from "../../../global/services/ubicacionesService";
+} from "../../../../global/services/routeService";
+import { createUbicacion } from "../../../../global/services/ubicacionesService";
+import { DeliveryFormData } from "../../../../global/types/deliveries";
+import { Ruta } from "../../../../global/types/paquete.types";
+import { RutaEstado } from "../../../../global/types/rutas";
+import { Paquete } from "../../../../hooks/useManifiestos";
+import { createPaqueteIcon } from "../../../../pages/driver/utils/mapIcons";
+import { ordenarPaquetesPorDistancia } from "../../../../pages/driver/utils/paquetesUtils";
 
-export const useRouteManager = (
+export const useRouteManagerAdmin = (
   mapRef: React.MutableRefObject<google.maps.Map | null>,
   location?: google.maps.LatLngLiteral | null,
   rutaId?: number

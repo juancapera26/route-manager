@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import TablaRutas from "../../components/admin/routes/TablaRutas";
 import { ModalDetallesRuta } from "../../components/admin/routes/ModalDetallesRuta";
 import { CreateRutaDto, Ruta } from "../../global/types/rutas";
+import { Conductor } from "../../global/types/conductores";
 import {
   getAllRutas,
   createRuta,
@@ -16,6 +17,7 @@ import {
 } from "../../global/config/filterConfigs";
 import EstadoFilterDropdown from "../../components/common/EstadoFilter";
 import { Plus } from "lucide-react";
+import { MapAdmin } from "../../components/admin/mapaAdmin/MapAdmin";
 
 interface AlertState {
   show: boolean;
@@ -30,6 +32,11 @@ const RouteManagement: React.FC = () => {
 
   const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
+
+  const [mapAdminOpen, setMapAdminOpen] = useState(false);
+  const [selectedConductor, setSelectedConductor] = useState<Conductor | null>(
+    null
+  );
 
   const [alert, setAlert] = useState<AlertState>({
     show: false,
@@ -90,6 +97,11 @@ const RouteManagement: React.FC = () => {
         onCancelarAsignacion={handleCancelarAsignacion}
         onCompletarRuta={handleCompletarRuta}
         onMarcarFallida={handleMarcarFallid_ruta}
+        onVerMapa={(ruta: Ruta, conductor: Conductor | null) => {
+          setRutaSeleccionada(ruta);
+          setSelectedConductor(conductor);
+          setMapAdminOpen(true);
+        }}
       />
 
       <ModalDetallesRuta
@@ -114,9 +126,9 @@ const RouteManagement: React.FC = () => {
 
   const handleEliminarRuta = async (id_ruta: number) => {
     try {
-      const isDeleted = await deleteRuta(id_ruta); 
+      const isDeleted = await deleteRuta(id_ruta);
       if (isDeleted) {
-        setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta)); 
+        setTodasLasRutas((prev) => prev.filter((r) => r.id_ruta !== id_ruta));
         mostrarAlert("Ruta eliminada correctamente", "success");
       }
     } catch (error) {
@@ -139,14 +151,14 @@ const RouteManagement: React.FC = () => {
 
   const handleCrearRuta = async () => {
     const nuevaRutaData: CreateRutaDto = {
-      id_conductor: null, 
-      id_vehiculo: null, 
+      id_conductor: null,
+      id_vehiculo: null,
     };
 
     setSaving(true);
     try {
-      const nuevaRuta = await createRuta(nuevaRutaData); 
-      setTodasLasRutas((prev) => [nuevaRuta, ...prev]); 
+      const nuevaRuta = await createRuta(nuevaRutaData);
+      setTodasLasRutas((prev) => [nuevaRuta, ...prev]);
       mostrarAlert("Ruta creada correctamente", "success");
     } catch (error) {
       console.error("❌ Error al crear la ruta:", error);
@@ -231,6 +243,16 @@ const RouteManagement: React.FC = () => {
             rutasFiltradas
           )}
         </div>
+      )}
+
+      {/* Modal del mapa */}
+      {rutaSeleccionada && (
+        <MapAdmin
+          isOpen={mapAdminOpen}
+          onClose={() => setMapAdminOpen(false)}
+          conductor={selectedConductor}
+          rutaSeleccionada={rutaSeleccionada} // ✅ agrega esto
+        />
       )}
     </div>
   );
