@@ -19,24 +19,26 @@ export const NoveltyManagement: React.FC = () => {
   } = useNoveltyLogic();
 
   return (
-    <div className="min-h-screen bg-[#1A2332] p-6">  {/* ← CAMBIÉ ESTE COLOR */}
+    // Fondo que respeta el modo claro y oscuro
+    <div className="min-h-screen bg-background text-foreground p-6 transition-colors duration-300">  {/* ← CAMBIÉ ESTE COLOR */}
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-foregorund mb-2 flex item-center gap-2">
+            <FileText className="text-primary"/>
             Gestión de Novedades
           </h1>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             Visualiza y gestiona las novedades reportadas por los conductores
           </p>
         </div>
 
         {/* Stats Card */}
-        <div className="bg-[#0F1623] rounded-xl shadow-lg p-6 mb-6 border border-[#2A3441]">  {/* ← Y ESTE */}
+        <div className="bg-card rounded-xl shadow-lg p-6 mb-6 border border-border transition colors duration-300">  {/* ← Y ESTE */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400 mb-1">Total de novedades</p>
-              <p className="text-4xl font-bold text-white">
+              <p className="text-sm text-muted-foreground mb-1">Total de novedades</p>
+              <p className="text-4xl font-bold text-foreground">
                 {novelties.length}
               </p>
             </div>
