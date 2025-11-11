@@ -1,77 +1,69 @@
-// services/noveltyService.ts
-import { Novelty } from '../types/novedades';
+import { Novelty } from "../types/novedades";
+import { API_URL } from "../../config"; // ✅ Usa la variable global
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-// Logica de presentacion
-
+// --- Manejo de respuesta ---
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({
-      message: 'Error en la petición'
+      message: "Error en la petición",
     }));
     throw new Error(error.message || `Error ${response.status}`);
   }
   return response.json();
 };
 
-const getAuthHeaders = () => {
-  return {
-    'Content-Type': 'application/json',
-  };
-};
+// --- Encabezados comunes ---
+const getAuthHeaders = () => ({
+  "Content-Type": "application/json",
+});
 
+// --- Servicio ---
 export const noveltyService = {
   getAllNovelties: async (): Promise<Novelty[]> => {
     try {
-      console.log('🔍 Fetching from:', `${API_URL}/reportes/historial`);
+      console.log("🔍 Fetching from:", `${API_URL}/reportes/historial`);
       const response = await fetch(`${API_URL}/reportes/historial`, {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
       });
       const data = await handleResponse(response);
-      console.log(' Data received:', data);
-      console.log(' Primera novedad completa:', data[0]);
+      console.log("✅ Data received:", data);
       if (data[0]?.imagen) {
-        console.log('🖼️ Imagen encontrada:', data[0].imagen);
-      } else {
-        console.log(' Primera novedad sin imagen');
+        console.log("🖼️ Imagen encontrada:", data[0].imagen);
       }
       return data;
     } catch (error) {
-      console.error('❌ Error fetching novelties:', error);
+      console.error("❌ Error fetching novelties:", error);
       throw error;
     }
   },
 
   getNoveltyById: async (id: number): Promise<Novelty> => {
     try {
-      console.log('🔍 Fetching novelty by ID:', id);
+      console.log("🔍 Fetching novelty by ID:", id);
       const response = await fetch(`${API_URL}/reportes/historial/${id}`, {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
       });
-      const data = await handleResponse(response);
-      console.log('✅ Novelty received:', data);
-      return data;
+      return await handleResponse(response);
     } catch (error) {
-      console.error('❌ Error fetching novelty:', error);
+      console.error("❌ Error fetching novelty:", error);
       throw error;
     }
   },
 
   deleteNovelty: async (id: number): Promise<void> => {
     try {
-      console.log('🗑️ Deleting novelty:', id);
+      console.log("🗑️ Deleting novelty:", id);
       const response = await fetch(`${API_URL}/reportes/historial/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: getAuthHeaders(),
       });
       await handleResponse(response);
-      console.log('✅ Novelty deleted successfully');
+      console.log("✅ Novelty deleted successfully");
     } catch (error) {
-      console.error('❌ Error deleting novelty:', error);
+      console.error("❌ Error deleting novelty:", error);
       throw error;
     }
-  }
+  },
 };
