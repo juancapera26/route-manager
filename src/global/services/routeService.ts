@@ -46,7 +46,8 @@ export const cambiarEstadoRuta = async (
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/estado`;
 
-  const payload = { nuevoEstado: data.estado_ruta };
+  // ✅ Usa directamente la propiedad 'nuevoEstado' del DTO
+  const payload = { nuevoEstado: data.nuevoEstado };
 
   console.log("🚀 Enviando PATCH a:", url, "con data:", payload);
 
@@ -103,12 +104,12 @@ export const asignarConductor = async (
 export const asignarVehiculo = async (
   idRuta: number,
   idVehiculo: number
-): Promise<any> => {
+): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${idRuta}/asignar-vehiculo`;
   console.log("🚀 Enviando PATCH a:", url, "con id_vehiculo:", idVehiculo);
 
   try {
-    const response = await axios.patch(url, { id_vehiculo: idVehiculo });
+    const response = await axios.patch<Ruta>(url, { id_vehiculo: idVehiculo });
     console.log("✅ Vehículo asignado:", response.data);
     return response.data;
   } catch (error: unknown) {

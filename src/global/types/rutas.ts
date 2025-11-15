@@ -64,7 +64,7 @@ export interface CreateRutaDto {
 
 // ----------------- DTO para cambiar estado -----------------
 export interface CambiarEstadoRutaDto {
-  estado_ruta: RutaEstado;
+  nuevoEstado: RutaEstado;
 }
 
 // ----------------- DTO para asignar conductor -----------------

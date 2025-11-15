@@ -229,23 +229,60 @@ export const useRouteManager = (
       console.log("📍 Ubicación registrada al entregar paquete");
     }
 
-    const nuevos = sortedPaquetes.filter(
-      (p) => p.id_paquete !== currentDestino.id_paquete
+    // 📦 Actualizar paquete entregado
+    const paquetesActuales =
+      JSON.parse(localStorage.getItem("paquetesRuta") || "[]") || [];
+    const actualizados = paquetesActuales.map((p: Paquete) =>
+      p.id_paquete === currentDestino.id_paquete
+        ? { ...p, estado_paquete: "Entregado" }
+        : p
+    );
+
+    localStorage.setItem("paquetesRuta", JSON.stringify(actualizados));
+
+    const nuevos = actualizados.filter(
+      (p: Paquete) =>
+        p.estado_paquete !== "Entregado" && p.estado_paquete !== "Fallido"
     );
     setSortedPaquetes(nuevos);
-    localStorage.setItem("paquetesRuta", JSON.stringify(nuevos));
 
-    if (!nuevos.length) {
+    // 🧩 Revisar estado general con comprobación robusta
+    if (nuevos.length === 0 && activeRutaId) {
+      const paquetesFinales: Paquete[] = JSON.parse(
+        localStorage.getItem("paquetesRuta") || "[]"
+      );
+
+      const tieneFallidos = paquetesFinales.some(
+        (p) => p.estado_paquete?.toLowerCase() === "fallido"
+      );
+
+      const nuevoEstado = tieneFallidos
+        ? RutaEstado.Fallida
+        : RutaEstado.Completada;
+
+      console.log("🔍 Evaluando ruta final:", {
+        total: paquetesFinales.length,
+        fallidos: paquetesFinales.filter(
+          (p) => p.estado_paquete?.toLowerCase() === "fallido"
+        ).length,
+        nuevoEstado,
+      });
+
+      // ✅ Corrección: el backend espera { nuevoEstado }
+      await cambiarEstadoRuta(activeRutaId, { nuevoEstado });
+
+      console.log(
+        nuevoEstado === RutaEstado.Fallida
+          ? "❌ Ruta marcada como Fallida (hay paquetes fallidos)"
+          : "✅ Ruta marcada como Completada (todos entregados)"
+      );
+
       setCurrentDestino(null);
       clearRoute();
-      if (activeRutaId) {
-        await cambiarEstadoRuta(activeRutaId, {
-          estado_ruta: RutaEstado.Completada,
-        });
-      }
       return { newPath: null, nextDestino: null };
     }
 
+    // 🧭 Buscar siguiente destino
     let masCercano: Paquete | null = null;
     let menorDistancia = Infinity;
     for (const p of nuevos) {
@@ -258,6 +295,7 @@ export const useRouteManager = (
         masCercano = p;
       }
     }
+
     if (!masCercano) return { newPath: null, nextDestino: null };
 
     setCurrentDestino(masCercano);
