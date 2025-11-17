@@ -45,8 +45,6 @@ export const cambiarEstadoRuta = async (
   data: CambiarEstadoRutaDto
 ): Promise<Ruta> => {
   const url = `${API_URL}/rutas/${id}/estado`;
-
-  // ✅ Usa directamente la propiedad 'nuevoEstado' del DTO
   const payload = { nuevoEstado: data.nuevoEstado };
 
   console.log("🚀 Enviando PATCH a:", url, "con data:", payload);
@@ -68,12 +66,13 @@ export const cambiarEstadoRuta = async (
   }
 };
 
-// Asignar conductor a una ruta
+// ✅ CORREGIDO: Asignar conductor usando cod_manifiesto
 export const asignarConductor = async (
-  id: number,
+  codManifiesto: string, // 👈 Ahora recibe cod_manifiesto (string)
   data: AsignarConductorDto
 ): Promise<Ruta> => {
-  const url = `${API_URL}/rutas/${id}/asignar-conductor`;
+  const url = `${API_URL}/rutas/${codManifiesto}/asignar-conductor`; // 👈 Usa cod_manifiesto en la URL
+  
   const idConductor =
     typeof data.id_conductor === "string"
       ? parseInt(data.id_conductor, 10)
@@ -85,16 +84,16 @@ export const asignarConductor = async (
 
   try {
     const response = await axios.patch<Ruta>(url, dataWithCorrectType);
-    console.log(" Conductor asignado:", response.data);
+    console.log("✅ Conductor asignado:", response.data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error(
-        ` Error al asignar conductor a la ruta ${id}:`,
+        `❌ Error al asignar conductor a la ruta ${codManifiesto}:`,
         error.message
       );
     } else {
-      console.error(` Error desconocido al asignar conductor a la ruta ${id}`);
+      console.error(`❌ Error desconocido al asignar conductor a la ruta ${codManifiesto}`);
     }
     throw error;
   }
@@ -134,9 +133,9 @@ export const deleteRuta = async (id: number): Promise<boolean> => {
     return true;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(` Error al eliminar la ruta ${id}:`, error.message);
+      console.error(`❌ Error al eliminar la ruta ${id}:`, error.message);
     } else {
-      console.error(` Error desconocido al eliminar la ruta ${id}`);
+      console.error(`❌ Error desconocido al eliminar la ruta ${id}`);
     }
     throw error;
   }

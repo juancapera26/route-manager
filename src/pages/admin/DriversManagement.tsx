@@ -24,7 +24,7 @@ const DriversManagement: React.FC = () => {
   const { rutas, refetch: refetchRutas } = useRoutes();
 
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
-  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
+  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null); // 👈 Cambio: Ahora guarda cod_manifiesto
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
@@ -77,18 +77,21 @@ const DriversManagement: React.FC = () => {
     setOpenAssignModal(true); 
   };
 
-  const handleSelectRoute = (routeId: number) => {
-    setSelectedRouteId(routeId); 
+  // 👈 Cambio: Ahora recibe el cod_manifiesto en lugar del id
+  const handleSelectRoute = (codManifiesto: string) => {
+    setSelectedCodManifiesto(codManifiesto); 
   };
 
   const handleConfirmAssign = async () => {
-    if (!selectedDriver || selectedRouteId === null) return;
+    if (!selectedDriver || !selectedCodManifiesto) return;
 
     const data: AsignarConductorDto = { id_conductor: selectedDriver.id };
+    
     try {
-      await asignarConductor(selectedRouteId, data); // Asigna el conductor a la ruta seleccionada
+      // 👈 Cambio: Ahora pasa cod_manifiesto en lugar de id
+      await asignarConductor(selectedCodManifiesto, data);
       alert("✅ Conductor asignado correctamente!");
-      refetchRutas(); // Refresca las rutas después de la asignación
+      refetchRutas();
       setOpenAssignModal(false); 
     } catch (error) {
       console.error("❌ Error al asignar conductor:", error);
@@ -185,8 +188,8 @@ const DriversManagement: React.FC = () => {
         routes={rutas}
         onAssign={handleConfirmAssign}
         onClose={() => setOpenAssignModal(false)}
-        isOpen={openAssignModal} // Pasamos el estado para controlar la visibilidad
-        onSelectRoute={handleSelectRoute} // Función para seleccionar la ruta
+        isOpen={openAssignModal}
+        onSelectRoute={handleSelectRoute} // 👈 Ahora pasa cod_manifiesto
       />
     </div>
   );
