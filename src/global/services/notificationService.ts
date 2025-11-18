@@ -57,12 +57,12 @@ class NotificationService {
       console.log(`📝 Usuario registrado: ID ${userId}, Rol ${userRole}`);
     });
 
-    this.socket.on('disconnect', (reason) => {
+    this.socket.on('disconnect', (reason: any) => {
       console.warn('❌ WebSocket desconectado:', reason);
       this.isConnected = false;
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', (error:any) => {
       console.error('🔴 Error de conexión WebSocket:', error.message);
     });
 
