@@ -26,7 +26,7 @@ export const useRouteManager = (
   const [currentDestino, setCurrentDestino] = useState<Paquete | null>(null);
   const [activeRutaId, setActiveRutaId] = useState<number | undefined>(rutaId);
 
-  // 📍 Buscar ruta activa y guardar ubicación inicial
+  //  Buscar ruta activa y guardar ubicación inicial
   useEffect(() => {
     if (activeRutaId) return;
 
@@ -44,7 +44,7 @@ export const useRouteManager = (
               lat: location.lat,
               lng: location.lng,
             });
-            console.log("📍 Ubicación inicial registrada");
+            console.log(" Ubicación inicial registrada");
           }
         }
       } catch (error) {

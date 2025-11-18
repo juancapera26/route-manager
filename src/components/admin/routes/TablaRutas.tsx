@@ -6,6 +6,7 @@ import {
   TableRow,
   TableCell,
 } from "../../../components/ui/table";
+import { Map } from "@mui/icons-material";
 import LocationOffIcon from "@mui/icons-material/LocationOff";
 import {
   ArrowRight,
@@ -167,7 +168,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                         className="p-2 text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-lg"
                         title="Ver mapa"
                       >
-                        📍
+                        <Map className="w-2 h-2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10" />
                       </button>
                     )}
 

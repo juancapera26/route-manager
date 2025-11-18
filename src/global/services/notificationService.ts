@@ -1,6 +1,7 @@
 // src/services/NotificationService.ts
 
 import { io, Socket } from 'socket.io-client';
+import { API_URL } from "../../config";
 
 // 🔔 Estructura de la notificación que llega del backend
 export interface NotificationPayload {
@@ -33,7 +34,7 @@ class NotificationService {
     }
 
     // 🌐 URL del backend - CAMBIA ESTO según tu configuración
-    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const SOCKET_URL = API_URL;
 
     console.log(`🔌 Conectando WebSocket para usuario ${userId} (${userRole})...`);
 

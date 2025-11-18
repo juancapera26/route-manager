@@ -17,6 +17,7 @@ import { asignarConductor } from "../../global/services/routeService";
 import { AsignarConductorDto } from "../../global/types/rutas";
 import { useRoutes } from "../../hooks/admin/rutas/useRoutes";
 import AssignRouteModal from "../../components/admin/drivers/ModalAsignarConductor";
+import { toast } from "sonner";
 
 const DriversManagement: React.FC = () => {
   const { data: conductores, loading, refetch } = useDriver();
@@ -24,7 +25,7 @@ const DriversManagement: React.FC = () => {
   const { rutas, refetch: refetchRutas } = useRoutes();
 
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
-  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null); // 👈 Cambio: Ahora guarda cod_manifiesto
+  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
@@ -90,12 +91,12 @@ const DriversManagement: React.FC = () => {
     try {
       // 👈 Cambio: Ahora pasa cod_manifiesto en lugar de id
       await asignarConductor(selectedCodManifiesto, data);
-      alert("✅ Conductor asignado correctamente!");
+      toast.success("Conductor asignado correctamente");
       refetchRutas();
       setOpenAssignModal(false); 
     } catch (error) {
-      console.error("❌ Error al asignar conductor:", error);
-      alert("Error al asignar conductor.");
+      toast.error("Error al asignar conductor" || error?.message);
+      console.error("Error al asignar conductor:", error);
     }
   };
 
