@@ -95,7 +95,7 @@ const DriversManagement: React.FC = () => {
       refetchRutas();
       setOpenAssignModal(false); 
     } catch (error) {
-      toast.error("Error al asignar conductor" || error?.message);
+      toast.error("Error al asignar conductor" || error);
       console.error("Error al asignar conductor:", error);
     }
   };
