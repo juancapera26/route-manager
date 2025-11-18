@@ -3,12 +3,10 @@ import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
-import { Paquete, TipoPaquete } from "../../../global/types/paquete.types";
-import { Plus } from "lucide-react";
-import { usePackages } from "../../../hooks/admin/usePackages";
+import { TipoPaquete } from "../../../global/types/paquete.types";
+import { Plus, MapPin } from "lucide-react";
 import { toast } from "sonner";
-
-//modal para agregar paquete
+import axios from "axios";
 
 interface ModalAgregarPaqueteProps {
   isOpen: boolean;
@@ -30,7 +28,10 @@ interface ModalAgregarPaqueteProps {
       alto: number;
       peso: number;
     };
+    lat: number;
+    lng: number;
   }) => Promise<boolean>;
+  
   isLoading?: boolean;
 }
 
@@ -50,15 +51,26 @@ interface FormErrors {
   };
 }
 
+// 🗺️ Tipo para la respuesta de Google Maps Geocoding API
+interface GeocodeResponse {
+  results: Array<{
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+    };
+    formatted_address: string;
+  }>;
+  status: string;
+}
+
 const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   isOpen,
   onClose,
   onSuccess,
   isLoading = false,
 }) => {
-
-  const { createPackage } = usePackages();
-
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -66,12 +78,60 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     correo: "",
     telefono: "",
     tipo_paquete: TipoPaquete.Pequeño,
-    cantidad: 0,
+    cantidad: 1,
     valor_declarado: 0,
     dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [latLng, setLatLng] = useState({ lat: 0, lng: 0 });
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  /**
+   * 🗺️ Función para geocodificar la dirección usando Google Maps API
+   */
+  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+    setIsGeocoding(true);
+    
+    try {
+      // 🔥 FIX: Agregar 'https://' al inicio
+      const response = await axios.get<GeocodeResponse>(
+        'https://maps.googleapis.com/maps/api/geocode/json',
+        {
+          params: {
+            address: address,
+            key: "AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY", // ⚠️ Cambia por tu clave
+          },
+        }
+      );
+
+      console.log('🗺️ Respuesta de geocodificación:', response.data);
+
+      // Verificar que haya resultados
+      if (response.data.status === 'OK' && response.data.results.length > 0) {
+        const result = response.data.results[0];
+        const { lat, lng } = result.geometry.location;
+        
+        setLatLng({ lat, lng });
+        
+        toast.success(`📍 Ubicación encontrada: ${result.formatted_address}`);
+        
+        return { lat, lng };
+      } else if (response.data.status === 'ZERO_RESULTS') {
+        toast.error("No se encontró la dirección. Verifica que sea correcta.");
+        return null;
+      } else {
+        toast.error(`Error de geocodificación: ${response.data.status}`);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error al geocodificar:', error);
+      toast.error("Error al obtener las coordenadas. Intenta nuevamente.");
+      return null;
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,10 +186,10 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       newErrors.cantidad = "La cantidad no puede ser mayor a 100";
     }
 
-    if (formData.valor_declarado <= 0) {
-      newErrors.valor_declarado = "El valor debe ser mayor a 0";
+    if (formData.valor_declarado < 1000) {
+      newErrors.valor_declarado = "El valor mínimo es 1.000 COP";
     } else if (formData.valor_declarado > 10000000) {
-      newErrors.valor_declarado = "El valor declarado es muy alto";
+      newErrors.valor_declarado = "El valor máximo es 10.000.000 COP";
     }
 
     const dimensionesErrors: FormErrors["dimensiones"] = {};
@@ -203,11 +263,21 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validateForm()) {
       toast.error("Por favor corrige los errores en el formulario");
       return;
     }
 
+    // 🗺️ Geocodificar la dirección
+    const coordinates = await geocodeAddress(formData.direccion);
+    
+    if (!coordinates) {
+      toast.error("No se pudieron obtener las coordenadas. Verifica la dirección.");
+      return;
+    }
+
+    // Armar el payload con las coordenadas
     const payload = {
       destinatario: {
         nombre: formData.nombre.trim(),
@@ -220,12 +290,19 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       cantidad: formData.cantidad,
       valor_declarado: formData.valor_declarado,
       dimensiones: formData.dimensiones,
+      lat: coordinates.lat,
+      lng: coordinates.lng,
     };
+
+    console.log('📦 Payload a enviar:', payload);
 
     try {
       const success = await onSuccess(payload);
+      
       if (success) {
         toast.success("¡Paquete creado exitosamente!");
+        
+        // Reset form
         setFormData({
           nombre: "",
           apellido: "",
@@ -237,6 +314,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           valor_declarado: 0,
           dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
         });
+        setLatLng({ lat: 0, lng: 0 });
         setErrors({});
         onClose();
       } else {
@@ -249,7 +327,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   };
 
   const handleClose = () => {
-    if (!isLoading) {
+    if (!isLoading && !isGeocoding) {
       setErrors({});
       onClose();
     }
@@ -268,6 +346,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Datos del destinatario */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Datos del destinatario
@@ -277,11 +356,11 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Label>Nombre *</Label>
                 <Input
                   name="nombre"
-                  placeholder="Tu nombre"
+                  placeholder="Nombre del destinatario"
                   value={formData.nombre}
                   onChange={handleInputChange}
                   className={errors.nombre ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.nombre && (
                   <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
@@ -291,11 +370,11 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Label>Apellido *</Label>
                 <Input
                   name="apellido"
-                  placeholder="Tu apellido"
+                  placeholder="Apellido del destinatario"
                   value={formData.apellido}
                   onChange={handleInputChange}
                   className={errors.apellido ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.apellido && (
                   <p className="text-red-500 text-xs mt-1">{errors.apellido}</p>
@@ -304,16 +383,28 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
             <div className="mt-4">
               <Label>Dirección *</Label>
-              <Input
-                name="direccion"
-                value={formData.direccion}
-                onChange={handleInputChange}
-                placeholder="Ej: Calle 123 #45-67, Bogotá"
-                className={errors.direccion ? "border-red-500" : ""}
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <Input
+                  name="direccion"
+                  value={formData.direccion}
+                  onChange={handleInputChange}
+                  placeholder="Ej: Calle 123 #45-67, Bogotá"
+                  className={errors.direccion ? "border-red-500" : ""}
+                  disabled={isLoading || isGeocoding}
+                />
+                {latLng.lat !== 0 && latLng.lng !== 0 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <MapPin className="w-5 h-5 text-green-500" />
+                  </div>
+                )}
+              </div>
               {errors.direccion && (
                 <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
+              )}
+              {latLng.lat !== 0 && latLng.lng !== 0 && (
+                <p className="text-green-600 text-xs mt-1">
+                  ✓ Coordenadas: {latLng.lat.toFixed(6)}, {latLng.lng.toFixed(6)}
+                </p>
               )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -326,7 +417,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   onChange={handleInputChange}
                   placeholder="ejemplo@correo.com"
                   className={errors.correo ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.correo && (
                   <p className="text-red-500 text-xs mt-1">{errors.correo}</p>
@@ -341,7 +432,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   onChange={handleInputChange}
                   placeholder="3001234567"
                   className={errors.telefono ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.telefono && (
                   <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
@@ -350,6 +441,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
+          {/* Información del paquete */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Información del paquete
@@ -362,7 +454,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   value={formData.tipo_paquete}
                   onChange={handleInputChange}
                   className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 >
                   {Object.values(TipoPaquete).map((tipo) => (
                     <option key={tipo} value={tipo}>
@@ -376,31 +468,37 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 <Input
                   type="number"
                   name="cantidad"
-                  placeholder="0"
+                  placeholder="1"
                   value={formData.cantidad === 0 ? "" : formData.cantidad}
                   onChange={handleInputChange}
                   min="1"
                   max="100"
                   className={errors.cantidad ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.cantidad && (
                   <p className="text-red-500 text-xs mt-1">{errors.cantidad}</p>
                 )}
               </div>
               <div>
-                <Label>Valor declarado (COP)</Label>
+                <Label>Valor declarado (COP) *</Label>
                 <Input
                   type="number"
                   name="valor_declarado"
-                  placeholder="0"
-                  value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
+                  placeholder="50000"
+                  value={
+                    formData.valor_declarado === 0
+                      ? ""
+                      : formData.valor_declarado
+                  }
                   onChange={handleInputChange}
-                  min="0"
-                  step={1000}
+                  min="1000"
                   className={errors.valor_declarado ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Mínimo: $1.000 - Máximo: $10.000.000
+                </p>
                 {errors.valor_declarado && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.valor_declarado}
@@ -410,23 +508,28 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
+          {/* Dimensiones */}
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
               Dimensiones del paquete
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <Label>Largo (cm)</Label>
+                <Label>Largo (cm) *</Label>
                 <Input
                   type="number"
                   name="largo"
                   placeholder="0"
-                  value={formData.dimensiones.largo === 0 ? "" : formData.dimensiones.largo}
+                  value={
+                    formData.dimensiones.largo === 0
+                      ? ""
+                      : formData.dimensiones.largo
+                  }
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
                   className={errors.dimensiones?.largo ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.dimensiones?.largo && (
                   <p className="text-red-500 text-xs mt-1">
@@ -435,17 +538,21 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 )}
               </div>
               <div>
-                <Label>Ancho (cm)</Label>
+                <Label>Ancho (cm) *</Label>
                 <Input
                   type="number"
                   name="ancho"
                   placeholder="0"
-                  value={formData.dimensiones.ancho === 0 ? "" : formData.dimensiones.ancho}
+                  value={
+                    formData.dimensiones.ancho === 0
+                      ? ""
+                      : formData.dimensiones.ancho
+                  }
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
                   className={errors.dimensiones?.ancho ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.dimensiones?.ancho && (
                   <p className="text-red-500 text-xs mt-1">
@@ -454,17 +561,21 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 )}
               </div>
               <div>
-                <Label>Alto (cm)</Label>
+                <Label>Alto (cm) *</Label>
                 <Input
                   type="number"
                   name="alto"
                   placeholder="0"
-                  value={formData.dimensiones.alto === 0 ? "" : formData.dimensiones.alto}
+                  value={
+                    formData.dimensiones.alto === 0
+                      ? ""
+                      : formData.dimensiones.alto
+                  }
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
                   className={errors.dimensiones?.alto ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.dimensiones?.alto && (
                   <p className="text-red-500 text-xs mt-1">
@@ -473,17 +584,21 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 )}
               </div>
               <div>
-                <Label>Peso (kg)</Label>
+                <Label>Peso (kg) *</Label>
                 <Input
                   type="number"
                   name="peso"
                   placeholder="0"
-                  value={formData.dimensiones.peso === 0 ? "" : formData.dimensiones.peso}
+                  value={
+                    formData.dimensiones.peso === 0
+                      ? ""
+                      : formData.dimensiones.peso
+                  }
                   onChange={handleInputChange}
                   min="0"
                   step={0.1}
                   className={errors.dimensiones?.peso ? "border-red-500" : ""}
-                  disabled={isLoading}
+                  disabled={isLoading || isGeocoding}
                 />
                 {errors.dimensiones?.peso && (
                   <p className="text-red-500 text-xs mt-1">
@@ -494,21 +609,26 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
             </div>
           </div>
 
+          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
               onClick={handleClose}
-              disabled={isLoading}
+              disabled={isLoading || isGeocoding}
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={isLoading}
-              className="min-w-[120px]"
+              disabled={isLoading || isGeocoding}
+              className="min-w-[140px]"
             >
-              {isLoading ? "Creando..." : "Crear paquete"}
+              {isGeocoding 
+                ? "📍 Obteniendo ubicación..." 
+                : isLoading 
+                ? "Creando..." 
+                : "Crear paquete"}
             </Button>
           </div>
         </form>
@@ -516,4 +636,5 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     </Modal>
   );
 };
+
 export default ModalAgregarPaquete;
