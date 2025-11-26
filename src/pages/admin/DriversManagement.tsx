@@ -24,7 +24,7 @@ const DriversManagement: React.FC = () => {
   const { rutas, refetch: refetchRutas } = useRoutes();
 
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
-  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null); // 👈 Cambio: Ahora guarda cod_manifiesto
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
@@ -77,21 +77,18 @@ const DriversManagement: React.FC = () => {
     setOpenAssignModal(true); 
   };
 
-  // 👈 Cambio: Ahora recibe el cod_manifiesto en lugar del id
-  const handleSelectRoute = (codManifiesto: string) => {
-    setSelectedCodManifiesto(codManifiesto); 
+  const handleSelectRoute = (routeId: number) => {
+    setSelectedRouteId(routeId); 
   };
 
   const handleConfirmAssign = async () => {
-    if (!selectedDriver || !selectedCodManifiesto) return;
+    if (!selectedDriver || selectedRouteId === null) return;
 
     const data: AsignarConductorDto = { id_conductor: selectedDriver.id };
-    
     try {
-      // 👈 Cambio: Ahora pasa cod_manifiesto en lugar de id
-      await asignarConductor(selectedCodManifiesto, data);
+      await asignarConductor(selectedRouteId, data); // Asigna el conductor a la ruta seleccionada
       alert("✅ Conductor asignado correctamente!");
-      refetchRutas();
+      refetchRutas(); // Refresca las rutas después de la asignación
       setOpenAssignModal(false); 
     } catch (error) {
       console.error("❌ Error al asignar conductor:", error);
@@ -188,8 +185,8 @@ const DriversManagement: React.FC = () => {
         routes={rutas}
         onAssign={handleConfirmAssign}
         onClose={() => setOpenAssignModal(false)}
-        isOpen={openAssignModal}
-        onSelectRoute={handleSelectRoute} // 👈 Ahora pasa cod_manifiesto
+        isOpen={openAssignModal} // Pasamos el estado para controlar la visibilidad
+        onSelectRoute={handleSelectRoute} // Función para seleccionar la ruta
       />
     </div>
   );

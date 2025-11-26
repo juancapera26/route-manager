@@ -1,30 +1,19 @@
-// src/components/layout/AppHeader.tsx (o donde esté tu AppHeader)
-
 import { useEffect, useRef } from "react";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchBar from "../components/header/SearchBar";
 import UserDropdown from "../components/header/UserDropdown";
-import NotificationBell from "../components/header/NotificationBell";
+
 import { useSidebar } from "../context/SidebarContext";
-import useAuth from "../hooks/useAuth";
-import { useNotifications } from "../hooks/useNotifications";
+
+// import { Link } from "react-router";
+
+// import NotificationDropdown from "../components/header/NotificationDropdown";
 
 const AppHeader: React.FC = () => {
-  const { toggleSidebar, toggleMobileSidebar } = useSidebar();
-  
-  // 🔔 Obtener datos del usuario autenticado
-  const { idUsuario, role } = useAuth();
+  // const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
-  // 🔔 Hook de notificaciones
-  const {
-    notifications,
-    unreadCount,
-    isConnected,
-    markAsRead,
-    markAllAsRead,
-    clearAll,
-    removeNotification,
-  } = useNotifications(idUsuario, role);
+  const { toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   const handleToggle = () => {
     if (window.innerWidth >= 991) {
@@ -33,6 +22,10 @@ const AppHeader: React.FC = () => {
       toggleMobileSidebar();
     }
   };
+
+  // const toggleApplicationMenu = () => {
+  //   setApplicationMenuOpen(!isApplicationMenuOpen);
+  // };
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,20 +56,10 @@ const AppHeader: React.FC = () => {
             >
               <MenuIcon className="text-gray-500 dark:text-gray-400" />
             </button>
+
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            {/* 🔔 CAMPANITA DE NOTIFICACIONES */}
-            <NotificationBell
-              notifications={notifications}
-              unreadCount={unreadCount}
-              isConnected={isConnected}
-              onMarkAsRead={markAsRead}
-              onMarkAllAsRead={markAllAsRead}
-              onClearAll={clearAll}
-              onRemove={removeNotification}
-            />
-
             <UserDropdown />
           </div>
         </div>
