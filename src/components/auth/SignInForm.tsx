@@ -28,16 +28,34 @@ export default function SignInForm() {
   useEffect(() => {
     if (location.state?.successMessage) {
       setSuccessMessage(location.state.successMessage);
-
       window.history.replaceState({}, document.title);
 
-      const timer = setTimeout(() => {
-        setSuccessMessage("");
-      }, 8080);
-
-      return () => clearTimeout(timer); // limpiar timeout si el compo se desmonta
+      const timer = setTimeout(() => setSuccessMessage(""), 8080);
+      return () => clearTimeout(timer);
     }
   }, [location.state]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email && !password) {
+      setError("Por favor ingresa tu correo y contraseña");
+      return;
+    }
+
+    if (!email) {
+      setError("Por favor ingresa tu correo");
+      return;
+    }
+
+    if (!password) {
+      setError("Por favor ingresa tu contraseña");
+      return;
+    }
+
+    handleLogin(e, email, password, setError);
+  };
 
   return (
     <div className="flex flex-col flex-1">
@@ -51,88 +69,86 @@ export default function SignInForm() {
               Ingresa tu correo y contraseña para iniciar sesión
             </p>
           </div>
-          <div>
-            <form onSubmit={(e) => handleLogin(e, email, password, setError)}>
-              <div className="space-y-6">
-                <div>
-                  <Label>
-                    Correo <span className="text-error-500">*</span>{" "}
-                  </Label>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-6">
+              <div>
+                <Label>
+                  Correo <span className="text-error-500">*</span>
+                </Label>
+                <Input
+                  type="email"
+                  placeholder="info@gmail.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>
+                  Contraseña <span className="text-error-500">*</span>
+                </Label>
+                <div className="relative">
                   <Input
-                    type="email"
-                    placeholder="info@gmail.com"
-                    onChange={(e) => setEmail(e.target.value)}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Ingresa tu contraseña"
+                    onChange={(e) => setPassword(e.target.value)}
                   />
-                </div>
-                <div>
-                  <Label>
-                    Contraseña <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Ingresa tu contraseña"
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Error de login */}
-                {error && <div className="text-red-600">{error}</div>}
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Mantenerme conectado
-                    </span>
-                  </div>
-                  <Link
-                    to="/reset-password"
-                    className="text-sm text-blue-600 hover:text-blue-600 dark:text-blue-400"
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
-                    ¿Olvidó su contraseña?
-                  </Link>
-                </div>
-
-                <div>
-                  <Button
-                    className="w-full bg-blue-500 hover:bg-blue-700"
-                    size="sm"
-                  >
-                    Iniciar sesión
-                  </Button>
+                    {showPassword ? (
+                      <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                    ) : (
+                      <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                    )}
+                  </span>
                 </div>
               </div>
-            </form>
 
-            {successMessage && (
-              <div className="mt-4 text-center text-green-600 font-medium">
-                {successMessage}
-              </div>
-            )}
+              {/* Mensaje de error */}
+              {error && <div className="text-red-600">{error}</div>}
 
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                ¿No tienes una cuenta?{" "}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Checkbox checked={isChecked} onChange={setIsChecked} />
+                  <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
+                    Mantenerme conectado
+                  </span>
+                </div>
                 <Link
-                  to="/signup"
-                  className="text-blue-600 hover:text-blue-600 dark:text-blue-400"
+                  to="/reset-password"
+                  className="text-sm text-blue-600 hover:text-blue-600 dark:text-blue-400"
                 >
-                  Registrarse
+                  ¿Olvidó su contraseña?
                 </Link>
-              </p>
+              </div>
+
+              <div>
+                <Button
+                  className="w-full bg-blue-500 hover:bg-blue-700"
+                  size="sm"
+                >
+                  Iniciar sesión
+                </Button>
+              </div>
             </div>
+          </form>
+
+          {successMessage && (
+            <div className="mt-4 text-center text-green-600 font-medium">
+              {successMessage}
+            </div>
+          )}
+
+          <div className="mt-5">
+            <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+              ¿No tienes una cuenta?{" "}
+              <Link
+                to="/signup"
+                className="text-blue-600 hover:text-blue-600 dark:text-blue-400"
+              >
+                Registrarse
+              </Link>
+            </p>
           </div>
         </div>
       </div>

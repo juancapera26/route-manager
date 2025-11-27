@@ -55,6 +55,20 @@ export default function SignUpForm() {
       tipoVehiculo: value,
     }));
   };
+  const allowedDomains = [
+    "gmail.com",
+    "outlook.com",
+    "hotmail.com",
+    "yahoo.com",
+  ];
+
+  const isValidEmailDomain = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return false;
+
+    const domain = email.split("@")[1];
+    return allowedDomains.includes(domain.toLowerCase());
+  };
 
   // Validaciones del frontend
   const validateForm = (): string | null => {
@@ -63,19 +77,30 @@ export default function SignUpForm() {
     if (!formData.documento.trim()) return "El documento es requerido";
     if (!formData.numeroTelefono.trim())
       return "El número de teléfono es requerido";
+
     if (!formData.email.trim()) return "El email es requerido";
     if (!formData.confirmarEmail.trim()) return "Confirmar email es requerido";
+
     if (formData.email !== formData.confirmarEmail)
       return "Los emails no coinciden";
+
+    // ⬇️ ⬇️ NUEVO: Validar dominio permitido
+    if (!isValidEmailDomain(formData.email))
+      return "El correo debe ser de un proveedor válido (gmail, outlook, hotmail, yahoo).";
+
     if (!formData.password) return "La contraseña es requerida";
+
     if (formData.password.length < 6)
       return "La contraseña debe tener al menos 6 caracteres";
+
     if (formData.password !== formData.repetirPassword)
       return "Las contraseñas no coinciden";
-    if (!isChecked) return "Debe aceptar los términos y condiciones";
+
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
     if (!hasSpecialChar)
       return "La contraseña debe contener al menos un carácter especial";
+
+    if (!isChecked) return "Debe aceptar los términos y condiciones";
 
     return null;
   };

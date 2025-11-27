@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import Badge from "../../ui/badge/Badge";
 import { Modal } from "../../ui/modal/index";
 import { Ruta } from "../../../global/types/rutas";
+import { Paquete } from "../../../global/types/paquete.types";
 
 interface ModalDetallesRutaProps {
   isOpen: boolean;
+  detallesPaquete: Paquete | null;
+
   onClose: () => void;
   ruta: Ruta | null;
 }
@@ -142,10 +145,7 @@ export const ModalDetallesRuta: React.FC<ModalDetallesRutaProps> = ({
                           Dirección:
                         </span>
                         <p className="text-xs font-medium text-gray-900 dark:text-white mt-1 leading-relaxed">
-                          {/* Cambio de direccion */}
-                          {paquete.direccion_entrega
-                            ? `${paquete.direccion_entrega.calle}, ${paquete.direccion_entrega.numero}, ${paquete.direccion_entrega.ciudad}`
-                            : paquete.cliente?.direccion || "-"}
+                          {paquete.cliente.direccion}
                         </p>
                       </div>
                     </div>
