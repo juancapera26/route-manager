@@ -31,7 +31,7 @@ interface ModalAgregarPaqueteProps {
     lat: number;
     lng: number;
   }) => Promise<boolean>;
-  
+
   isLoading?: boolean;
 }
 
@@ -90,34 +90,36 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
   /**
    * 🗺️ Función para geocodificar la dirección usando Google Maps API
    */
-  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+  const geocodeAddress = async (
+    address: string
+  ): Promise<{ lat: number; lng: number } | null> => {
     setIsGeocoding(true);
-    
+
     try {
       // 🔥 FIX: Agregar 'https://' al inicio
       const response = await axios.get<GeocodeResponse>(
-        'https://maps.googleapis.com/maps/api/geocode/json',
+        "https://maps.googleapis.com/maps/api/geocode/json",
         {
           params: {
             address: address,
-            key: "AIzaSyDEbgrPMy2WgtfJj5w164HOlKYFkjyPXzY", // ⚠️ Cambia por tu clave
+            key: "AIzaSyBp-vxE_u91t0oyjFZCao9I7Hf8UOh4I-Q", // ⚠️ Cambia por tu clave
           },
         }
       );
 
-      console.log('🗺️ Respuesta de geocodificación:', response.data);
+      console.log(" Respuesta de geocodificación:", response.data);
 
       // Verificar que haya resultados
-      if (response.data.status === 'OK' && response.data.results.length > 0) {
+      if (response.data.status === "OK" && response.data.results.length > 0) {
         const result = response.data.results[0];
         const { lat, lng } = result.geometry.location;
-        
+
         setLatLng({ lat, lng });
-        
-        toast.success(`📍 Ubicación encontrada: ${result.formatted_address}`);
-        
+
+        toast.success(` Ubicación encontrada: ${result.formatted_address}`);
+
         return { lat, lng };
-      } else if (response.data.status === 'ZERO_RESULTS') {
+      } else if (response.data.status === "ZERO_RESULTS") {
         toast.error("No se encontró la dirección. Verifica que sea correcta.");
         return null;
       } else {
@@ -125,7 +127,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
         return null;
       }
     } catch (error) {
-      console.error('❌ Error al geocodificar:', error);
+      console.error(" Error al geocodificar:", error);
       toast.error("Error al obtener las coordenadas. Intenta nuevamente.");
       return null;
     } finally {
@@ -271,9 +273,11 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
 
     // 🗺️ Geocodificar la dirección
     const coordinates = await geocodeAddress(formData.direccion);
-    
+
     if (!coordinates) {
-      toast.error("No se pudieron obtener las coordenadas. Verifica la dirección.");
+      toast.error(
+        "No se pudieron obtener las coordenadas. Verifica la dirección."
+      );
       return;
     }
 
@@ -294,14 +298,14 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       lng: coordinates.lng,
     };
 
-    console.log('📦 Payload a enviar:', payload);
+    console.log("📦 Payload a enviar:", payload);
 
     try {
       const success = await onSuccess(payload);
-      
+
       if (success) {
         toast.success("¡Paquete creado exitosamente!");
-        
+
         // Reset form
         setFormData({
           nombre: "",
@@ -403,7 +407,8 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
               )}
               {latLng.lat !== 0 && latLng.lng !== 0 && (
                 <p className="text-green-600 text-xs mt-1">
-                  ✓ Coordenadas: {latLng.lat.toFixed(6)}, {latLng.lng.toFixed(6)}
+                  ✓ Coordenadas: {latLng.lat.toFixed(6)},{" "}
+                  {latLng.lng.toFixed(6)}
                 </p>
               )}
             </div>
@@ -624,10 +629,10 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
               disabled={isLoading || isGeocoding}
               className="min-w-[140px]"
             >
-              {isGeocoding 
-                ? "📍 Obteniendo ubicación..." 
-                : isLoading 
-                ? "Creando..." 
+              {isGeocoding
+                ? "📍 Obteniendo ubicación..."
+                : isLoading
+                ? "Creando..."
                 : "Crear paquete"}
             </Button>
           </div>
