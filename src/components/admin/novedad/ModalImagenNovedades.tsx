@@ -6,7 +6,7 @@ interface ModalVerImagenProps {
   onClose: () => void;
 }
 
-// Modal de imagenes 
+// Modal de imagenes
 
 const ModalVerImagen: React.FC<ModalVerImagenProps> = ({ 
   imagenUrl, 
@@ -20,9 +20,20 @@ const ModalVerImagen: React.FC<ModalVerImagenProps> = ({
   // Construir URL completa
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
   
-  const fullImageUrl = imagenUrl.startsWith("http")
-    ? imagenUrl
-    : `${API_URL}${imagenUrl}`;
+  let fullImageUrl: string;
+
+  if (imagenUrl.startsWith("http")){
+    fullImageUrl = imagenUrl;
+  }else{
+    let normalizedPath = imagenUrl.startsWith("/") ? imagenUrl : `/${imagenUrl}`;
+
+    if (!normalizedPath.includes("/uploads/")){
+      const filename =  normalizedPath.split('/').pop();
+      normalizedPath = `/uploads/${filename}`;
+    }
+
+    fullImageUrl = `${API_URL}${normalizedPath}`
+  }
 
   console.log('🖼️ Imagen original:', imagenUrl);
   console.log('🖼️ URL completa construida:', fullImageUrl);

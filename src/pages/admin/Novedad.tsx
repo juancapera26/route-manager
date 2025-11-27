@@ -50,7 +50,6 @@ export const NoveltyManagement: React.FC = () => {
           novelties={novelties}
           onViewDetails={handleViewImage}
           onViewImage={handleViewImage}
-          onDelete={deleteNovelty}
           isLoading={isLoading}
         />
 
