@@ -1,10 +1,11 @@
 // src/services/NotificationService.ts
 
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
+import { API_URL } from "../../config";
 
 // 🔔 Estructura de la notificación que llega del backend
 export interface NotificationPayload {
-  type: 'ruta_completada' | 'ruta_fallida' | 'ruta_asignada';
+  type: "ruta_completada" | "ruta_fallida" | "ruta_asignada";
   title: string;
   message: string;
   data?: {
@@ -19,7 +20,8 @@ export interface NotificationPayload {
 class NotificationService {
   private socket: Socket | null = null;
   private isConnected = false;
-  private listeners: Map<string, Set<(payload: NotificationPayload) => void>> = new Map();
+  private listeners: Map<string, Set<(payload: NotificationPayload) => void>> =
+    new Map();
 
   /**
    * Conecta al servidor WebSocket
@@ -28,17 +30,19 @@ class NotificationService {
    */
   connect(userId: number, userRole: string): void {
     if (this.socket?.connected) {
-      console.log('🔌 WebSocket ya está conectado');
+      console.log("🔌 WebSocket ya está conectado");
       return;
     }
 
     // 🌐 URL del backend - CAMBIA ESTO según tu configuración
-    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    const SOCKET_URL = API_URL;
 
-    console.log(`🔌 Conectando WebSocket para usuario ${userId} (${userRole})...`);
+    console.log(
+      `🔌 Conectando WebSocket para usuario ${userId} (${userRole})...`
+    );
 
     this.socket = io(SOCKET_URL, {
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -47,36 +51,36 @@ class NotificationService {
     // =========================================
     // EVENTOS DE CONEXIÓN
     // =========================================
-    
-    this.socket.on('connect', () => {
-      console.log('✅ WebSocket conectado:', this.socket?.id);
+
+    this.socket.on("connect", () => {
+      console.log("✅ WebSocket conectado:", this.socket?.id);
       this.isConnected = true;
 
       // Registrar usuario al conectar
-      this.socket?.emit('register', { userId, role: userRole });
+      this.socket?.emit("register", { userId, role: userRole });
       console.log(`📝 Usuario registrado: ID ${userId}, Rol ${userRole}`);
     });
 
-    this.socket.on('disconnect', (reason: any) => {
-      console.warn('❌ WebSocket desconectado:', reason);
+    this.socket.on("disconnect", (reason: any) => {
+      console.warn("❌ WebSocket desconectado:", reason);
       this.isConnected = false;
     });
 
-    this.socket.on('connect_error', (error:any) => {
-      console.error('🔴 Error de conexión WebSocket:', error.message);
+    this.socket.on("connect_error", (error: any) => {
+      console.error("🔴 Error de conexión WebSocket:", error.message);
     });
 
     // =========================================
     // EVENTO DE NOTIFICACIONES
     // =========================================
-    
-    this.socket.on('notification', (payload: NotificationPayload) => {
-      console.log('🔔 Notificación recibida:', payload);
-      
+
+    this.socket.on("notification", (payload: NotificationPayload) => {
+      console.log("🔔 Notificación recibida:", payload);
+
       // Emitir a todos los listeners suscritos
-      const listeners = this.listeners.get('notification');
+      const listeners = this.listeners.get("notification");
       if (listeners) {
-        listeners.forEach(callback => callback(payload));
+        listeners.forEach((callback) => callback(payload));
       }
     });
   }
@@ -86,7 +90,7 @@ class NotificationService {
    */
   disconnect(): void {
     if (this.socket) {
-      console.log('🔌 Desconectando WebSocket...');
+      console.log("🔌 Desconectando WebSocket...");
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
@@ -100,19 +104,19 @@ class NotificationService {
    * @returns Función para cancelar la suscripción
    */
   subscribe(callback: (payload: NotificationPayload) => void): () => void {
-    if (!this.listeners.has('notification')) {
-      this.listeners.set('notification', new Set());
+    if (!this.listeners.has("notification")) {
+      this.listeners.set("notification", new Set());
     }
 
-    const listeners = this.listeners.get('notification')!;
+    const listeners = this.listeners.get("notification")!;
     listeners.add(callback);
 
-    console.log('👂 Listener suscrito, total:', listeners.size);
+    console.log("👂 Listener suscrito, total:", listeners.size);
 
     // Retornar función de cleanup
     return () => {
       listeners.delete(callback);
-      console.log('🔇 Listener eliminado, total:', listeners.size);
+      console.log("🔇 Listener eliminado, total:", listeners.size);
     };
   }
 
