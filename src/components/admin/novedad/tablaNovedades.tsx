@@ -1,4 +1,4 @@
-// components/novelty/NoveltyTable.tsx!
+// components/novelty/NoveltyTable.tsx
 import React from "react";
 import { Image as ImageIcon, FileText } from "lucide-react";
 import { ColumnDef } from "../../ui/table/DataTable";
