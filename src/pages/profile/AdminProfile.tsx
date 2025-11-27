@@ -23,7 +23,6 @@ const PerfilAdmin = () => {
     nombre,
     apellido,
     correo,
-    role,
     telefono,
     empresa,
     tipoDocumento,

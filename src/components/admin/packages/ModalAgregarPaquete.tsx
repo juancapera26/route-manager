@@ -501,9 +501,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   className={errors.valor_declarado ? "border-red-500" : ""}
                   disabled={isLoading || isGeocoding}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Mínimo: $1.000 - Máximo: $10.000.000
-                </p>
+
                 {errors.valor_declarado && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.valor_declarado}
@@ -630,7 +628,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
               className="min-w-[140px]"
             >
               {isGeocoding
-                ? "📍 Obteniendo ubicación..."
+                ? "Obteniendo ubicación..."
                 : isLoading
                 ? "Creando..."
                 : "Crear paquete"}

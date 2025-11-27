@@ -240,7 +240,7 @@ export const MapAdmin: React.FC<MapAdminProps> = ({
   return (
     <Dialog open={isOpen} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
-        🗺️ Ubicación del conductor y destinos
+        Ubicación del conductor y destinos
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", right: 12, top: 12 }}

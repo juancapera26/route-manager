@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Eye, Edit, Trash, UserCheck } from "lucide-react"; 
+import {
+  Eye,
+  Edit,
+  Trash,
+  UserCheck,
+  AlertTriangle,
+  Check,
+} from "lucide-react";
 import {
   DataTable,
   ColumnDef,
@@ -17,6 +24,7 @@ import { asignarConductor } from "../../global/services/routeService";
 import { AsignarConductorDto } from "../../global/types/rutas";
 import { useRoutes } from "../../hooks/admin/rutas/useRoutes";
 import AssignRouteModal from "../../components/admin/drivers/ModalAsignarConductor";
+import { toast } from "sonner";
 
 const DriversManagement: React.FC = () => {
   const { data: conductores, loading, refetch } = useDriver();
@@ -24,11 +32,13 @@ const DriversManagement: React.FC = () => {
   const { rutas, refetch: refetchRutas } = useRoutes();
 
   const [selectedDriver, setSelectedDriver] = useState<Conductor | null>(null);
-  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<string | null>(null); // 👈 Cambio: Ahora guarda cod_manifiesto
+  const [selectedCodManifiesto, setSelectedCodManifiesto] = useState<
+    string | null
+  >(null); // 👈 Cambio: Ahora guarda cod_manifiesto
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
-  const [openAssignModal, setOpenAssignModal] = useState(false); 
+  const [openAssignModal, setOpenAssignModal] = useState(false);
 
   const {
     handleDeleteDriver,
@@ -52,7 +62,7 @@ const DriversManagement: React.FC = () => {
     } catch (error) {
       console.error("Error al actualizar conductor:", error);
     } finally {
-      setOpenEditModal(false); 
+      setOpenEditModal(false);
     }
   };
 
@@ -64,7 +74,7 @@ const DriversManagement: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!selectedDriver) return;
     await handleDeleteDriver(selectedDriver.id);
-    setOpenDeleteModal(false); 
+    setOpenDeleteModal(false);
   };
 
   const handleView = (item: Conductor) => {
@@ -74,28 +84,35 @@ const DriversManagement: React.FC = () => {
 
   const handleAssign = (driver: Conductor) => {
     setSelectedDriver(driver);
-    setOpenAssignModal(true); 
+    setOpenAssignModal(true);
   };
 
   // 👈 Cambio: Ahora recibe el cod_manifiesto en lugar del id
   const handleSelectRoute = (codManifiesto: string) => {
-    setSelectedCodManifiesto(codManifiesto); 
+    setSelectedCodManifiesto(codManifiesto);
   };
 
   const handleConfirmAssign = async () => {
     if (!selectedDriver || !selectedCodManifiesto) return;
 
     const data: AsignarConductorDto = { id_conductor: selectedDriver.id };
-    
+
     try {
       // 👈 Cambio: Ahora pasa cod_manifiesto en lugar de id
       await asignarConductor(selectedCodManifiesto, data);
-      alert("✅ Conductor asignado correctamente!");
+
+      toast.success("Conductor asignado correctamente!", {
+        icon: <Check className="w-5 h-5" />,
+      });
+
       refetchRutas();
-      setOpenAssignModal(false); 
+      setOpenAssignModal(false);
     } catch (error) {
-      console.error("❌ Error al asignar conductor:", error);
-      alert("Error al asignar conductor.");
+      console.error("Error al asignar conductor:", error);
+
+      toast.error("Error al asignar conductor.", {
+        icon: <AlertTriangle className="w-5 h-5" />,
+      });
     }
   };
 

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Ruta } from "../../../global/types/rutas";
 import { Conductor } from "../../../global/types/conductores";
+import MapIcon from "@mui/icons-material/Map";
 
 interface TablaRutasProps {
   rutas: Ruta[];
@@ -167,7 +168,7 @@ const TablaRutas: React.FC<TablaRutasProps> = ({
                         className="p-2 text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-lg"
                         title="Ver mapa"
                       >
-                        📍
+                        <MapIcon className="w-4 h-4" />
                       </button>
                     )}
 
