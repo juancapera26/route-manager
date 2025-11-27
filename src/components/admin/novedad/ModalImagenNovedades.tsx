@@ -6,7 +6,7 @@ interface ModalVerImagenProps {
   onClose: () => void;
 }
 
-// Modal de imagenes 
+// Modal de imagenes!
 
 const ModalVerImagen: React.FC<ModalVerImagenProps> = ({ 
   imagenUrl, 
