@@ -108,6 +108,7 @@ const RouteManagement: React.FC = () => {
         isOpen={modalDetallesAbierto}
         onClose={() => setModalDetallesAbierto(false)}
         ruta={rutaSeleccionada}
+        
       />
     </section>
   );

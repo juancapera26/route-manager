@@ -6,7 +6,7 @@ import { Paquete } from "../../../global/types/paquete.types";
 
 interface ModalDetallesRutaProps {
   isOpen: boolean;
-  detallesPaquete: Paquete | null;
+  detallesPaquete?: Paquete | null;
 
   onClose: () => void;
   ruta: Ruta | null;
