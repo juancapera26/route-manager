@@ -1,397 +1,527 @@
 <div align="center">
-🌐 Router Manager
-Plataforma Web de Gestión Logística Inteligente
-React Vite TypeScript Firebase Tailwind CSS
 
-<p align="center"> <img src="https://img.shields.io/badge/Status-Production-success?style=flat-square" alt="Status"> <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version"> <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"> <img src="https://img.shields.io/badge/Deployment-Vercel-black?style=flat-square&logo=vercel" alt="Vercel"> </p>
-Router Manager es una plataforma web que optimiza la gestión logística mediante seguimiento GPS en tiempo real, gestión inteligente de rutas y monitoreo centralizado de paquetes para empresas de mensajería y transporte.
+# Router Manager
 
-🚀 Demo en Vivo • 📖 Documentación • 🐛 Reportar Bug
+### Plataforma de Gestión Logística
+
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-10.0+-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status">
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License">
+</p>
+
+---
 
 </div>
-📑 Tabla de Contenidos
-Sobre el Proyecto
-Características Principales
-Comenzando
-Pre-requisitos
-Instalación
-Arquitectura del Proyecto
-Scripts Disponibles
-Despliegue
-Tecnologías Usadas
-Versionado
-Autores
-Licencia
-🎯 Sobre el Proyecto
-Router Manager es una solución integral diseñada para revolucionar la gestión logística en empresas de mensajería y transporte. La plataforma permite:
 
-<div align="center">
-🎯 Objetivo	📊 Impacto
-⚡ Optimizar tiempos de entrega	Reducción del 30% en tiempos promedio
-💰 Reducir costos operativos	Ahorro del 25% en combustible
-📈 Mejorar flujo de trabajo	Incremento del 40% en eficiencia
-📍 Seguimiento en tiempo real	Visibilidad 24/7 de la flota
-</div>
-💡 Diseño centrado en el usuario: Cada funcionalidad fue desarrollada basándose en problemáticas reales identificadas por conductores y administradores logísticos en campo.
+## 📋 Tabla de Contenidos
 
-✨ Características Principales
-<table> <tr> <td width="50%">
-👨‍💼 Para Administradores
-🗺️ Gestión de rutas optimizadas
-📦 Control total de paquetes
-📊 Dashboard con métricas en tiempo real
-👥 Administración de conductores
-📈 Reportes y analíticas detalladas
-🔔 Sistema de notificaciones
-</td> <td width="50%">
-🚗 Para Conductores
-📍 GPS integrado en tiempo real
-📱 Interfaz móvil optimizada
-✅ Actualización de estados rápida
-📝 Registro de novedades en campo
-🗺️ Rutas asignadas claras
-🔔 Alertas instantáneas
-</td> </tr> </table>
-🚀 Comenzando
-📥 Clonar el Repositorio
-Puedes clonar el proyecto usando cualquiera de estos métodos:
+- [Sobre el Proyecto](#-sobre-el-proyecto)
+- [Comenzando](#-comenzando)
+- [Pre-requisitos](#-pre-requisitos)
+- [Instalación](#-instalación)
+- [Arquitectura del Proyecto](#️-arquitectura-del-proyecto)
+- [Scripts Disponibles](#-scripts-disponibles)
+- [Despliegue](#-despliegue)
+- [Tecnologías Usadas](#️-tecnologías-usadas)
+- [Versionado](#-versionado)
+- [Autores](#️-autores)
 
-<details open> <summary><b>🔹 HTTPS (Recomendado)</b></summary>
+
+---
+
+## 🎯 Sobre el Proyecto
+
+**Router Manager** es una plataforma web diseñada para revolucionar la gestión logística en empresas de mensajería y transporte. Nuestra solución optimiza las operaciones mediante:
+
+- 📍 **Seguimiento GPS en tiempo real**
+- 🗺️ **Gestión inteligente de rutas**
+- 📦 **Control centralizado de paquetes**
+- 📊 **Monitoreo logístico avanzado**
+- ⚡ **Optimización de tiempos de entrega**
+
+### 🎯 Objetivos Principales
+
+- ⏱️ **Optimizar tiempos de entrega**
+- 💰 **Reducir costos operativos**
+- 📈 **Mejorar el flujo de trabajo**
+- 👥 **Facilitar la comunicación entre equipos**
+
+> 💡 **Desarrollado con y para el sector logístico:** Todas las funcionalidades fueron diseñadas según las problemáticas reales identificadas por conductores y administradores logísticos.
+
+---
+
+## 🚀 Comenzando
+
+### Repositorio del Proyecto
+
+```
+https://github.com/juancapera26/route-manager.git
+```
+
+### Clonar el Proyecto
+
+Puedes clonar el repositorio usando alguna de las opciones disponibles en GitHub:
+
+**Opción 1: HTTPS**
+```bash
 git clone https://github.com/juancapera26/route-manager.git
-cd route-manager
-</details> <details> <summary><b>🔹 SSH</b></summary>
+```
+
+**Opción 2: SSH**
+```bash
 git clone git@github.com:juancapera26/route-manager.git
-cd route-manager
-</details> <details> <summary><b>🔹 GitHub CLI</b></summary>
+```
+
+**Opción 3: GitHub CLI**
+```bash
 gh repo clone juancapera26/route-manager
+```
+
+### Navegar al directorio
+
+```bash
 cd route-manager
+```
+
+---
+
+## 📦 Pre-requisitos
+
+Antes de instalar las dependencias, asegúrate de tener instalado lo siguiente en tu sistema:
+
+| Herramienta | Versión Recomendada | Descarga |
+|------------|---------------------|----------|
+| ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white) | 18.x o superior | [Descargar](https://nodejs.org/) |
+| ![npm](https://img.shields.io/badge/npm-CB3837?style=flat&logo=npm&logoColor=white) | 9.x o superior | Incluido con Node.js |
+| ![Yarn](https://img.shields.io/badge/Yarn-2C8EBB?style=flat&logo=yarn&logoColor=white) | 1.22 o superior | [Descargar](https://yarnpkg.com/) |
+| ![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white) | Última versión | [Descargar](https://git-scm.com/) |
+
+### 🔐 Archivos de Configuración Requeridos
+
+El proyecto requiere los siguientes archivos de configuración:
+
+```
+/secrets
+    └── credenciales-firebase.json    # Credenciales de Firebase
+.env                                   # Variables de entorno
+```
+
+> ⚠️ **Importante:** Estos archivos contienen información sensible y no están incluidos en el repositorio. Solicítalos al equipo de desarrollo.
+
+---
+
+## 🔧 Instalación
+
+### Paso 1: Instalar dependencias
+
+Usando **Yarn** (recomendado):
+```bash
+yarn install
+```
+
+O usando **npm**:
+```bash
+npm install
+```
+
+<details>
+<summary>💡 ¿Qué hace este comando?</summary>
+
+Este comando descarga e instala todas las dependencias necesarias definidas en `package.json`, incluyendo:
+- React y React DOM
+- Vite para el bundling
+- Firebase para autenticación y storage
+- Librerías de utilidad y componentes
+- Herramientas de desarrollo
+
 </details>
-📦 Pre-requisitos
-Antes de comenzar, asegúrate de tener instalado:
 
-<div align="center"> <table> <tr> <td align="center" width="33%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" width="80" height="80" alt="Node.js"/> <br><br> <strong>Node.js</strong> <br> <sub>Versión estable actual</sub> <br> <sub>(v18.0 o superior recomendado)</sub> <br><br> <a href="https://nodejs.org/"> <img src="https://img.shields.io/badge/Descargar-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Download"/> </a> </td> <td align="center" width="33%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/npm/npm-original-wordmark.svg" width="80" height="80" alt="npm"/> <br><br> <strong>npm o Yarn</strong> <br> <sub>Gestor de paquetes</sub> <br> <sub>(Yarn recomendado)</sub> <br><br> <a href="https://yarnpkg.com/"> <img src="https://img.shields.io/badge/Descargar_Yarn-2C8EBB?style=for-the-badge&logo=yarn&logoColor=white" alt="Yarn"/> </a> </td> <td align="center" width="33%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" width="80" height="80" alt="Git"/> <br><br> <strong>Git</strong> <br> <sub>Control de versiones</sub> <br> <sub>(Última versión)</sub> <br><br> <a href="https://git-scm.com/"> <img src="https://img.shields.io/badge/Descargar-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git"/> </a> </td> </tr> </table> </div>
-🔐 Archivos de Configuración Requeridos
-El proyecto necesita los siguientes archivos:
+### Paso 2: Configurar variables de entorno
 
-route-manager/
-├── secrets/
-│   └── firebase-credentials.json    # 🔑 Credenciales de Firebase
-└── .env                              # ⚙️ Variables de entorno
-📝 Ejemplo de archivo .env:
+Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+
+```env
 # Firebase Configuration
-VITE_FIREBASE_API_KEY=tu_api_key_aqui
-VITE_FIREBASE_AUTH_DOMAIN=tu_proyecto.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=tu_project_id
-VITE_FIREBASE_STORAGE_BUCKET=tu_proyecto.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
-VITE_FIREBASE_APP_ID=tu_app_id
+VITE_FIREBASE_API_KEY=tu-api-key
+VITE_FIREBASE_AUTH_DOMAIN=tu-auth-domain
+VITE_FIREBASE_PROJECT_ID=tu-project-id
+VITE_FIREBASE_STORAGE_BUCKET=tu-storage-bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=tu-sender-id
+VITE_FIREBASE_APP_ID=tu-app-id
 
 # API Configuration
-VITE_API_BASE_URL=https://api.router-manager.com
-VITE_API_TIMEOUT=30000
+VITE_API_URL=https://api.router-manager.com
+```
 
-# Environment
-VITE_ENV=development
-⚠️ Importante: Nunca subas archivos .env o credenciales al repositorio. Asegúrate de que estén en el .gitignore.
+### Paso 3: Agregar credenciales de Firebase
 
-🛠️ Instalación
-📥 Paso 1: Instalar Dependencias
-<table> <tr> <td width="50%">
-Usando Yarn (Recomendado)
-yarn install
-Verifica la instalación:
+Coloca el archivo `credenciales-firebase.json` en la carpeta `/secrets`:
 
-yarn --version
-</td> <td width="50%">
-Usando npm
-npm install
-Verifica la instalación:
+```
+/secrets
+    └── credenciales-firebase.json
+```
 
-npm --version
-</td> </tr> </table>
-✅ Verificar Instalación Exitosa
-# Con Yarn
-yarn list --depth=0
+<div align="center">
 
-# Con npm
-npm list --depth=0
-<details> <summary>⚠️ <b>¿Problemas con la instalación?</b></summary>
-Prueba estos comandos para solucionar problemas comunes:
+### 🎉 ¡Listo! Ya puedes iniciar el proyecto
 
-# Limpiar caché de Yarn
-yarn cache clean
+</div>
 
-# Limpiar caché de npm
-npm cache clean --force
+---
 
-# Eliminar node_modules y package-lock
-rm -rf node_modules package-lock.json yarn.lock
+## 🏗️ Arquitectura del Proyecto
 
-# Reinstalar
-yarn install
-# o
-npm install
-</details>
-🏗️ Arquitectura del Proyecto
-Router Manager utiliza una arquitectura en capas modular que garantiza escalabilidad, mantenibilidad y separación de responsabilidades.
+Router Manager utiliza una arquitectura en capas basada en componentes, permitiendo mantener una estructura limpia, escalable y fácil de mantener.
 
+```
 src/
 │
-├── 🎨 components/              # Componentes React reutilizables
-│   ├── common/                 # Componentes compartidos (Buttons, Inputs, etc.)
-│   ├── layout/                 # Estructura de páginas (Header, Sidebar, Footer)
-│   ├── forms/                  # Formularios específicos
-│   └── ui/                     # Elementos de interfaz base
+├── components/          # Componentes reutilizables
+│   ├── common/         # Componentes genéricos (botones, inputs, etc.)
+│   ├── layout/         # Componentes de estructura (header, sidebar)
+│   └── features/       # Componentes específicos de funcionalidades
 │
-├── 📄 pages/                   # Páginas principales del sistema
-│   ├── Dashboard/              # Panel de control administrativo
-│   ├── Routes/                 # Gestión y visualización de rutas
-│   ├── Packages/               # Control de paquetes
-│   ├── Drivers/                # Administración de conductores
-│   ├── Reports/                # Reportes y analíticas
-│   └── Auth/                   # Login y autenticación
+├── pages/              # Páginas del sistema
+│   ├── Dashboard/      # Panel principal
+│   ├── Routes/         # Gestión de rutas
+│   ├── Packages/       # Gestión de paquetes
+│   └── Auth/           # Autenticación
 │
-├── 🔧 services/                # Lógica de negocio y APIs
-│   ├── api/                    # Consumo de servicios REST
-│   ├── firebase/               # Integración Firebase
-│   ├── gps/                    # Servicios de geolocalización
-│   └── auth/                   # Gestión de autenticación
+├── services/           # Lógica de negocio y consumo de APIs
+│   ├── api/           # Configuración de APIs
+│   ├── firebase/      # Servicios de Firebase
+│   └── storage/       # Gestión de almacenamiento
 │
-├── 🪝 hooks/                   # Custom React Hooks
-│   ├── useAuth.js              # Hook de autenticación
-│   ├── useRoutes.js            # Hook de gestión de rutas
-│   ├── usePackages.js          # Hook de paquetes
-│   └── useGPS.js               # Hook de geolocalización
+├── hooks/              # Hooks personalizados
+│   ├── useAuth.ts     # Hook de autenticación
+│   ├── useRoutes.ts   # Hook de rutas
+│   └── usePackages.ts # Hook de paquetes
 │
-├── 🎨 assets/                  # Recursos estáticos
-│   ├── images/                 # Imágenes e ilustraciones
-│   ├── icons/                  # Iconos SVG
-│   └── styles/                 # Estilos globales CSS/SCSS
+├── assets/             # Recursos estáticos
+│   ├── images/        # Imágenes
+│   ├── icons/         # Íconos
+│   └── styles/        # Estilos globales
 │
-├── 🛠️ utils/                   # Utilidades y helpers
-│   ├── validators.js           # Funciones de validación
-│   ├── formatters.js           # Formateadores de datos
-│   ├── constants.js            # Constantes globales
-│   └── helpers.js              # Funciones auxiliares
+├── utils/              # Utilidades generales
+│   ├── helpers/       # Funciones auxiliares
+│   ├── constants/     # Constantes del proyecto
+│   └── validators/    # Validadores
 │
-└── 🔐 secrets/                 # Credenciales (NO versionado)
-    └── firebase-credentials.json
+└── types/              # Definiciones de TypeScript
+    └── index.ts       # Tipos globales
 
-📄 .env                         # Variables de entorno
-📄 vite.config.ts               # Configuración de Vite
-📄 package.json                 # Dependencias del proyecto
-📄 .gitignore                   # Archivos ignorados por Git
-🎨 Patrones de Diseño Implementados
-<div align="center">
-Patrón	Descripción	Beneficio
-🧩 Component-Based	Arquitectura basada en componentes React	Reutilización y modularidad
-🪝 Custom Hooks	Lógica compartida en hooks personalizados	Separación de concerns
-🏗️ Service Layer	Capa de servicios para APIs	Testabilidad y mantenimiento
-⚛️ Atomic Design	Organización jerárquica de componentes	Escalabilidad y consistencia
-📦 Container/Presentational	Separación lógica y presentacional	Código más limpio
-</div>
-⚙️ Scripts Disponibles
-🚀 Modo Desarrollo
+secrets/                # Credenciales privadas (no versionado)
+    └── credenciales-firebase.json
+
+.env                    # Variables de entorno (no versionado)
+vite.config.ts          # Configuración de Vite
+tsconfig.json           # Configuración de TypeScript
+package.json            # Dependencias del proyecto
+```
+
+### 📁 Descripción de Carpetas Principales
+
+| Carpeta | Descripción |
+|---------|-------------|
+| **components/** | Componentes React reutilizables organizados por tipo |
+| **pages/** | Páginas principales de la aplicación |
+| **services/** | Lógica de negocio, llamadas a APIs y servicios externos |
+| **hooks/** | Custom hooks para lógica compartida |
+| **assets/** | Archivos estáticos (imágenes, estilos, íconos) |
+| **utils/** | Funciones auxiliares y utilidades |
+| **types/** | Definiciones de tipos TypeScript |
+
+---
+
+## 💻 Scripts Disponibles
+
+### 🚀 Desarrollo
+
+Iniciar el servidor de desarrollo con hot-reload:
+
+```bash
 # Con npm
 npm run dev
 
-# Con Yarn
+# Con yarn
 yarn dev
-<div align="center">
-🌐 Abre tu navegador en: http://localhost:5173
+```
 
-</div> <details> <summary>📋 <b>Características del modo desarrollo</b></summary>
-⚡ Hot Module Replacement (HMR) - Cambios instantáneos sin recargar
-🔍 Source Maps - Debugging facilitado
-🔥 Fast Refresh - Actualización automática de componentes
-🐛 Error Overlay - Errores visibles en el navegador
-📊 Console Logs - Información detallada en consola
-</details>
-🏗️ Build de Producción
+El proyecto estará disponible en `http://localhost:5173`
+
+### 🏗️ Producción
+
+Construir el proyecto para producción:
+
+```bash
 # Con npm
 npm run build
 
-# Con Yarn
+# Con yarn
 yarn build
-<details> <summary>📋 <b>Optimizaciones aplicadas</b></summary>
-📦 Minificación - Código comprimido y optimizado
-🗜️ Compresión - Assets comprimidos (gzip/brotli)
-🎯 Tree Shaking - Eliminación de código no utilizado
-📱 Code Splitting - Carga bajo demanda
-🖼️ Image Optimization - Imágenes optimizadas
-🚀 Lazy Loading - Carga diferida de componentes
-</details>
-👁️ Preview del Build
+```
+
+Este comando:
+- Compila el código TypeScript
+- Optimiza los assets
+- Genera el bundle en la carpeta `dist/`
+
+### 👀 Vista Previa
+
+Visualizar el build de producción localmente:
+
+```bash
 # Con npm
 npm run preview
 
-# Con Yarn
+# Con yarn
 yarn preview
-<div align="center">
-🌐 Previsualiza en: http://localhost:4173
+```
 
-</div>
-🧹 Otros Scripts Útiles
-# Linting y formato de código
-npm run lint          # Analizar código
-npm run lint:fix      # Corregir automáticamente
-npm run format        # Formatear con Prettier
+## 📦 Despliegue
 
-# Testing (si está configurado)
-npm run test          # Ejecutar pruebas
-npm run test:watch    # Modo watch
-npm run test:coverage # Reporte de cobertura
-🚀 Despliegue
-Despliegue en Vercel
+### 🌐 Deployment en Vercel
+
+Router Manager se despliega automáticamente en Vercel para un proceso ágil y sin complicaciones.
+
 <div align="center">
+
+```mermaid
 graph LR
-    A[Git Push] -->|Webhook| B[Vercel CI/CD]
-    B -->|Install| C[yarn install]
-    C -->|Build| D[yarn build]
-    D -->|Deploy| E[Production]
-    B -->|Branch| F[Preview URL]
-    
-    style A fill:#f9f,stroke:#333
-    style E fill:#9f9,stroke:#333
-    style F fill:#99f,stroke:#333
+    A[GitHub Repository] -->|Push| B[Vercel]
+    B -->|Auto Build| C[Preview/Production]
+    C -->|Deploy| D[https://router-manager.vercel.app]
+```
+
 </div>
-📝 Guía Paso a Paso:
-<table> <tr> <td width="5%" align="center">1️⃣</td> <td width="95%">
-Crear cuenta en Vercel
 
-Visita vercel.com
-Regístrate con tu cuenta de GitHub
-</td> </tr> <tr> <td align="center">2️⃣</td> <td>
-Subir proyecto a GitHub
+### 📋 Pasos para el Despliegue
 
+#### 1️⃣ Crear una cuenta en Vercel
+
+Visita [vercel.com](https://vercel.com) y crea una cuenta gratuita.
+
+#### 2️⃣ Subir el proyecto a GitHub
+
+```bash
 git add .
-git commit -m "Initial commit"
+git commit -m "Preparar proyecto para deployment"
 git push origin main
-</td> </tr> <tr> <td align="center">3️⃣</td> <td>
-Importar en Vercel
+```
 
-Clic en "New Project"
-Selecciona "Import Git Repository"
-Elige route-manager
-</td> </tr> <tr> <td align="center">4️⃣</td> <td>
-Configurar Build Settings
+#### 3️⃣ Conectar el repositorio en Vercel
 
-Framework Preset: Vite
-Build Command: yarn build
-Output Directory: dist
-Install Command: yarn install
-Node Version: 18.x
-</td> </tr> <tr> <td align="center">5️⃣</td> <td>
-Agregar Variables de Entorno
+1. En el dashboard de Vercel, haz clic en **"New Project"**
+2. Importa tu repositorio desde GitHub
+3. Vercel detectará automáticamente que es un proyecto Vite
 
-Ve a Project Settings → Environment Variables
-Agrega cada variable de tu archivo .env:
-VITE_FIREBASE_API_KEY = tu_api_key
-VITE_FIREBASE_AUTH_DOMAIN = tu_dominio
-VITE_API_BASE_URL = https://api.router-manager.com
-... (todas las demás)
-</td> </tr> <tr> <td align="center">6️⃣</td> <td>
-Conectar y Desplegar
+#### 4️⃣ Configurar los comandos de build
 
-Autoriza acceso a GitHub
-Clic en "Deploy"
-Vercel generará automáticamente la URL de producción
-</td> </tr> </table>
-🎯 URLs Generadas por Vercel
+Vercel detectará automáticamente la configuración, pero verifica que sea:
+
+- **Build Command:** `npm run build` o `yarn build`
+- **Output Directory:** `dist`
+- **Install Command:** `npm install` o `yarn install`
+
+#### 5️⃣ Agregar las variables de entorno
+
+En la configuración del proyecto en Vercel, agrega todas las variables del archivo `.env`:
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_API_URL
+```
+
+#### 6️⃣ Deploy
+
+Haz clic en **"Deploy"** y Vercel:
+- Clonará el repositorio
+- Instalará las dependencias
+- Ejecutará el build
+- Desplegará automáticamente
+
+### 🔄 Despliegue Continuo
+
+Una vez configurado, cada push a la rama principal desplegará automáticamente:
+
+- **Commits a `main`** → Producción
+- **Pull Requests** → Preview deployments
+- **Otras ramas** → Preview deployments (opcional)
+
+### 🔍 Monitoreo del Deploy
+
+Vercel proporciona:
+- ✅ Logs en tiempo real
+- 📊 Analytics de rendimiento
+- 🔗 URLs de preview para cada commit
+- 🚨 Notificaciones de errores
+
+> 💡 **Tip:** Conecta las notificaciones de Vercel con Slack o Discord para recibir actualizaciones del deploy en tiempo real.
+
+---
+
+## 🛠️ Tecnologías Usadas
+
 <div align="center">
-Tipo	Ejemplo	Propósito
-🌐 Production	router-manager.vercel.app	Versión estable principal
-🔍 Preview	route-manager-git-feature.vercel.app	Testing de branches
-💻 Development	localhost:5173	Desarrollo local
+
+### Stack Principal
+
+<table>
+<tr>
+<td align="center" width="25%">
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="80" height="80" alt="React"/>
+<br><strong>React 18+</strong>
+<br><sub>Librería de UI</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://vitejs.dev/logo.svg" width="80" height="80" alt="Vite"/>
+<br><strong>Vite 5.0+</strong>
+<br><sub>Build tool</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" width="80" height="80" alt="TypeScript"/>
+<br><strong>TypeScript 5.0+</strong>
+<br><sub>Lenguaje tipado</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://www.gstatic.com/devrel-devsite/prod/v2210deb8920cd4a55bd580441aa58e7853afc04b39a9d9ac4198e1cd7fbe04ef/firebase/images/touchicon-180.png" width="80" height="80" alt="Firebase"/>
+<br><strong>Firebase</strong>
+<br><sub>Backend services</sub>
+</td>
+</tr>
+</table>
+
+### Herramientas y Servicios
+
+| Categoría | Tecnología | Propósito |
+|-----------|------------|-----------|
+| 🎨 **UI/UX** | React + Vite | Interfaz de usuario reactiva y rápida |
+| 💻 **Lenguaje** | JavaScript / TypeScript | Lógica del sistema con tipado estático |
+| 🔐 **Autenticación** | Firebase Auth | Gestión de usuarios y sesiones |
+| 📦 **Storage** | Firebase Storage | Gestión y almacenamiento de archivos |
+| 🎨 **Estilos** | CSS / Tailwind CSS | Diseño responsive y moderno |
+| 🚀 **Deploy** | Vercel | Hosting y despliegue continuo |
+| 🔄 **Versionado** | Git & GitHub | Control de versiones |
+| 📱 **Responsivo** | Mobile First | Diseño adaptable a todos los dispositivos |
+
 </div>
-🔄 CI/CD Automático
-Cada push a GitHub activa automáticamente:
 
-✅ Análisis de código (Linting)
-🏗️ Build del proyecto
-🧪 Ejecución de tests (si existen)
-🚀 Deploy automático
-📧 Notificación de estado
-<details> <summary>💡 <b>Configuración avanzada de Vercel</b></summary>
-Crea un archivo vercel.json en la raíz del proyecto:
+### 🔥 Firebase Services
 
-{
-  "buildCommand": "yarn build",
-  "devCommand": "yarn dev",
-  "installCommand": "yarn install",
-  "framework": "vite",
-  "outputDirectory": "dist",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
-}
-</details>
-🛠️ Tecnologías Usadas
-<div align="center">
-🎨 Frontend Stack
-<table> <tr> <td align="center" width="20%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="80" height="80" alt="React"/> <br><br> <strong>React</strong> <br> <sub>v18.0+</sub> <br> <sub>Librería UI principal</sub> </td> <td align="center" width="20%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vitejs/vitejs-original.svg" width="80" height="80" alt="Vite"/> <br><br> <strong>Vite</strong> <br> <sub>v5.0+</sub> <br> <sub>Build tool ultrarrápido</sub> </td> <td align="center" width="20%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" width="80" height="80" alt="TypeScript"/> <br><br> <strong>TypeScript</strong> <br> <sub>v5.0+</sub> <br> <sub>Tipado estático</sub> </td> <td align="center" width="20%"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="80" height="80" alt="JavaScript"/> <br><br> <strong>JavaScript</strong> <br> <sub>ES6+</sub> <br> <sub>Lenguaje base</sub> </td> <td align="center" width="20%"> <img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" width="80" height="80" alt="Tailwind"/> <br><br> <strong>Tailwind CSS</strong> <br> <sub>v3.0+</sub> <br> <sub>Framework CSS</sub> </td> </tr> </table>
-🔥 Backend & Servicios
-<table> <tr> <td align="center" width="33%"> <img src="https://www.vectorlogo.zone/logos/firebase/firebase-icon.svg" width="100" height="100" alt="Firebase"/> <br><br> <strong>Firebase</strong> <br> <sub>Backend as a Service</sub> <br><br> <code>Realtime Database</code> <code>Firestore</code> </td> <td align="center" width="33%"> <img src="https://www.vectorlogo.zone/logos/firebase/firebase-icon.svg" width="100" height="100" alt="Storage"/> <br><br> <strong>Firebase Storage</strong> <br> <sub>Gestión de archivos</sub> <br><br> <code>Images</code> <code>Documents</code> </td> <td align="center" width="33%"> <img src="https://www.vectorlogo.zone/logos/firebase/firebase-icon.svg" width="100" height="100" alt="Auth"/> <br><br> <strong>Firebase Auth</strong> <br> <sub>Autenticación</sub> <br><br> <code>Email/Password</code> <code>OAuth</code> </td> </tr> </table>
-🛠️ Herramientas de Desarrollo
-Categoría	Tecnología	Versión	Propósito
-📦 Package Manager	Yarn / npm	Latest	Gestión de dependencias
-🔧 Build Tool	Vite	5.0+	Bundling y HMR
-🎨 Linting	ESLint	8.0+	Análisis de código
-💅 Formatting	Prettier	3.0+	Formato consistente
-🚀 Deployment	Vercel	Latest	Hosting y CI/CD
-🔄 Version Control	Git + GitHub	Latest	Control de versiones
-🧪 Testing	Vitest / Jest	Latest	Testing framework
-🗺️ Maps	Google Maps API	Latest	Geolocalización
-</div>
-📌 Versionado
-Este proyecto utiliza Versionado Semántico (SemVer) con Git Tags y GitHub Releases.
+El proyecto integra los siguientes servicios de Firebase:
 
-📊 Convención de Versiones
-v[MAJOR].[MINOR].[PATCH]
+- **Firebase Authentication:** Manejo de autenticación de usuarios
+- **Firebase Storage:** Almacenamiento de archivos y documentos
+- **Firebase Firestore:** Base de datos en tiempo real (si aplica)
+- **Firebase Hosting:** Alternativa de hosting (opcional)
 
-Ejemplo: v1.2.3
-<div align="center">
-Componente	Cuándo incrementar	Ejemplo
-🔴 MAJOR	Cambios incompatibles con versiones anteriores	v1.0.0 → v2.0.0
-🟡 MINOR	Nueva funcionalidad compatible	v1.0.0 → v1.1.0
-🟢 PATCH	Correcciones de bugs	v1.0.0 → v1.0.1
-</div>
-📋 Historial de Versiones
-<details> <summary><b>Ver todas las versiones</b></summary>
-Versión	Fecha	Cambios Principales	Estado
-v1.0.0	Dic 2024	🎉 Lanzamiento inicial del proyecto	✅ Estable
-v1.1.0	Ene 2025	✨ Sistema de notificaciones push	✅ Estable
-v1.1.1	Ene 2025	🐛 Corrección de bugs menores	✅ Estable
-v1.2.0	Feb 2025	🚀 Optimización de rendimiento	🔄 Desarrollo
-</details>
-🏷️ Crear un Nuevo Release
+---
+
+## 📌 Versionado
+
+El versionado del proyecto se realiza siguiendo las mejores prácticas de control de versiones:
+
+### Estrategia de Versionado
+
+Utilizamos **Semantic Versioning (SemVer)** con el formato `MAJOR.MINOR.PATCH`:
+
+- **MAJOR:** Cambios incompatibles con versiones anteriores
+- **MINOR:** Nueva funcionalidad compatible con versiones anteriores
+- **PATCH:** Correcciones de bugs compatibles
+
+### 🏷️ Tags en Git
+
+Cada versión importante se marca con un tag:
+
+```bash
 # Crear un nuevo tag
-git tag -a v1.2.0 -m "Release v1.2.0: Nueva funcionalidad de reportes"
+git tag -a v1.0.0 -m "Versión 1.0.0 - Release inicial"
 
-# Subir el tag a GitHub
-git push origin v1.2.0
+# Subir el tag al repositorio
+git push origin v1.0.0
 
-# O subir todos los tags
-git push --tags
-📝 Gestión mediante Git Tags y Releases
-Git Tags: Se utilizan para marcar versiones específicas en el código
-GitHub Releases: Se crean releases en GitHub para documentar cambios importantes
-✒️ Autores
+# Listar todos los tags
+git tag -l
+```
+
+### 📦 Releases en GitHub
+
+Cada versión se documenta en GitHub Releases con:
+
+- 📝 Notas de la versión (changelog)
+- 🐛 Bugs corregidos
+- ✨ Nuevas funcionalidades
+- ⚠️ Breaking changes
+- 📦 Assets descargables (si aplica)
+
+### 📊 Historial de Versiones
+
+| Versión | Fecha | Descripción |
+|---------|-------|-------------|
+| v1.0.0 | 2024 | Release inicial con funcionalidades core |
+
+---
+
+## ✒️ Autores
+
 <div align="center">
-👥 Equipo de Desarrollo Router Manager
 
-<table> <tr> <td align="center" width="33%"> <a href="https://github.com/juancapera26"> <img src="https://github.com/juancapera26.png" width="150px;" alt="Juan Capera" style="border-radius: 50%; border: 3px solid #4CAF50;"/><br> <sub><b>Juan Capera</b></sub> </a> <br><br> <sub>🎯 <strong>Líder del Proyecto</strong></sub> <br> <sub>💻 Full Stack Developer</sub> <br> <sub>🏗️ Arquitectura & Backend</sub> <br><br> <a href="https://github.com/juancapera26" title="GitHub"> <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/> </a> <br> <a href="mailto:juan@routermanager.com" title="Email"> <img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"/> </a> <br> <a href="https://linkedin.com/in/juancapera26" title="LinkedIn"> <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/> </a> </td> <td align="center" width="33%"> <a href="https://github.com/jairduarte"> <img src="https://github.com/jairduarte.png" width="150px;" alt="Jair Duarte" style="border-radius: 50%; border: 3px solid #2196F3;"/><br> <sub><b>Jair Duarte</b></sub> </a> <br><br> <sub>⚡ <strong>Frontend Developer</strong></sub> <br> <sub>🎨 UI/UX Specialist</sub> <br> <sub>📱 Mobile Optimization</sub> <br><br> <a href="https://github.com/jairduarte" title="GitHub"> <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/> </a> <br> <a href="mailto:jair@routermanager.com" title="Email"> <img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"/> </a> <br> <a href="https://linkedin.com/in/jairduarte" title="LinkedIn"> <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/> </a> </td> <td align="center" width="33%"> <a href="https://github.com/josebecerra"> <img src="https://github.com/josebecerra.png" width="150px;" alt="Jose Becerra" style="border-radius: 50%; border: 3px solid #FF9800;"/><br> <sub><b>José Becerra</b></sub> </a> <br><br> <sub>🔧 <strong>Backend Developer</strong></sub> <br> <sub  
+### 👥 Equipo de Desarrollo
+
+<table>
+<tr>
+<td align="center">
+<a href="https://github.com/juancapera26">
+<img src="https://github.com/juancapera26.png" width="120px;" alt="Juan Capera"/><br>
+<sub><b>Juan Capera</b></sub>
+</a><br>
+<sub>🚀 Líder del Proyecto</sub><br>
+<sub>Full Stack Developer</sub><br>
+<a href="https://github.com/juancapera26">💻</a>
+<a href="mailto:juan@example.com">📧</a>
+</td>
+<td align="center">
+<a href="https://github.com/jairduarte">
+<img src="https://github.com/jairduarte.png" width="120px;" alt="Jair Duarte"/><br>
+<sub><b>Jair Duarte</b></sub>
+</a><br>
+<sub>👨‍💻 Desarrollador</sub><br>
+<sub>Full Stack Developer</sub><br>
+<a href="https://github.com/jairduarte">💻</a>
+<a href="mailto:jair@example.com">📧</a>
+</td>
+<td align="center">
+<a href="https://github.com/josebecerra">
+<img src="https://github.com/josebecerra.png" width="120px;" alt="José Becerra"/><br>
+<sub><b>José Becerra</b></sub>
+</a><br>
+<sub>👨‍💻 Desarrollador</sub><br>
+<sub>Full Stack Developer</sub><br>
+<a href="https://github.com/josebecerra">💻</a>
+<a href="mailto:jose@example.com">📧</a>
+</td>
+</tr>
+</table>
+
+### 🤝 Contribuciones
+
+Cada miembro del equipo contribuyó en:
+
+- **Juan Capera:** Arquitectura del proyecto, desarrollo principal, coordinación del equipo
+- **Jair Duarte:** Desarrollo de funcionalidades core, integración de APIs
+- **José Becerra:** Diseño de componentes, optimización de rendimiento
+
+</div>
+</div>
