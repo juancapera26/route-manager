@@ -1,56 +1,154 @@
-# React + TypeScript + Vite
+Router Manager – Plataforma de Gestión Logística
 
-![CI](https://github.com/juancapera26/route-manager/actions/workflows/main.yml/badge.svg)
+Router Manager es una plataforma web para gestión de rutas, paquetes, seguimiento GPS en tiempo real y monitoreo logístico.
+Su objetivo es optimizar tiempos de entrega, reducir costos operativos y mejorar el flujo de trabajo de empresas de mensajería y transporte.
+Todas las funcionalidades fueron diseñadas según las problemáticas reales de los conductores y administradores logísticos.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ Tabla de Contenidos
 
-Currently, two official plugins are available:
+Comenzando
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Pre-requisitos
 
-## Expanding the ESLint configuration
+Instalación
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Arquitectura del Proyecto
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
+Scripts Disponibles
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Despliegue
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+Tecnologías Usadas
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
-```
+Versionado
+
+Autores
+
+Licencia
+
+Comenzando
+
+Para clonar el repositorio, usa alguna de las opciones disponibles en GitHub (HTTPS, SSH o GitHub CLI):
+
+Repositorio:
+
+https://github.com/juancapera26/route-manager.git
+
+
+Clona el proyecto ejecutando:
+
+git clone https://github.com/juancapera26/route-manager.git
+
+
+Una vez clonado, tendrás el proyecto en tu entorno local.
+
+ Pre-requisitos
+
+Antes de instalar las dependencias, asegúrate de tener:
+
+Node.js (versión estable actual)
+
+npm o yarn
+
+Acceso a las variables de entorno
+
+El proyecto requiere:
+
+/secrets
+    └── credenciales Firebase
+.env          # Variables privadas backend/frontend
+
+Instalación
+
+Instala las dependencias con:
+
+yarn install
+
+
+o:
+
+npm install
+
+ Arquitectura del Proyecto
+
+Router Manager utiliza una arquitectura en capas, permitiendo mantener una estructura limpia y escalable.
+
+src/
+│── components/     # Componentes reutilizables
+│── pages/          # Páginas del sistema
+│── services/       # Lógica de negocio y consumo de APIs
+│── hooks/          # Hooks personalizados
+│── assets/         # Imágenes, íconos, estilos
+│── utils/          # Utilidades generales
+secrets/            # Credenciales privadas
+.env                # Variables de entorno
+vite.config.ts
+
+▶️ Scripts Disponibles
+
+Ejecutar en modo desarrollo:
+
+npm run dev
+
+
+Construir para producción:
+
+npm run build
+
+
+Visualizar el build:
+
+npm run preview
+
+🌐 Despliegue (Deployment)
+
+Para desplegar el proyecto en Vercel:
+
+Crear una cuenta en Vercel
+
+Subir el proyecto a GitHub
+
+Configurar los comandos de build
+
+Agregar las variables de entorno necesarias
+
+Conectar el repositorio
+
+Vercel generará automáticamente la versión en producción
+
+🛠️ Construido con
+
+Estas son las tecnologías principales utilizadas:
+
+React + Vite – Interfaz de usuario
+
+JavaScript / TypeScript – Lógica del sistema
+
+Firebase Storage – Gestión de archivos
+
+Firebase Auth (si aplica)
+
+CSS / Tailwind (si aplica)
+
+ Versionado
+
+El versionado del proyecto se realiza mediante:
+
+Tags en Git
+
+Releases en GitHub
+
+ Autores
+
+Participantes del proyecto:
+
+Juan Capera – Desarrollo principal / Líder del proyecto
+
+Jair Duarte – Desarrollo
+
+José Becerra – Desarrollo
+
+Licencia
+
+Este proyecto está bajo una licencia abierta (recomendado: MIT).
+Consulta el archivo LICENSE para más detalles.
