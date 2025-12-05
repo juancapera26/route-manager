@@ -6,10 +6,10 @@ import { RutaEstado } from "../../../global/types/rutas";
 
 interface Props {
   routes: Ruta[];
-  onAssign: () => void; // 👈 Ya no recibe parámetros, se ejecuta directamente
+  onAssign: () => void; // Ejecuta directamente
   onClose: () => void;
   isOpen: boolean;
-  onSelectRoute: (codManifiesto: string) => void; // 👈 Ahora recibe cod_manifiesto (string)
+  onSelectRoute: (codManifiesto: string) => void; // Recibe cod_manifiesto
 }
 
 export default function AssignRouteModal({
@@ -19,13 +19,17 @@ export default function AssignRouteModal({
   isOpen,
   onSelectRoute,
 }: Props) {
-  // Filtrar solo las rutas con estado "Pendiente"
   const filteredRoutes = routes.filter(
     (r) => r.estado_ruta === RutaEstado.Pendiente
   );
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Asignar Ruta">
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Asignar Ruta"
+      className="max-w-2xl w-full" // sobrescribe el predeterminado
+    >
       <div className="space-y-6">
         {/* Título y descripción */}
         <p className="text-gray-700 dark:text-gray-300 mb-6 text-center">
@@ -46,9 +50,12 @@ export default function AssignRouteModal({
             <tbody>
               {filteredRoutes.length > 0 ? (
                 filteredRoutes.map((r) => (
-                  <tr key={r.id_ruta} className="border-b hover:bg-blue-50 transition-colors">
+                  <tr
+                    key={r.id_ruta}
+                    className="border-b hover:bg-blue-50 transition-colors"
+                  >
                     <td className="px-6 py-4 text-gray-700 font-mono font-semibold">
-                      {r.cod_manifiesto || 'N/A'}
+                      {r.cod_manifiesto || "N/A"}
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-3 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded-full">
@@ -56,24 +63,25 @@ export default function AssignRouteModal({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
-                      {r.fecha_creacion 
-                        ? new Date(r.fecha_creacion).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })
-                        : 'N/A'}
+                      {r.fecha_creacion
+                        ? new Date(r.fecha_creacion).toLocaleDateString(
+                            "es-ES",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )
+                        : "N/A"}
                     </td>
                     <td className="px-6 py-4">
                       <Button
                         variant="primary"
                         onClick={() => {
-                          // 👈 Primero selecciona la ruta (guarda cod_manifiesto)
                           onSelectRoute(r.cod_manifiesto!);
-                          // 👈 Luego ejecuta la asignación
                           onAssign();
                         }}
-                        disabled={!r.cod_manifiesto} // Deshabilitar si no hay código
+                        disabled={!r.cod_manifiesto}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Asignar
@@ -103,7 +111,8 @@ export default function AssignRouteModal({
                       </svg>
                       <p>No hay rutas pendientes para asignar.</p>
                       <p className="text-sm text-gray-400">
-                        Todas las rutas han sido asignadas o no existen rutas disponibles.
+                        Todas las rutas han sido asignadas o no existen rutas
+                        disponibles.
                       </p>
                     </div>
                   </td>

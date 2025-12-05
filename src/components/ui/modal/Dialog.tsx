@@ -4,7 +4,7 @@ interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  className?: string;
+  className?: string; // ✅ Puedes pasar max-w-* o w-* aquí
   children: React.ReactNode;
   showCloseButton?: boolean;
 }
@@ -13,7 +13,7 @@ export const Dialog: React.FC<DialogProps> = ({
   isOpen,
   onClose,
   title,
-  className,
+  className = "",
   children,
   showCloseButton = true,
 }) => {
@@ -40,7 +40,7 @@ export const Dialog: React.FC<DialogProps> = ({
       {/* Contenedor del diálogo */}
       <div
         ref={dialogRef}
-        className={`relative z-50 w-full max-w-md rounded-xl bg-white shadow-2xl dark:bg-gray-800 transition-all duration-300 transform animate-in fade-in-0 zoom-in-95 p-6 ${className}`}
+        className={`relative z-50 w-full rounded-xl bg-white shadow-2xl dark:bg-gray-800 transition-all duration-300 transform animate-in fade-in-0 zoom-in-95 p-6 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Botón de cierre */}
