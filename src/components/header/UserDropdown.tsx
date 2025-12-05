@@ -1,4 +1,5 @@
 // src/components/header/UserDropdown.tsx
+
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
 import useAuth from "../../hooks/useAuth";
@@ -41,10 +42,11 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
+  // Endpoint del perfil según rol
   const endpointPerfil =
     role === "1" ? "/admin/profile" : role === "2" ? "/driver/profile" : "/";
 
-  // ✅ función que acepta null o undefined
+  // Nombre del rol
   const getRoleName = (role: string | null | undefined) => {
     switch (role) {
       case "1":
@@ -113,6 +115,7 @@ export default function UserDropdown() {
         </div>
 
         <ul className="mt-2 flex flex-col gap-1 pb-3 border-b border-gray-200 dark:border-gray-800">
+          {/* PERFIL */}
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
@@ -123,20 +126,23 @@ export default function UserDropdown() {
               Perfil
             </DropdownItem>
           </li>
+
+          {/* MANUAL DE USUARIO */}
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="mailto:soporte@tudominio.com?subject=Necesito%20ayuda&body=Hola%2C%20necesito%20asistencia%20con..."
-              target="_blank"
-              rel="noopener noreferrer"
+              to={
+                role === "2" ? "/driver/manualusuario" : "/admin/manualusuario"
+              }
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              Soporte
+              Manual de Usuario
             </DropdownItem>
           </li>
         </ul>
 
+        {/* CERRAR SESIÓN */}
         <Link
           to="#"
           className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"

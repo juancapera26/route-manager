@@ -33,7 +33,7 @@ import DriverProfile from "./pages/profile/DriverProfile";
 
 import { MapDriver } from "./pages/driver/MapDriver";
 import { NoveltyManagement } from "./pages/admin/Novedad";
-
+import ManualUsuario from "./components/header/ManualUsuario";
 
 function App() {
   return (
@@ -63,6 +63,9 @@ function App() {
             />
             <Route path="delivery-history" element={<DeliveryHistory />} />
             <Route path="novedades" element={<NoveltyManagement />} />
+
+            {/* ⭐ IMPORTANTE — Ruta para Admin del Manual de Usuario */}
+            <Route path="manualusuario" element={<ManualUsuario />} />
           </Route>
         </Route>
 
@@ -71,6 +74,9 @@ function App() {
           <Route path="/driver" element={<AppLayout_home />}>
             <Route index element={<MapDriver />} />
             <Route path="profile" element={<DriverProfile />} />
+
+            {/* ⭐ Ruta para Conductor del Manual de Usuario */}
+            <Route path="manualusuario" element={<ManualUsuario />} />
           </Route>
         </Route>
 

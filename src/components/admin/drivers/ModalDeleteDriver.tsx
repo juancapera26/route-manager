@@ -42,7 +42,12 @@ const ModalDeleteDriver: React.FC<ModalEliminarConductorProps> = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Eliminar Conductor">
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Eliminar Conductor"
+      className="max-w-2xl w-full" // sobrescribe el predeterminado
+    >
       <div className="flex items-center gap-2 mb-4">
         <div className="p-2 bg-red-500/10 rounded-lg">
           <Trash2 className="w-5 h-5 text-red-600" />

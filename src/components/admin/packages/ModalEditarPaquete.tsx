@@ -4,7 +4,11 @@ import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import Input from "../../form/input/InputField";
-import { Paquete, TipoPaquete, PaqueteUpdate } from "../../../global/types/paquete.types";
+import {
+  Paquete,
+  TipoPaquete,
+  PaqueteUpdate,
+} from "../../../global/types/paquete.types";
 import { Edit } from "lucide-react";
 import { toast } from "sonner";
 
@@ -134,17 +138,14 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
         ...prev,
         [name]: Math.max(0, Number(value)),
       }));
-    } 
-    else if (["cantidad", "valor_declarado"].includes(name)) {
+    } else if (["cantidad", "valor_declarado"].includes(name)) {
       setFormData((prev) => ({ ...prev, [name]: Math.max(0, Number(value)) }));
-    } 
-    else if (name === "tipo_paquete") {
+    } else if (name === "tipo_paquete") {
       setFormData((prev) => ({
         ...prev,
         tipo_paquete: value as TipoPaquete,
       }));
-    } 
-    else {
+    } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -175,7 +176,7 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
 
     try {
       const success = await onSuccess(paquete.id_paquete, payload);
-      
+
       if (success) {
         toast.success("¡Paquete actualizado exitosamente!");
         setErrors({});
@@ -209,221 +210,159 @@ const ModalEditarPaquete: React.FC<ModalEditarPaqueteProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Datos del destinatario (solo lectura) */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-yellow-300 dark:border-yellow-600">
-            <div className="flex items-center gap-2 mb-4">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Datos del destinatario
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-white-300 dark:border-white-600">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                Información del paquete
               </h4>
-              <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded">
-                Solo lectura
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Nombre</Label>
-                <Input
-                  name="nombre"
-                  value={formData.nombre}
-                  disabled
-                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Los datos del cliente no se pueden editar aquí
-                </p>
-              </div>
-              
-              <div>
-                <Label>Apellido</Label>
-                <Input
-                  name="apellido"
-                  value={formData.apellido}
-                  disabled
-                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Tipo de paquete</Label>
+                  <select
+                    name="tipo_paquete"
+                    value={formData.tipo_paquete}
+                    onChange={handleInputChange}
+                    className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    disabled={isLoading}
+                  >
+                    {Object.values(TipoPaquete).map((tipo) => (
+                      <option key={tipo} value={tipo}>
+                        {tipo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label>Cantidad *</Label>
+                  <Input
+                    type="number"
+                    name="cantidad"
+                    placeholder="0"
+                    value={formData.cantidad === 0 ? "" : formData.cantidad}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="100"
+                    className={errors.cantidad ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.cantidad && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.cantidad}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Valor declarado (COP)</Label>
+                  <Input
+                    type="number"
+                    name="valor_declarado"
+                    placeholder="0"
+                    value={
+                      formData.valor_declarado === 0
+                        ? ""
+                        : formData.valor_declarado
+                    }
+                    onChange={handleInputChange}
+                    min="0"
+                    step={1000}
+                    className={errors.valor_declarado ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.valor_declarado && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.valor_declarado}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="mt-4">
-              <Label>Dirección</Label>
-              <Input
-                name="direccion"
-                value={formData.direccion}
-                disabled
-                className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-              />
-            </div>
+            {/* Dimensiones del paquete */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                Dimensiones del paquete
+              </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <Label>Correo electrónico</Label>
-                <Input
-                  type="email"
-                  name="correo"
-                  value={formData.correo}
-                  disabled
-                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                />
-              </div>
-              
-              <div>
-                <Label>Teléfono</Label>
-                <Input
-                  type="tel"
-                  name="telefono"
-                  value={formData.telefono}
-                  disabled
-                  className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <Label>Largo (cm)</Label>
+                  <Input
+                    type="number"
+                    name="largo"
+                    placeholder="0"
+                    value={formData.largo === 0 ? "" : formData.largo}
+                    onChange={handleInputChange}
+                    min="0"
+                    step={0.1}
+                    className={errors.largo ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.largo && (
+                    <p className="text-red-500 text-xs mt-1">{errors.largo}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Ancho (cm)</Label>
+                  <Input
+                    type="number"
+                    name="ancho"
+                    placeholder="0"
+                    value={formData.ancho === 0 ? "" : formData.ancho}
+                    onChange={handleInputChange}
+                    min="0"
+                    step={0.1}
+                    className={errors.ancho ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.ancho && (
+                    <p className="text-red-500 text-xs mt-1">{errors.ancho}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Alto (cm)</Label>
+                  <Input
+                    type="number"
+                    name="alto"
+                    placeholder="0"
+                    value={formData.alto === 0 ? "" : formData.alto}
+                    onChange={handleInputChange}
+                    min="0"
+                    step={0.1}
+                    className={errors.alto ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.alto && (
+                    <p className="text-red-500 text-xs mt-1">{errors.alto}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Peso (kg)</Label>
+                  <Input
+                    type="number"
+                    name="peso"
+                    placeholder="0"
+                    value={formData.peso === 0 ? "" : formData.peso}
+                    onChange={handleInputChange}
+                    min="0"
+                    step={0.1}
+                    className={errors.peso ? "border-red-500" : ""}
+                    disabled={isLoading}
+                  />
+                  {errors.peso && (
+                    <p className="text-red-500 text-xs mt-1">{errors.peso}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Información del paquete */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Información del paquete
-            </h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label>Tipo de paquete</Label>
-                <select
-                  name="tipo_paquete"
-                  value={formData.tipo_paquete}
-                  onChange={handleInputChange}
-                  className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                  disabled={isLoading}
-                >
-                  {Object.values(TipoPaquete).map((tipo) => (
-                    <option key={tipo} value={tipo}>
-                      {tipo}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label>Cantidad *</Label>
-                <Input
-                  type="number"
-                  name="cantidad"
-                  placeholder="0"
-                  value={formData.cantidad === 0 ? "" : formData.cantidad}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="100"
-                  className={errors.cantidad ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.cantidad && (
-                  <p className="text-red-500 text-xs mt-1">{errors.cantidad}</p>
-                )}
-              </div>
-
-              <div>
-                <Label>Valor declarado (COP)</Label>
-                <Input
-                  type="number"
-                  name="valor_declarado"
-                  placeholder="0"
-                  value={formData.valor_declarado === 0 ? "" : formData.valor_declarado}
-                  onChange={handleInputChange}
-                  min="0"
-                  step={1000}
-                  className={errors.valor_declarado ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.valor_declarado && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.valor_declarado}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Dimensiones del paquete */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-              Dimensiones del paquete
-            </h4>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <Label>Largo (cm)</Label>
-                <Input
-                  type="number"
-                  name="largo"
-                  placeholder="0"
-                  value={formData.largo === 0 ? "" : formData.largo}
-                  onChange={handleInputChange}
-                  min="0"
-                  step={0.1}
-                  className={errors.largo ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.largo && (
-                  <p className="text-red-500 text-xs mt-1">{errors.largo}</p>
-                )}
-              </div>
-
-              <div>
-                <Label>Ancho (cm)</Label>
-                <Input
-                  type="number"
-                  name="ancho"
-                  placeholder="0"
-                  value={formData.ancho === 0 ? "" : formData.ancho}
-                  onChange={handleInputChange}
-                  min="0"
-                  step={0.1}
-                  className={errors.ancho ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.ancho && (
-                  <p className="text-red-500 text-xs mt-1">{errors.ancho}</p>
-                )}
-              </div>
-
-              <div>
-                <Label>Alto (cm)</Label>
-                <Input
-                  type="number"
-                  name="alto"
-                  placeholder="0"
-                  value={formData.alto === 0 ? "" : formData.alto}
-                  onChange={handleInputChange}
-                  min="0"
-                  step={0.1}
-                  className={errors.alto ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.alto && (
-                  <p className="text-red-500 text-xs mt-1">{errors.alto}</p>
-                )}
-              </div>
-
-              <div>
-                <Label>Peso (kg)</Label>
-                <Input
-                  type="number"
-                  name="peso"
-                  placeholder="0"
-                  value={formData.peso === 0 ? "" : formData.peso}
-                  onChange={handleInputChange}
-                  min="0"
-                  step={0.1}
-                  className={errors.peso ? "border-red-500" : ""}
-                  disabled={isLoading}
-                />
-                {errors.peso && (
-                  <p className="text-red-500 text-xs mt-1">{errors.peso}</p>
-                )}
-              </div>
-            </div>
-          </div>
 
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
