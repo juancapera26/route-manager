@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Alert from "../../components/ui/alert/Alert";
 import Button from "../../components/ui/button/Button";
-import { Modal } from "../../components/ui/modal";
 import Badge from "../../components/ui/badge/Badge";
 import { Camera } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { updateFotoPerfil } from "../../global/services/driverService";
 import { API_URL } from "../../config";
+import EditProfile from "./editProfile";
 
 // Componente de carga
 const CustomLoader = () => {
@@ -109,6 +109,11 @@ const PerfilAdmin = () => {
   }
 
   const rolTexto = "Administrador";
+
+  // Si el modal está abierto, mostrar el componente EditProfile
+  if (isModalOpen) {
+    return <EditProfile onVolver={() => setIsModalOpen(false)} />;
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -216,14 +221,6 @@ const PerfilAdmin = () => {
           </div>
         </section>
       </div>
-
-      {/* Modal para editar perfil */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Editar Perfil</h2>
-          <p>Funcionalidad en desarrollo...</p>
-        </div>
-      </Modal>
     </div>
   );
 };
