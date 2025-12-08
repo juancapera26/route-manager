@@ -61,6 +61,10 @@ const useAuth = () => {
             },
           });
 
+          console.log("🔍 Response status:", response.status);
+          console.log("🔍 Response ok:", response.ok);
+
+
           if (!response.ok) throw new Error("Backend no validó al usuario");
 
           const data = await response.json();
@@ -171,6 +175,7 @@ const useAuth = () => {
       const data = await response.json();
       const userData = data.data;
 
+      // Verificar si userData existe
       setRole(userData.role?.toString() || null);
       setNombre(userData.nombre || null);
       setApellido(userData.apellido || null);
