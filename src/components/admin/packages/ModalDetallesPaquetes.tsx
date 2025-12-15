@@ -14,6 +14,8 @@ export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({
   detallesPaquete, 
   cerrarModalDetalles 
 }) => {
+  console.log("DETALLES PAQUETE:", detallesPaquete);
+
   return (
     <Modal isOpen={!!detallesPaquete} onClose={cerrarModalDetalles}>
       {detallesPaquete && (
@@ -164,6 +166,66 @@ export const ModalDetallesPaquetes: React.FC<ModalDetallesProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Información del Remitente */}
+        {(detallesPaquete.remitente_nombre ||
+          detallesPaquete.remitente_telefono ||
+          detallesPaquete.remitente_correo ||
+          detallesPaquete.remitente_empresa) && (
+          <div className="md:col-span-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mt-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+              <User className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" />
+              Información del Remitente
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {detallesPaquete.remitente_nombre && (
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Nombre completo
+                  </span>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                    {detallesPaquete.remitente_nombre}{' '}
+                    {detallesPaquete.remitente_apellido}
+                  </p>
+                </div>
+              )}
+
+              {detallesPaquete.remitente_telefono && (
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Teléfono
+                  </span>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                    {detallesPaquete.remitente_telefono}
+                  </p>
+                </div>
+              )}
+
+              {detallesPaquete.remitente_correo && (
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Correo electrónico
+                  </span>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                    {detallesPaquete.remitente_correo}
+                  </p>
+                </div>
+              )}
+
+              {detallesPaquete.remitente_empresa && (
+                <div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Empresa
+                  </span>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                    {detallesPaquete.remitente_empresa}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
             {/* Dirección de entrega (si es diferente) */}
             {detallesPaquete.direccion_entrega && (

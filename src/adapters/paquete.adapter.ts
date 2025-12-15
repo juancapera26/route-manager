@@ -20,6 +20,12 @@ interface PaqueteFromAPI {
   lng?: number | null;
   valor_declarado: number;
   cantidad: number;
+  remitente_nombre?: string | null;
+  remitente_apellido?: string | null;
+  remitente_telefono?: string | null;
+  remitente_correo?: string | null;
+  remitente_empresa?: string | null;
+  
   
   cliente?: {
     id_cliente: number;
@@ -91,6 +97,13 @@ export function mapApiToPaquete(apiResponse: PaqueteFromAPI): Paquete {
     direccion_entrega: apiResponse.direccion_entrega,
     lat: apiResponse.lat,
     lng: apiResponse.lng,
+
+  remitente_nombre: apiResponse.remitente_nombre,
+  remitente_apellido: apiResponse.remitente_apellido,
+  remitente_telefono: apiResponse.remitente_telefono,
+  remitente_empresa: apiResponse.remitente_empresa,
+  remitente_correo: apiResponse.remitente_correo,
+
     
     id_cliente: apiResponse.id_cliente,
     id_ruta: apiResponse.id_ruta,

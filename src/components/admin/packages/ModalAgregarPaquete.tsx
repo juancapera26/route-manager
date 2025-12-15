@@ -19,6 +19,7 @@ interface ModalAgregarPaqueteProps {
       correo: string;
       telefono: string;
     };
+
     tipo_paquete: TipoPaquete;
     cantidad: number;
     valor_declarado: number;
@@ -30,8 +31,8 @@ interface ModalAgregarPaqueteProps {
     };
     lat: number;
     lng: number;
+    
   }) => Promise<boolean>;
-
   isLoading?: boolean;
 }
 
@@ -49,9 +50,15 @@ interface FormErrors {
     alto?: string;
     peso?: string;
   };
+  remitente?: {
+    nombre?: string;
+    apellido?: string;
+    telefono?: string;
+    correo?: string;
+    // ❌ empresa NO va aquí porque es opcional
+  };
 }
 
-// 🗺️ Tipo para la respuesta de Google Maps Geocoding API
 interface GeocodeResponse {
   results: Array<{
     geometry: {
@@ -81,43 +88,41 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
     cantidad: 1,
     valor_declarado: 0,
     dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+    // ✅ Nuevos campos del remitente
+    remitente: {
+      nombre: "",
+      apellido: "",
+      telefono: "",
+      empresa: "",
+      correo: "",
+    },
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [latLng, setLatLng] = useState({ lat: 0, lng: 0 });
   const [isGeocoding, setIsGeocoding] = useState(false);
 
-  /**
-   * 🗺️ Función para geocodificar la dirección usando Google Maps API
-   */
   const geocodeAddress = async (
     address: string
   ): Promise<{ lat: number; lng: number } | null> => {
     setIsGeocoding(true);
 
     try {
-      // 🔥 FIX: Agregar 'https://' al inicio
       const response = await axios.get<GeocodeResponse>(
         "https://maps.googleapis.com/maps/api/geocode/json",
         {
           params: {
             address: address,
-            key: "AIzaSyBp-vxE_u91t0oyjFZCao9I7Hf8UOh4I-Q", // ⚠️ Cambia por tu clave
+            key: "AIzaSyBp-vxE_u91t0oyjFZCao9I7Hf8UOh4I-Q",
           },
         }
       );
 
-      console.log(" Respuesta de geocodificación:", response.data);
-
-      // Verificar que haya resultados
       if (response.data.status === "OK" && response.data.results.length > 0) {
         const result = response.data.results[0];
         const { lat, lng } = result.geometry.location;
-
         setLatLng({ lat, lng });
-
-        toast.success(` Ubicación encontrada: ${result.formatted_address}`);
-
+        toast.success(`Ubicación encontrada: ${result.formatted_address}`);
         return { lat, lng };
       } else if (response.data.status === "ZERO_RESULTS") {
         toast.error("No se encontró la dirección. Verifica que sea correcta.");
@@ -127,7 +132,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
         return null;
       }
     } catch (error) {
-      console.error(" Error al geocodificar:", error);
+      console.error("Error al geocodificar:", error);
       toast.error("Error al obtener las coordenadas. Intenta nuevamente.");
       return null;
     } finally {
@@ -152,22 +157,16 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       newErrors.nombre = "El nombre es requerido";
     } else if (formData.nombre.trim().length < 2) {
       newErrors.nombre = "El nombre debe tener al menos 2 caracteres";
-    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.nombre.trim())) {
-      newErrors.nombre = "El nombre solo puede contener letras";
     }
 
     if (!formData.apellido.trim()) {
       newErrors.apellido = "El apellido es requerido";
     } else if (formData.apellido.trim().length < 2) {
       newErrors.apellido = "El apellido debe tener al menos 2 caracteres";
-    } else if (!/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(formData.apellido.trim())) {
-      newErrors.apellido = "El apellido solo puede contener letras";
     }
 
     if (!formData.direccion.trim()) {
       newErrors.direccion = "La dirección es requerida";
-    } else if (formData.direccion.trim().length < 5) {
-      newErrors.direccion = "La dirección debe tener al menos 5 caracteres";
     }
 
     if (!formData.correo.trim()) {
@@ -184,40 +183,43 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
 
     if (formData.cantidad < 1) {
       newErrors.cantidad = "La cantidad debe ser mayor a 0";
-    } else if (formData.cantidad > 100) {
-      newErrors.cantidad = "La cantidad no puede ser mayor a 100";
     }
 
     if (formData.valor_declarado < 1000) {
       newErrors.valor_declarado = "El valor mínimo es 1.000 COP";
-    } else if (formData.valor_declarado > 10000000) {
-      newErrors.valor_declarado = "El valor máximo es 10.000.000 COP";
     }
 
     const dimensionesErrors: FormErrors["dimensiones"] = {};
     if (formData.dimensiones.largo <= 0) {
       dimensionesErrors.largo = "El largo debe ser mayor a 0";
-    } else if (formData.dimensiones.largo > 200) {
-      dimensionesErrors.largo = "Máximo 200cm";
     }
-
     if (formData.dimensiones.ancho <= 0) {
       dimensionesErrors.ancho = "El ancho debe ser mayor a 0";
-    } else if (formData.dimensiones.ancho > 200) {
-      dimensionesErrors.ancho = "Máximo 200cm";
     }
-
     if (formData.dimensiones.alto <= 0) {
       dimensionesErrors.alto = "El alto debe ser mayor a 0";
-    } else if (formData.dimensiones.alto > 200) {
-      dimensionesErrors.alto = "Máximo 200cm";
     }
-
     if (formData.dimensiones.peso <= 0) {
       dimensionesErrors.peso = "El peso debe ser mayor a 0";
-    } else if (formData.dimensiones.peso > 50) {
-      dimensionesErrors.peso = "Máximo 50kg";
     }
+    if (!formData.remitente.nombre.trim()) {
+  newErrors.remitente = { ...newErrors.remitente, nombre: "El nombre del remitente es requerido" };
+    }
+    if (!formData.remitente.apellido.trim()) {
+      newErrors.remitente = { ...newErrors.remitente, apellido: "El apellido del remitente es requerido" };
+    }
+    if (!formData.remitente.telefono.trim()) {
+      newErrors.remitente = { ...newErrors.remitente, telefono: "El teléfono del remitente es requerido" };
+    } else if (!validatePhone(formData.remitente.telefono)) {
+      newErrors.remitente = { ...newErrors.remitente, telefono: "Teléfono inválido" };
+    }
+    if (!formData.remitente.correo.trim()) {
+      newErrors.remitente = { ...newErrors.remitente, correo: "El correo del remitente es requerido" };
+    } else if (!validateEmail(formData.remitente.correo)) {
+      newErrors.remitente = { ...newErrors.remitente, correo: "Correo inválido" };
+    }
+
+    
 
     if (Object.keys(dimensionesErrors).length > 0) {
       newErrors.dimensiones = dimensionesErrors;
@@ -236,7 +238,14 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
-    if (["largo", "ancho", "alto", "peso"].includes(name)) {
+    // ✅ Manejar campos del remitente
+    if (["remitente_nombre", "remitente_telefono", "remitente_empresa", "remitente_correo"].includes(name)) {
+      const field = name.replace("remitente_", "");
+      setFormData((prev) => ({
+        ...prev,
+        remitente: { ...prev.remitente, [field]: value },
+      }));
+    } else if (["largo", "ancho", "alto", "peso"].includes(name)) {
       setFormData((prev) => ({
         ...prev,
         dimensiones: {
@@ -244,13 +253,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           [name]: Math.max(0, Number(value)),
         },
       }));
-
-      if (errors.dimensiones?.[name as keyof FormErrors["dimensiones"]]) {
-        setErrors((prev) => ({
-          ...prev,
-          dimensiones: { ...prev.dimensiones, [name]: undefined },
-        }));
-      }
     } else if (["cantidad", "valor_declarado"].includes(name)) {
       setFormData((prev) => ({ ...prev, [name]: Math.max(0, Number(value)) }));
     } else if (name === "tipo_paquete") {
@@ -271,42 +273,52 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
       return;
     }
 
-    // 🗺️ Geocodificar la dirección
     const coordinates = await geocodeAddress(formData.direccion);
 
     if (!coordinates) {
-      toast.error(
-        "No se pudieron obtener las coordenadas. Verifica la dirección."
-      );
+      toast.error("No se pudieron obtener las coordenadas.");
       return;
     }
 
-    // Armar el payload con las coordenadas
     const payload = {
-      destinatario: {
-        nombre: formData.nombre.trim(),
-        apellido: formData.apellido.trim(),
-        direccion: formData.direccion.trim(),
-        correo: formData.correo.trim().toLowerCase(),
-        telefono: formData.telefono.trim(),
-      },
-      tipo_paquete: formData.tipo_paquete,
-      cantidad: formData.cantidad,
-      valor_declarado: formData.valor_declarado,
-      dimensiones: formData.dimensiones,
-      lat: coordinates.lat,
-      lng: coordinates.lng,
-    };
+  destinatario: {
+    nombre: formData.nombre,
+    apellido: formData.apellido,
+    direccion: formData.direccion,
+    correo: formData.correo,
+    telefono: formData.telefono,
+  },
 
-    console.log("📦 Payload a enviar:", payload);
+  dimensiones: {
+    largo: formData.dimensiones.largo,
+    ancho: formData.dimensiones.ancho,
+    alto: formData.dimensiones.alto,
+    peso: formData.dimensiones.peso,
+  },
+
+  tipo_paquete: formData.tipo_paquete,
+  cantidad: formData.cantidad,
+  valor_declarado: formData.valor_declarado,
+
+  lat: coordinates.lat,
+  lng: coordinates.lng,
+
+  remitente: {
+    remitente_nombre: formData.remitente.nombre,
+    remitente_apellido: formData.remitente.apellido,
+    remitente_telefono: formData.remitente.telefono,
+    remitente_correo: formData.remitente.correo,
+    remitente_empresa: formData.remitente.empresa || null,
+  },
+};
+
+
 
     try {
       const success = await onSuccess(payload);
 
       if (success) {
         toast.success("¡Paquete creado exitosamente!");
-
-        // Reset form
         setFormData({
           nombre: "",
           apellido: "",
@@ -317,28 +329,19 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           cantidad: 1,
           valor_declarado: 0,
           dimensiones: { largo: 0, ancho: 0, alto: 0, peso: 0 },
+          remitente: { nombre: "", apellido: "", telefono: "", empresa: "", correo: "" },
         });
         setLatLng({ lat: 0, lng: 0 });
         setErrors({});
         onClose();
-      } else {
-        toast.error("Error al crear el paquete");
       }
     } catch (error) {
-      console.error("Error al crear paquete:", error);
       toast.error("Error al crear el paquete");
     }
   };
 
-  const handleClose = () => {
-    if (!isLoading && !isGeocoding) {
-      setErrors({});
-      onClose();
-    }
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -405,12 +408,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
               {errors.direccion && (
                 <p className="text-red-500 text-xs mt-1">{errors.direccion}</p>
               )}
-              {latLng.lat !== 0 && latLng.lng !== 0 && (
-                <p className="text-green-600 text-xs mt-1">
-                  ✓ Coordenadas: {latLng.lat.toFixed(6)},{" "}
-                  {latLng.lng.toFixed(6)}
-                </p>
-              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
@@ -441,6 +438,81 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                 />
                 {errors.telefono && (
                   <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ✅ NUEVA SECCIÓN: Datos del Remitente */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+              Datos del remitente
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Nombre</Label>
+                <Input
+                  name="remitente_nombre"
+                  placeholder="Nombre del remitente"
+                  value={formData.remitente.nombre}
+                  onChange={handleInputChange}
+                  disabled={isLoading || isGeocoding}
+                />
+              </div>
+
+              <div>
+                <Label>Apellido</Label>
+                <Input
+                  name="remitente_apellido"
+                  placeholder="Apellido del remitente"
+                  value={formData.remitente.apellido}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      remitente: {
+                        ...prev.remitente,
+                        apellido: e.target.value,
+                      },
+                    }))
+                  }
+                  disabled={isLoading || isGeocoding}
+                />
+              </div>
+              
+              <div>
+                <Label>Teléfono</Label>
+                <Input
+                  type="tel"
+                  name="remitente_telefono"
+                  placeholder="3001234567"
+                  value={formData.remitente.telefono}
+                  onChange={handleInputChange}
+                  disabled={isLoading || isGeocoding}
+                />
+              </div>
+              <div>
+                <Label>Empresa</Label>
+                <Input
+                  name="remitente_empresa"
+                  placeholder="Nombre de la empresa"
+                  value={formData.remitente.empresa}
+                  onChange={handleInputChange}
+                  disabled={isLoading || isGeocoding}
+                />
+              </div>
+              <div>
+                <Label>Correo</Label>
+                <Input
+                  type="email"
+                  name="remitente_correo"
+                  placeholder="remitente@mail.com"
+                  value={formData.remitente.correo}
+                  onChange={handleInputChange}
+                  className={errors.remitente?.correo ? "border-red-500" : ""}
+                  disabled={isLoading || isGeocoding}
+                />
+                {errors.remitente?.correo && (
+                  <p className="text-red-500 text-xs mt-1">{errors.remitente.correo}</p>
                 )}
               </div>
             </div>
@@ -477,7 +549,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   value={formData.cantidad === 0 ? "" : formData.cantidad}
                   onChange={handleInputChange}
                   min="1"
-                  max="100"
                   className={errors.cantidad ? "border-red-500" : ""}
                   disabled={isLoading || isGeocoding}
                 />
@@ -501,7 +572,6 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
                   className={errors.valor_declarado ? "border-red-500" : ""}
                   disabled={isLoading || isGeocoding}
                 />
-
                 {errors.valor_declarado && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.valor_declarado}
@@ -616,7 +686,7 @@ const ModalAgregarPaquete: React.FC<ModalAgregarPaqueteProps> = ({
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
-              onClick={handleClose}
+              onClick={onClose}
               disabled={isLoading || isGeocoding}
             >
               Cancelar

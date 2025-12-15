@@ -54,34 +54,49 @@ export interface Paquete {
   fecha_entrega?: string | null;
   estado: PaquetesEstados;
   tipo_paquete: TipoPaquete;
-  
-  // Dimensiones separadas (como vienen del backend)
+
+  // Dimensiones
   largo: number;
   ancho: number;
   alto: number;
   peso: number;
-  
+
   cantidad: number;
   valor_declarado: number;
-  
-  // Dirección de entrega específica del paquete
+
   direccion_entrega?: string | null;
   lat?: number | null;
   lng?: number | null;
-  
-  // Relaciones (IDs)
+
   id_cliente: number;
   id_ruta?: number | null;
   id_barrio?: number | null;
-  
-  // ← RELACIONES POBLADAS (cuando el backend hace include)
+
+  // 🔹 RELACIONES
   cliente?: Cliente;
   ruta?: Ruta;
   barrio?: Barrio;
+
+  // ✅ CAMPOS DEL REMITENTE (NUEVOS)
+  remitente_nombre?: string | null;
+  remitente_apellido?: string | null;
+  remitente_telefono?: string | null;
+  remitente_correo?: string | null;
+  remitente_empresa?: string | null;
 }
+
 
 // 🔹 Para CREAR un paquete (incluye datos del cliente)
 export interface PaqueteCreate {
+
+  remitente: {
+    remitente_nombre: string;
+    remitente_apellido: string;
+    remitente_telefono: string;
+    remitente_correo: string;
+    remitente_empresa?: string;
+  };
+
   destinatario: {
     nombre: string;
     apellido: string;
