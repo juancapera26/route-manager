@@ -156,7 +156,7 @@ export const useNotifications = (
 
       // Mostrar toast según el tipo
       const toastConfig = {
-        duration: 5000,
+        duration: 5000, // 👈 Cambia aquí: 8 segundos (8000ms)
         position: 'top-right' as const,
       };
 
@@ -180,6 +180,14 @@ export const useNotifications = (
 
         case 'ruta_fallida':
           toast.error(payload.title, {
+            description: payload.message,
+            ...toastConfig,
+          });
+          playNotificationSound();
+          break;
+
+        case 'reporte_creado':
+          toast.warning(payload.title, {
             description: payload.message,
             ...toastConfig,
           });

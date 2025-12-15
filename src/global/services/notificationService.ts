@@ -5,7 +5,7 @@ import { API_URL } from "../../config";
 
 // 🔔 Estructura de la notificación que llega del backend
 export interface NotificationPayload {
-  type: "ruta_completada" | "ruta_fallida" | "ruta_asignada";
+  type: "ruta_completada" | "ruta_fallida" | "ruta_asignada" | "reporte_creado"; // 👈 Agregar
   title: string;
   message: string;
   data?: {
@@ -13,6 +13,8 @@ export interface NotificationPayload {
     cod_manifiesto?: string;
     estado_ruta?: string;
     id_conductor?: number;
+    id_novedad?: number; // 👈 Agregar
+    tipo_novedad?: string; // 👈 Agregar
   };
   timestamp: Date;
 }
@@ -34,7 +36,7 @@ class NotificationService {
       return;
     }
 
-    // 🌐 URL del backend - CAMBIA ESTO según tu configuración
+    // 🌐 URL del backend
     const SOCKET_URL = API_URL;
 
     console.log(
